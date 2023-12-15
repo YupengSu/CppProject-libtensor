@@ -7,7 +7,11 @@
 using namespace ts;
 
 int main() {
-    Tensor<int> a = Tensor<int>({{2, 2}});
-    Tensor<float> b = Tensor<float>({{2, 3.2}});
+    // Tensor a = tensor({{{2.1, 2, 3}, {2, 3, 4}, {1, 2, 3}},
+    //                               {{2, 2, 3}, {2, 3, 4}, {1, 2, 3}}});
+    // cout << a << endl;
 
+    Tensor<> b = Tensor<>({{{2.1, 2, 3}, {2, 3, 4}, {1, 2, 3}},
+                                     {{2, 2, 3}, {2, 3, 4}, {1, 2, 3}}}, int8);
+    cout << b << endl;
 }

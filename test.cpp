@@ -1,82 +1,93 @@
-#include <initializer_list>
 #include <iostream>
-using namespace std;
+#include <vector>
+#include <initializer_list>
+#include <cassert>
+#include <type_traits>
 
-class ShapeElem {
-   public:
-    ShapeElem* next;
-    int len;
+enum dt { int8, float32 };
 
-    ShapeElem(int _len, ShapeElem* _next) : next(_next), len(_len) {}
+template <typename T>
+struct is_vector : std::false_type {};
 
-    void print_shape() {
-        if (next != nullptr) {
-            cout << " " << len;
-            next->print_shape();
-        } else {
-            cout << " " << len << "\n";
-        }
-    }
-
-    int array_len() {
-        if (next != nullptr) {
-            return len * next->array_len();
-        } else {
-            return len;
-        }
-    }
-};
+template <typename T>
+struct is_vector<std::vector<T>> : std::true_type {};
 
 template <class value_type>
-class ArrayInit {
-   public:
-    void* data = nullptr;
-    size_t len;
-    bool is_final;
+class BaseTensor {
+public:
+    BaseTensor(const value_type& data) {
+        std::cout << "BaseTensor constructor called with data: " << data << std::endl;
+    }
 
-    ArrayInit(std::initializer_list<value_type> init)
-        : data((void*)init.begin()), len(init.size()), is_final(true) {
-            cout << "build scaler" << endl;
-        }
+    // 其他成员函数和定义
+};
 
-    ArrayInit(std::initializer_list<ArrayInit<value_type>> init)
-        : data((void*)init.begin()), len(init.size()), is_final(false) {
-            cout << "build array" << endl;
+class Tensor {
+public:
+    void *base;
+    dt dtype;
 
-        }
+    Tensor() : base(nullptr), dtype(int8) {}
 
-    ShapeElem* shape() {
-        if (is_final) {
-            ShapeElem* out = new ShapeElem(len, nullptr);
+    template<typename T>
+    void initializeBaseTensor(const T& data) {
+        base = new BaseTensor<T>(data);
+    }
+
+    template <class T>
+    Tensor(const std::vector<T>& data) {
+        initializeBaseTensor(data);
+    }
+
+    // 重载Tensor构造函数以处理嵌套花括号输入
+    template <class T>
+    Tensor(const std::initializer_list<T>& data) {
+        if constexpr (is_vector<T>::value) {
+            initializeBaseTensor(data);
         } else {
-            ArrayInit<value_type>* first = (ArrayInit<value_type>*)data;
-            ShapeElem* out = new ShapeElem(len, first->shape());
+            assert(false); // 这里可以根据情况处理其他类型的数据结构
         }
     }
-    void assign(value_type** pointer) {
-        if (is_final) {
-            for (size_t k = 0; k < len; k++) {
-                (*pointer)[k] = (((value_type*)data)[k]);
-            }
-            (*pointer) = (*pointer) + len;
+
+    // 这里添加其他Tensor的构造函数重载用于处理其他类型的数据结构
+
+    friend std::ostream &operator<<(std::ostream &os, const Tensor &ts) {
+        if (ts.dtype == int8) {
+            os << *static_cast<BaseTensor<int> *>(ts.base);
+        } else if (ts.dtype == float32) {
+            os << *static_cast<BaseTensor<float> *>(ts.base);
         } else {
-            ArrayInit<value_type>* data_array = (ArrayInit<value_type>*)data;
-            for (int k = 0; k < len; k++) {
-                data_array[k].assign(pointer);
-            }
+            assert(false);
         }
+        return os;
     }
 };
 
+Tensor tensor() {
+    return Tensor();
+}
+
+template<typename T, typename... Args>
+Tensor tensor(const T& arg, const Args&... args) {
+    return Tensor{arg, args...};
+}
+
 int main() {
-    auto x = ArrayInit<int>({{1, 2, 3}, {92, 1, 3}});
-    auto shape = x.shape();
-    shape->print_shape();
-    int* data = new int[shape->array_len()];
-    int* running_pointer = data;
-    x.assign(&running_pointer);
-    for (int i = 0; i < shape->array_len(); i++) {
-        cout << " " << data[i];
-    }
-    cout << "\n";
+    // 嵌套花括号输入示例
+    Tensor a = tensor(
+        std::vector<std::vector<int>>{
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        },
+        std::vector<std::vector<int>>{
+            {9, 8, 7},
+            {6, 5, 4},
+            {3, 2, 1}
+        }
+    );
+
+    std::cout << a << std::endl;
+
+    return 0;
 }
