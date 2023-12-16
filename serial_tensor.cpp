@@ -64,9 +64,9 @@ Tensor Tensor::slice(int idx, int dim) {
                    idx, dim, size(dim));
 
     Storage new_data(data, stride[dim] * idx);
-    
+
     Size new_shape(shape, dim);
-    vector<int> new_stride = vector<int> (shape.ndim-1);
+    vector<int> new_stride = vector<int>(shape.ndim - 1);
 
     int i = 0;
     for (; i < dim; ++i) {
@@ -92,14 +92,12 @@ ostream &operator<<(ostream &os, Tensor t) {
             os << t[{i}];
             if (i != t.shape[0] - 1) os << ", ";
         }
-    } 
-    else if (t.ndim == 2) {
+    } else if (t.ndim == 2) {
         for (int i = 0; i < t.size(0); i++) {
             os << t.slice(i);
             if (i != t.shape[0] - 1) os << ", " << endl;
         }
-    } 
-    else {
+    } else {
         for (int i = 0; i < t.size(0); i++) {
             os << t.slice(i);
             if (i != t.shape[0] - 1) os << ", " << endl << endl;
@@ -109,46 +107,60 @@ ostream &operator<<(ostream &os, Tensor t) {
     return os;
 }
 
-
 Tensor Tensor::operator()(int index) { return slice(index); }
 Tensor Tensor::operator()(int index, pair<int, int> range) {
-    CHECK_IN_RANGE(range.first, 0, size(index),
-                   "Index %d is out of bound for dimension %d with size %zu",
-                   range.first, index, size(index));
-    CHECK_IN_RANGE(range.second, 0, size(index),
-                   "Index %d is out of bound for dimension %d with size %zu",
-                   range.second, index, size(index));
-
-    Storage new_data(data, stride[index] * range.first);
-    vector<int> new_shape(this->shape.shape);
-    vector<int> new_stride(this->stride);
-
-    new_shape[index] = range.second - range.first;
-    new_stride[index] = stride[index];
-
-    return Tensor(new_data, Size(new_shape), new_stride, dtype);;
+    Tensor new_data = slice(index);
+    new_data.shape[0] = range.second - range.first;
+    new_data.data.dp += range.first * new_data.stride[0];
+    return new_data;
 }
 
-data_t& Tensor::operator[](initializer_list<size_t> inds) {
-    CHECK_EQUAL(ndim, inds.size(),
-        "Invalid %dD indices for %dD tensor", inds.size(), ndim);
+// data_t& Tensor::operator[](initializer_list<size_t> inds) {
+//     CHECK_EQUAL(ndim, inds.size(),
+//         "Invalid %dD indices for %dD tensor", inds.size(), ndim);
+//     size_t offset = 0, i = 0;
+//     for (auto idx : inds) {
+//         CHECK_IN_RANGE(idx, 0, shape[i],
+//             "Index %zu is out of bound for dimension %zu with size %zu",
+//             idx, i, size(i));
+//         offset += idx * stride[i++];
+//     }
+//     return data[offset];
+// }
+// data_t Tensor::operator[](initializer_list<size_t> inds) const {
+//     CHECK_EQUAL(ndim, inds.size(),
+//         "Invalid %dD indices for %dD tensor", inds.size(), ndim);
+//     size_t offset = 0, i = 0;
+//     for (auto idx : inds) {
+//         CHECK_IN_RANGE(idx, 0, shape[i],
+//             "Index %zu is out of bound for dimension %zu with size %zu",
+//             idx, i, size(i));
+//         offset += idx * stride[i++];
+//     }
+//     return data[offset];
+// }
+data_t &Tensor::operator[](vector<size_t> inds) {
+    CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
+                inds.size(), ndim);
     size_t offset = 0, i = 0;
     for (auto idx : inds) {
-        CHECK_IN_RANGE(idx, 0, shape[i],
-            "Index %zu is out of bound for dimension %zu with size %zu",
-            idx, i, size(i));
+        CHECK_IN_RANGE(
+            idx, 0, shape[i],
+            "Index %zu is out of bound for dimension %zu with size %zu", idx, i,
+            size(i));
         offset += idx * stride[i++];
     }
     return data[offset];
 }
-data_t Tensor::operator[](initializer_list<size_t> inds) const {
-    CHECK_EQUAL(ndim, inds.size(),
-        "Invalid %dD indices for %dD tensor", inds.size(), ndim);
+data_t Tensor::operator[](vector<size_t> inds) const {
+    CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
+                inds.size(), ndim);
     size_t offset = 0, i = 0;
     for (auto idx : inds) {
-        CHECK_IN_RANGE(idx, 0, shape[i],
-            "Index %zu is out of bound for dimension %zu with size %zu",
-            idx, i, size(i));
+        CHECK_IN_RANGE(
+            idx, 0, shape[i],
+            "Index %zu is out of bound for dimension %zu with size %zu", idx, i,
+            size(i));
         offset += idx * stride[i++];
     }
     return data[offset];
@@ -156,8 +168,6 @@ data_t Tensor::operator[](initializer_list<size_t> inds) const {
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
-
-
 
 void *Tensor::data_ptr() { return (void *)data.bp.get(); }
 
@@ -167,6 +177,14 @@ int Tensor::get_size(vector<int> shape) {
         size *= shape[i];
     }
     return size;
+}
+
+vector<data_t> Tensor::get_data() {
+    vector<data_t> data(this->shape.size());
+    for (int i = 0; i < this->shape.size(); i++) {
+        data[i] = this->data[i];
+    }
+    return data;
 }
 
 Tensor tensor(BaseTensor<> bt) { return Tensor(bt.get_data(), bt.shape.shape); }
@@ -227,6 +245,95 @@ Tensor eye(Size sz) {
     }
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
+}
+
+size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
+    // Validate input: indices size and shape dimensions should match
+    if (indices.size() != shape.ndim) {
+        throw std::invalid_argument(
+            "Indices size does not match tensor dimensions");
+    }
+
+    size_t offset = 0;
+    size_t stride = 1;
+
+    // Calculate the linear offset
+    for (int i = indices.size() - 1; i >= 0; --i) {
+        if (indices[i] >= shape[i]) {
+            throw std::out_of_range("Index out of range for tensor dimension");
+        }
+        offset += indices[i] * stride;
+        stride *= shape[i];
+    }
+
+    return offset;
+}
+
+
+// TODO: below
+Tensor cat(vector<Tensor> tensors, int dim) {
+    if (tensors.size() == 0) {
+        return Tensor();
+    }
+    Tensor first = tensors[0];
+    size_t total_size = 0;
+    for (int i = 0; i < tensors.size(); i++) {
+        CHECK_EQUAL(first.ndim, tensors[i].ndim,
+                    "Tensor dimension mismatch: %d vs %d", first.ndim,
+                    tensors[i].ndim);
+        for (int j = 0; j < first.ndim; j++) {
+            if (j == dim) continue;
+            CHECK_EQUAL(first.shape[j], tensors[i].shape[j],
+                        "Tensor shape mismatch: %d vs %d", first.shape[j],
+                        tensors[i].shape[j]);
+        }
+        total_size += tensors[i].shape.size();
+    }
+    vector<data_t> data(total_size);
+    size_t offset = 0;
+    for (int i = 0; i < tensors.size(); i++) {
+        vector<data_t> t_data = tensors[i].get_data();
+        size_t end = offset + tensors[i].shape.size();
+        copy(t_data.begin(), t_data.end(), data.begin() + offset);
+        offset = end;
+    }
+    vector<int> new_shape = first.shape.shape;
+    new_shape[dim] *= tensors.size();
+    return Tensor(data, new_shape);
+}
+
+void repeat(vector<data_t> &v, int repeats) {
+    size_t total_size = v.size() * repeats;
+    vector<data_t> new_v(total_size);
+    for (int i = 0; i < repeats; i++) {
+        copy(v.begin(), v.end(), new_v.begin() + i * v.size());
+    }
+    v = new_v;
+    cout << "repeat" << endl;
+}
+
+vector<int> vec_mul(vector<int> v1, vector<int> v2) {
+    CHECK_EQUAL(v1.size(), v2.size(), "Vector size mismatch: %d vs %d",
+                v1.size(), v2.size());
+    vector<int> ret = vector<int>(v1.size());
+    for (int i = 0; i < v1.size(); i++) {
+        ret[i] = v1[i] * v2[i];
+    }
+    return ret;
+}
+
+Tensor tile(Tensor t, vector<int> reps) {
+    CHECK_EQUAL(t.ndim, reps.size(),
+                "Tensor dimension mismatch: %d vs %d", t.ndim, reps.size());
+    vector<data_t> data = t.get_data();
+    Tensor new_t = Tensor(t);
+    for (int i = 0; i < t.ndim; i++) {
+        for (int j = 0; j < reps[i]; j++) {
+            repeat(data, t.shape[i]);
+        }
+    }
+    Tensor test= Tensor(data, vec_mul(t.shape.shape, reps));
+    return test;
 }
 
 }  // namespace ts

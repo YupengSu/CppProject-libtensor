@@ -42,11 +42,14 @@ class Tensor {
 
     Tensor operator()(int index);
     Tensor operator()(int index, pair<int, int> range);
-    data_t &operator[](initializer_list<size_t> inds);
-    data_t operator[](initializer_list<size_t> inds) const;
-
+    // data_t &operator[](initializer_list<size_t> inds);
+    // data_t operator[](initializer_list<size_t> inds) const;
+    data_t &operator[](vector<size_t> inds);
+    data_t operator[](vector<size_t> inds) const;
     size_t get_dim() const;
     size_t size(int i) const;
+
+    vector<data_t> get_data();
 
     Tensor slice(int idx, int dim = 0);
     void *data_ptr();
@@ -61,5 +64,6 @@ Tensor zeros(Size sz);
 Tensor ones(Size sz);
 Tensor full(Size sz, data_t val);
 Tensor eye(Size sz);
-
+Tensor cat(vector<Tensor> tensors, int dim);
+Tensor tile(Tensor t, vector<int> reps);
 }  // namespace ts

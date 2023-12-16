@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <ios>
+#include <iostream>
 #include <vector>
 
 // #include "tensor.hpp"
@@ -9,18 +10,16 @@
 using namespace ts;
 //
 int main() {
-    Tensor t = rand({3, 5, 6});
-    cout << t.shape << endl ;
-    cout << t << endl << endl;
-    Tensor b =  t.slice(2, 0);
+    
+    Tensor t1 = rand({3,2});
+    Tensor t2 = rand({3,2});
+    cout << t1 << endl;
+    cout << t2 << endl;
+    
+    cout << cat({t1,t2}, 1) << endl;
 
-    cout << b.shape <<  endl;
-    for (int i : b.stride) {
-        cout << i << " ";
-    }
-    cout << endl;
-    cout << b(0) << endl;
-    cout << b(0)[{4}] << endl;
+    Tensor t3 = tile(t1, {2,2});
+    cout << t3 << endl;
 
 //     cout << t.shape << endl;
 //     cout << t(1,{0,2}) << endl;
