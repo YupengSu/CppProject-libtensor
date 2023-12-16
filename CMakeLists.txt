@@ -4,7 +4,12 @@ project(libtensor VERSION 0.1.0 LANGUAGES C CXX)
 include(CTest)
 enable_testing()
 
-add_executable(libtensor main.cpp tensor.hpp)
+add_executable(libtensor 
+main.cpp 
+tensor.hpp 
+exception.cpp
+serial_tensor.cpp 
+size.hpp)
 
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

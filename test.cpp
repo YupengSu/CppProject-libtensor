@@ -1,93 +1,489 @@
-#include <iostream>
-#include <vector>
-#include <initializer_list>
 #include <cassert>
-#include <type_traits>
+#include <initializer_list>
+#include <iostream>
+#include <ostream>
+#include <vector>
 
+using namespace std;
+
+namespace ts {
 enum dt { int8, float32 };
-
-template <typename T>
-struct is_vector : std::false_type {};
-
-template <typename T>
-struct is_vector<std::vector<T>> : std::true_type {};
-
-template <class value_type>
-class BaseTensor {
-public:
-    BaseTensor(const value_type& data) {
-        std::cout << "BaseTensor constructor called with data: " << data << std::endl;
+class Size {
+   public:
+    int dim;
+    vector<int> shape;
+    ostream &operator<<(ostream &os) {
+        os << "Tensor_Shape: (";
+        for (int i = 0; i < shape.size(); i++) {
+            os << shape[i];
+            if (i != shape.size() - 1) {
+                os << ", ";
+            }
+        }
+        os << ')';
+        return os;
+    }
+    friend ostream &operator<<(ostream &os, Size sz) {
+        os << "Tensor_Shape: (";
+        for (int i = 0; i < sz.shape.size(); i++) {
+            os << sz.shape[i];
+            if (i != sz.shape.size() - 1) {
+                os << ", ";
+            }
+        }
+        os << ')';
+        return os;
     }
 
-    // 其他成员函数和定义
+    bool operator==(Size sz) {
+        if (dim != sz.dim) {
+            return false;
+        }
+        for (int i = 0; i < dim; i++) {
+            if (shape[i] != sz.shape[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(Size sz) {
+        if (dim != sz.dim) {
+            return true;
+        }
+        for (int i = 0; i < dim; i++) {
+            if (shape[i] != sz.shape[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void operator=(Size sz) {
+        dim = sz.dim;
+        shape = sz.shape;
+    }
+
+    int operator[](int index) {
+        assert(index < dim);
+        return shape[index];
+    }
+
+    Size() : shape({0}), dim(0) {}
+
+    Size(int len) : dim(1) { shape = {len}; }
+    Size(vector<int> shape) : dim(shape.size()), shape(shape) {}
+    Size(Size old, int new_dim) : dim(old.dim + 1) {
+        shape = vector<int>(old.shape);
+        shape.insert(shape.begin(), new_dim);
+    }
+};
+
+class FloatTensor {
+   public:
+    int dim;
+    int my_dim;
+    Size shape;  // Using shared_ptr with arrays
+    dt dtype;
+
+    vector<FloatTensor> data;
+    float scaler;
+
+    ~FloatTensor() {}
+
+    FloatTensor() {
+        this->dim = 0;
+
+        this->shape = Size();
+        this->data = {};
+    }
+    FloatTensor &operator=(int data) {
+        assert(this->dim == 0);
+        this->scaler = data;
+        return *this;
+    }
+
+    FloatTensor &operator[](int index) {
+        assert(this->dim > 0);
+        assert(index < this->shape.shape[0]);
+        // if (this->dim == 1) {
+        //     return this->data[index];
+        // } else {
+        //     Tensor newT;
+        //     newT.dim = this->dim - 1;
+        //     newT.shape =
+        //         Size(this->shape.shape.begin() + 1, this->shape.shape.end());
+        //     for (Tensor ts : this->data) {
+        //         newT.data.push_back(ts[index]);
+        //     }
+        //     return newT;
+        // }
+        return this->data[index];
+    }
+
+    template <class iterT>
+    FloatTensor(iterT begin, iterT end, dt dtype = float32) {
+        this->dim = 1;
+        // this->shape = Size((int)ts.size());
+        this->shape = Size(begin - end);
+        for (iterT i = begin; i != end; i++) {
+            this->data.push_back(FloatTensor(*i));
+        }
+        this->update_dtype(dtype);
+    }
+
+    FloatTensor(float data, dt dtype = float32) {
+        this->dim = 0;
+        this->shape = Size();
+        this->scaler = data;
+        this->update_dtype(dtype);
+    }
+
+    FloatTensor(initializer_list<FloatTensor> data, dt dtype = float32) {
+        this->data = {};
+
+        for (FloatTensor i : data) {
+            this->data.push_back(i);
+        }
+        FloatTensor first = this->data[0];
+        if (first.dim == 0) {
+            this->shape = Size((int)this->data.size());
+        } else {
+            this->shape = Size(first.shape, (int)this->data.size());
+        }
+        this->dim = first.dim + 1;
+
+        for (FloatTensor ts : data) {
+            assert(first.dim == ts.dim);
+            for (int i = 0; i < this->dim; i++) {
+                assert(first.shape.shape[i] == ts.shape.shape[i]);
+            }
+        }
+        this->update_dtype(dtype);
+    }
+
+    ostream &operator<<(ostream &os) {
+        os << "[";
+        for (auto i : data) {
+            os << i << " ";
+        }
+        os << ']' << endl;
+        return os;
+    }
+
+    friend ostream &operator<<(ostream &os, FloatTensor tsr) {
+        if (tsr.dim == 0) {
+            os << tsr.scaler;
+            return os;
+        } else {
+            os << "[";
+            for (int i = 0; i < tsr.data.size(); i++) {
+                os << tsr.data[i];
+                if (i != tsr.data.size() - 1) {
+                    os << ", ";
+
+                    if (tsr.dim >= 2) {
+                        os << endl;
+                    }
+                }
+            }
+            os << ']';
+
+            return os;
+        }
+    }
+
+    // template <class T>
+    // bool operator==(Tensor ts) {
+    //     if (this->dim != ts.dim) {
+    //         return false;
+    //     }
+    //     if (this->dim == 0) {
+    //         return this->scaler == ts.scaler;
+    //     }
+    //     if (this->shape != ts.shape) {
+    //         return false;
+    //     }
+    //     for (int i = 0; i < this->data.size(); i++) {
+    //         if (this->data[i] != ts.data[i]) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+    // template <class T>
+    // bool operator!=(Tensor ts) {
+    //     if (this->dim != ts.dim) {
+    //         return true;
+    //     }
+    //     if (this->dim == 0) {
+    //         return this->scaler != ts.scaler;
+    //     }
+    //     if (this->shape != ts.shape) {
+    //         return true;
+    //     }
+    //     for (int i = 0; i < this->data.size(); i++) {
+    //         if (this->data[i] != ts.data[i]) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    FloatTensor copy() {
+        if (this->dim == 0) {
+            return {FloatTensor(this->scaler)};
+        } else {
+            FloatTensor newT;
+            for (FloatTensor ts : this->data) {
+                newT.data.push_back(ts.copy());
+            }
+            newT.dim = this->dim;
+            newT.shape = this->shape;
+            return newT;
+        }
+    }
+
+    void set_dtype(dt dtype) {
+        if (this->dtype == dtype) {
+            return;
+        }
+        if (this->dim == 0) {
+            switch (dtype) {
+                case int8:
+                    this->scaler = (int8_t)this->scaler;
+                    break;
+                case float32:
+                    this->scaler = (float)this->scaler;
+                    break;
+            }
+        } else {
+            for (FloatTensor ts : this->data) {
+                ts.set_dtype(dtype);
+            }
+        }
+    }
+    void update_dtype(dt dtype) {
+        switch (dtype) {
+            case int8:
+                this->set_dtype(int8);
+                break;
+            case float32:
+                this->set_dtype(float32);
+                break;
+        }
+    }
+};
+
+class IntTensor {
+   public:
+    int dim;
+    int my_dim;
+    Size shape;  // Using shared_ptr with arrays
+    dt dtype;
+
+    vector<IntTensor> data;
+    int scaler;
+
+    ~IntTensor() {}
+
+    IntTensor() {
+        this->dim = 0;
+
+        this->shape = Size();
+        this->data = {};
+    }
+    IntTensor &operator=(int data) {
+        assert(this->dim == 0);
+        this->scaler = data;
+        return *this;
+    }
+
+    IntTensor &operator[](int index) {
+        assert(this->dim > 0);
+        assert(index < this->shape.shape[0]);
+        // if (this->dim == 1) {
+        //     return this->data[index];
+        // } else {
+        //     Tensor newT;
+        //     newT.dim = this->dim - 1;
+        //     newT.shape =
+        //         Size(this->shape.shape.begin() + 1, this->shape.shape.end());
+        //     for (Tensor ts : this->data) {
+        //         newT.data.push_back(ts[index]);
+        //     }
+        //     return newT;
+        // }
+        return this->data[index];
+    }
+
+    template <class iterT>
+    IntTensor(iterT begin, iterT end, dt dtype = float32) {
+        this->dim = 1;
+        // this->shape = Size((int)ts.size());
+        this->shape = Size(begin - end);
+        for (iterT i = begin; i != end; i++) {
+            this->data.push_back(IntTensor(*i));
+        }
+        this->update_dtype(dtype);
+    }
+
+    IntTensor(int data, dt dtype = float32) {
+        this->dim = 0;
+        this->shape = Size();
+        this->scaler = data;
+        this->update_dtype(dtype);
+    }
+
+    IntTensor(initializer_list<IntTensor> data, dt dtype = float32) {
+        this->data = {};
+
+        for (IntTensor i : data) {
+            this->data.push_back(i);
+        }
+        IntTensor first = this->data[0];
+        if (first.dim == 0) {
+            this->shape = Size((int)this->data.size());
+        } else {
+            this->shape = Size(first.shape, (int)this->data.size());
+        }
+        this->dim = first.dim + 1;
+
+        for (IntTensor ts : data) {
+            assert(first.dim == ts.dim);
+            for (int i = 0; i < this->dim; i++) {
+                assert(first.shape.shape[i] == ts.shape.shape[i]);
+            }
+        }
+        this->update_dtype(dtype);
+    }
+
+    ostream &operator<<(ostream &os) {
+        os << "[";
+        for (auto i : data) {
+            os << i << " ";
+        }
+        os << ']' << endl;
+        return os;
+    }
+
+    friend ostream &operator<<(ostream &os, IntTensor tsr) {
+        if (tsr.dim == 0) {
+            os << tsr.scaler;
+            return os;
+        } else {
+            os << "[";
+            for (int i = 0; i < tsr.data.size(); i++) {
+                os << tsr.data[i];
+                if (i != tsr.data.size() - 1) {
+                    os << ", ";
+
+                    if (tsr.dim >= 2) {
+                        os << endl;
+                    }
+                }
+            }
+            os << ']';
+
+            return os;
+        }
+    }
+
+    // template <class T>
+    // bool operator==(Tensor ts) {
+    //     if (this->dim != ts.dim) {
+    //         return false;
+    //     }
+    //     if (this->dim == 0) {
+    //         return this->scaler == ts.scaler;
+    //     }
+    //     if (this->shape != ts.shape) {
+    //         return false;
+    //     }
+    //     for (int i = 0; i < this->data.size(); i++) {
+    //         if (this->data[i] != ts.data[i]) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+    // template <class T>
+    // bool operator!=(Tensor ts) {
+    //     if (this->dim != ts.dim) {
+    //         return true;
+    //     }
+    //     if (this->dim == 0) {
+    //         return this->scaler != ts.scaler;
+    //     }
+    //     if (this->shape != ts.shape) {
+    //         return true;
+    //     }
+    //     for (int i = 0; i < this->data.size(); i++) {
+    //         if (this->data[i] != ts.data[i]) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    IntTensor copy() {
+        if (this->dim == 0) {
+            return {IntTensor(this->scaler)};
+        } else {
+            IntTensor newT;
+            for (IntTensor ts : this->data) {
+                newT.data.push_back(ts.copy());
+            }
+            newT.dim = this->dim;
+            newT.shape = this->shape;
+            return newT;
+        }
+    }
+
+    void set_dtype(dt dtype) {
+        if (this->dtype == dtype) {
+            return;
+        }
+        if (this->dim == 0) {
+            switch (dtype) {
+                case int8:
+                    this->scaler = (int8_t)this->scaler;
+                    break;
+                case float32:
+                    this->scaler = (int)this->scaler;
+                    break;
+            }
+        } else {
+            for (IntTensor ts : this->data) {
+                ts.set_dtype(dtype);
+            }
+        }
+    }
+    void update_dtype(dt dtype) {
+        switch (dtype) {
+            case int8:
+                this->set_dtype(int8);
+                break;
+            case float32:
+                this->set_dtype(float32);
+                break;
+        }
+    }
 };
 
 class Tensor {
-public:
-    void *base;
-    dt dtype;
-
-    Tensor() : base(nullptr), dtype(int8) {}
-
-    template<typename T>
-    void initializeBaseTensor(const T& data) {
-        base = new BaseTensor<T>(data);
-    }
-
-    template <class T>
-    Tensor(const std::vector<T>& data) {
-        initializeBaseTensor(data);
-    }
-
-    // 重载Tensor构造函数以处理嵌套花括号输入
-    template <class T>
-    Tensor(const std::initializer_list<T>& data) {
-        if constexpr (is_vector<T>::value) {
-            initializeBaseTensor(data);
-        } else {
-            assert(false); // 这里可以根据情况处理其他类型的数据结构
-        }
-    }
-
-    // 这里添加其他Tensor的构造函数重载用于处理其他类型的数据结构
-
-    friend std::ostream &operator<<(std::ostream &os, const Tensor &ts) {
-        if (ts.dtype == int8) {
-            os << *static_cast<BaseTensor<int> *>(ts.base);
-        } else if (ts.dtype == float32) {
-            os << *static_cast<BaseTensor<float> *>(ts.base);
-        } else {
-            assert(false);
-        }
-        return os;
-    }
+   public:
+    void *tensors;
 };
 
-Tensor tensor() {
-    return Tensor();
+Tensor tensor(initializer_list<initializer_list<float>> data, dt dtype = float32) {  // 3D Tensor
+    Tensor ts;
+    
+    return ts;
 }
-
-template<typename T, typename... Args>
-Tensor tensor(const T& arg, const Args&... args) {
-    return Tensor{arg, args...};
+Tensor tensor(initializer_list<initializer_list<initializer_list<float>>>
+                  data) {  // 3D Tensor
+    Tensor ts;
+    return ts;
 }
-
-int main() {
-    // 嵌套花括号输入示例
-    Tensor a = tensor(
-        std::vector<std::vector<int>>{
-            {1, 2, 3},
-            {4, 5, 6},
-            {7, 8, 9}
-        },
-        std::vector<std::vector<int>>{
-            {9, 8, 7},
-            {6, 5, 4},
-            {3, 2, 1}
-        }
-    );
-
-    std::cout << a << std::endl;
-
-    return 0;
-}
+}  // namespace ts
