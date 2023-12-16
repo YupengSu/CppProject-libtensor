@@ -46,8 +46,6 @@ void Tensor::init_stride() {
     }
 }
 
-
-
 Tensor::Tensor(const Storage &i_data, const Size &i_shape,
                const vector<int> i_stride, dt dtype)
     : data(i_data), stride(i_stride), shape(i_shape) {
@@ -128,6 +126,25 @@ Tensor Tensor::slice(int idx, int dim) {
     return nt;
 }
 
+Tensor Tensor::operator()(int index) { return slice(index); }
+Tensor Tensor::operator()(int index, pair<int, int> range) {
+    CHECK_IN_RANGE(range.first, 0, size(index),
+                   "Index %d is out of bound for dimension %d with size %zu",
+                   range.first, index, size(index));
+    CHECK_IN_RANGE(range.second, 0, size(index),
+                   "Index %d is out of bound for dimension %d with size %zu",
+                   range.second, index, size(index));
+
+    Storage new_data(data, stride[index] * range.first);
+    vector<int> new_shape(this->shape.shape);
+    vector<int> new_stride(this->stride);
+
+    new_shape[index] = range.second - range.first;
+    new_stride[index] = stride[index];
+    
+    return Tensor(new_data, Size(new_shape), new_stride, dtype);;
+}
+
 void *Tensor::data_ptr() { return (void *)data.bp.get(); }
 
 int Tensor::get_size(vector<int> shape) {
@@ -197,7 +214,5 @@ Tensor eye(Size sz) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
-
 
 }  // namespace ts

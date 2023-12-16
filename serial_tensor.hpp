@@ -40,6 +40,11 @@ class Tensor {
 
     ostream &operator<<(ostream &os);
     friend ostream &operator<<(ostream &os, Tensor t);
+
+    Tensor operator()(int index);
+    Tensor operator()(int index, pair<int, int> range);
+
+
     size_t get_dim() const;
     size_t size(int i) const;
 
