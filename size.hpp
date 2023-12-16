@@ -10,7 +10,7 @@ namespace ts {
 enum dt { int8, float32 };
 class Size {
    public:
-    int dim;
+    int ndim;
     vector<int> shape;
     ostream &operator<<(ostream &os) {
         os << "(";
@@ -36,10 +36,10 @@ class Size {
     }
 
     bool operator==(Size sz) {
-        if (dim != sz.dim) {
+        if (ndim != sz.ndim) {
             return false;
         }
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < ndim; i++) {
             if (shape[i] != sz.shape[i]) {
                 return false;
             }
@@ -48,10 +48,10 @@ class Size {
     }
 
     bool operator!=(Size sz) {
-        if (dim != sz.dim) {
+        if (ndim != sz.ndim) {
             return true;
         }
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < ndim; i++) {
             if (shape[i] != sz.shape[i]) {
                 return true;
             }
@@ -60,34 +60,41 @@ class Size {
     }
 
     void operator=(Size sz) {
-        dim = sz.dim;
+        ndim = sz.ndim;
         shape = sz.shape;
     }
 
     int &operator[](int index) {
-        assert(index < dim);
+        assert(index < ndim);
+        return shape[index];
+    }
+    int operator[](int index) const {
+        assert(index < ndim);
         return shape[index];
     }
 
-    Size() : shape({0}), dim(0) {}
+    Size() : shape({0}), ndim(0) {}
 
-    Size(int len) : dim(1) { shape = {len}; }
-    Size(vector<int> shape) : dim(shape.size()), shape(shape) {}
-    Size(initializer_list<int> shape) : dim(shape.size()), shape(shape) {}
-
-    Size(Size old, int new_dim) : dim(old.dim + 1) {
-        shape = vector<int>(old.shape);
-        shape.insert(shape.begin(), new_dim);
+    Size(int len) : ndim(1) { shape = {len}; }
+    Size(vector<int> shape) : ndim(shape.size()), shape(shape) {}
+    Size(initializer_list<int> shape) : ndim(shape.size()), shape(shape) {}
+    Size(const Size &other, size_t skip) : shape(other.ndim - 1) {
+        int i = 0;
+        for (; i < skip; ++i) shape[i] = other.shape[i];
+        for (; i < shape.size(); ++i) shape[i] = other.shape[i + 1];
+        ndim = shape.size();
     }
 
+    Size(const Size &sz) : ndim(sz.ndim), shape(sz.shape) {}
+
     size_t size(int i) const {
-        assert(i < dim);
+        assert(i < ndim);
         return shape[i];
     }
 
     size_t size() const {
         size_t sz = 1;
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < ndim; i++) {
             sz *= shape[i];
         }
         return sz;

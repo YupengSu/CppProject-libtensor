@@ -10,7 +10,7 @@ using data_t = float;
 class Storage {
    private:
     struct Vdata {
-        size_t version_;
+        // size_t version_;
         data_t data_[1];
     };
 

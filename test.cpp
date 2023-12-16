@@ -10,7 +10,7 @@ namespace ts {
 enum dt { int8, float32 };
 class Size {
    public:
-    int dim;
+    int ndim;
     vector<int> shape;
     ostream &operator<<(ostream &os) {
         os << "Tensor_Shape: (";
@@ -36,10 +36,10 @@ class Size {
     }
 
     bool operator==(Size sz) {
-        if (dim != sz.dim) {
+        if (ndim != sz.ndim) {
             return false;
         }
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < ndim; i++) {
             if (shape[i] != sz.shape[i]) {
                 return false;
             }
@@ -48,10 +48,10 @@ class Size {
     }
 
     bool operator!=(Size sz) {
-        if (dim != sz.dim) {
+        if (ndim != sz.ndim) {
             return true;
         }
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < ndim; i++) {
             if (shape[i] != sz.shape[i]) {
                 return true;
             }
@@ -60,20 +60,20 @@ class Size {
     }
 
     void operator=(Size sz) {
-        dim = sz.dim;
+        ndim = sz.ndim;
         shape = sz.shape;
     }
 
     int operator[](int index) {
-        assert(index < dim);
+        assert(index < ndim);
         return shape[index];
     }
 
-    Size() : shape({0}), dim(0) {}
+    Size() : shape({0}), ndim(0) {}
 
-    Size(int len) : dim(1) { shape = {len}; }
-    Size(vector<int> shape) : dim(shape.size()), shape(shape) {}
-    Size(Size old, int new_dim) : dim(old.dim + 1) {
+    Size(int len) : ndim(1) { shape = {len}; }
+    Size(vector<int> shape) : ndim(shape.size()), shape(shape) {}
+    Size(Size old, int new_dim) : ndim(old.ndim + 1) {
         shape = vector<int>(old.shape);
         shape.insert(shape.begin(), new_dim);
     }

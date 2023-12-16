@@ -29,7 +29,6 @@ class Tensor {
     Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
            dt dtype = float32);
 
-
     Tensor(const Storage &i_data, const Size &i_shape,
            const vector<int> i_stride, dt dtype);
 
@@ -38,12 +37,13 @@ class Tensor {
     // data_t &operator[](int index);
     // data_t &operator[](initializer_list<int> inds);
 
-    ostream &operator<<(ostream &os);
+    // ostream &operator<<(ostream &os);
     friend ostream &operator<<(ostream &os, Tensor t);
 
     Tensor operator()(int index);
     Tensor operator()(int index, pair<int, int> range);
-
+    data_t &operator[](initializer_list<size_t> inds);
+    data_t operator[](initializer_list<size_t> inds) const;
 
     size_t get_dim() const;
     size_t size(int i) const;
