@@ -6,7 +6,7 @@ enable_testing()
 
 add_executable(libtensor 
 main.cpp 
-tensor.hpp 
+base_tensor.hpp 
 exception.cpp
 serial_tensor.cpp 
 size.hpp)

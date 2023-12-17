@@ -270,14 +270,17 @@ size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
 }
 
 
-// TODO: below
 Tensor cat(vector<Tensor> tensors, int dim) {
     if (tensors.size() == 0) {
         return Tensor();
     }
     Tensor first = tensors[0];
     size_t total_size = 0;
+    vector<int> step_sizes(tensors.size());
+    int sum_step_sizes = 0;
     for (int i = 0; i < tensors.size(); i++) {
+        step_sizes[i] = tensors[i].stride[dim] * tensors[i].size(dim);
+        sum_step_sizes += step_sizes[i];
         CHECK_EQUAL(first.ndim, tensors[i].ndim,
                     "Tensor dimension mismatch: %d vs %d", first.ndim,
                     tensors[i].ndim);
@@ -289,28 +292,27 @@ Tensor cat(vector<Tensor> tensors, int dim) {
         }
         total_size += tensors[i].shape.size();
     }
+
     vector<data_t> data(total_size);
-    size_t offset = 0;
+    size_t t_offset = 0;
     for (int i = 0; i < tensors.size(); i++) {
-        vector<data_t> t_data = tensors[i].get_data();
-        size_t end = offset + tensors[i].shape.size();
-        copy(t_data.begin(), t_data.end(), data.begin() + offset);
-        offset = end;
+        size_t target_offset = 0;
+        size_t self_offset = 0;
+        while (target_offset < total_size) {
+            copy(tensors[i].data.dp + self_offset,
+                 tensors[i].data.dp + step_sizes[i] + self_offset,
+                 data.begin() + target_offset + t_offset);
+            self_offset += step_sizes[i];
+            target_offset += sum_step_sizes;
+        }
+        t_offset += step_sizes[i];
     }
     vector<int> new_shape = first.shape.shape;
-    new_shape[dim] *= tensors.size();
+    new_shape[dim] = sum_step_sizes / first.stride[dim];
     return Tensor(data, new_shape);
 }
 
-void repeat(vector<data_t> &v, int repeats) {
-    size_t total_size = v.size() * repeats;
-    vector<data_t> new_v(total_size);
-    for (int i = 0; i < repeats; i++) {
-        copy(v.begin(), v.end(), new_v.begin() + i * v.size());
-    }
-    v = new_v;
-    cout << "repeat" << endl;
-}
+// TODO: below
 
 vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     CHECK_EQUAL(v1.size(), v2.size(), "Vector size mismatch: %d vs %d",
@@ -323,17 +325,17 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
 }
 
 Tensor tile(Tensor t, vector<int> reps) {
-    CHECK_EQUAL(t.ndim, reps.size(),
-                "Tensor dimension mismatch: %d vs %d", t.ndim, reps.size());
-    vector<data_t> data = t.get_data();
+    CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %d",
+                t.ndim, reps.size());
     Tensor new_t = Tensor(t);
-    for (int i = 0; i < t.ndim; i++) {
-        for (int j = 0; j < reps[i]; j++) {
-            repeat(data, t.shape[i]);
+    for (int i = t.ndim; i >= 0; i--) {
+        Tensor tmp = Tensor(new_t);
+        for (int j = 0; j < reps[i] - 1; j++) {
+            tmp = cat({tmp, new_t}, i);
         }
+        new_t = tmp;
     }
-    Tensor test= Tensor(data, vec_mul(t.shape.shape, reps));
-    return test;
+    return new_t;
 }
 
 }  // namespace ts
