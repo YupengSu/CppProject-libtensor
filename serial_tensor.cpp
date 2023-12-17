@@ -14,13 +14,18 @@ using namespace std;
 
 namespace ts {
 
-Tensor::Tensor() : Tensor(0) {}
-Tensor::Tensor(int i_dim) : data(i_dim) {
-    this->ndim = i_dim;
-    this->shape = Size(i_dim);
-    this->stride.reserve(i_dim);
+Tensor::Tensor(){
+    this->ndim = 0;
+    this->shape = Size(0);
+    this->stride.reserve(0);
     this->offset = 0;
 }
+// Tensor::Tensor(int i_dim) : data(i_dim) {
+//     this->ndim = i_dim;
+//     this->shape = Size(i_dim);
+//     this->stride.reserve(i_dim);
+//     this->offset = 0;
+// }
 
 Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
                dt dtype) {
@@ -114,31 +119,9 @@ Tensor Tensor::operator()(int index, pair<int, int> range) {
     new_data.data.dp += range.first * new_data.stride[0];
     return new_data;
 }
+// data_t &Tensor::operator()(vector<size_t> inds) { return (*this)[inds]; }
+// data_t Tensor::operator()(vector<size_t> inds) const { return (*this)[inds]; }
 
-// data_t& Tensor::operator[](initializer_list<size_t> inds) {
-//     CHECK_EQUAL(ndim, inds.size(),
-//         "Invalid %dD indices for %dD tensor", inds.size(), ndim);
-//     size_t offset = 0, i = 0;
-//     for (auto idx : inds) {
-//         CHECK_IN_RANGE(idx, 0, shape[i],
-//             "Index %zu is out of bound for dimension %zu with size %zu",
-//             idx, i, size(i));
-//         offset += idx * stride[i++];
-//     }
-//     return data[offset];
-// }
-// data_t Tensor::operator[](initializer_list<size_t> inds) const {
-//     CHECK_EQUAL(ndim, inds.size(),
-//         "Invalid %dD indices for %dD tensor", inds.size(), ndim);
-//     size_t offset = 0, i = 0;
-//     for (auto idx : inds) {
-//         CHECK_IN_RANGE(idx, 0, shape[i],
-//             "Index %zu is out of bound for dimension %zu with size %zu",
-//             idx, i, size(i));
-//         offset += idx * stride[i++];
-//     }
-//     return data[offset];
-// }
 data_t &Tensor::operator[](vector<size_t> inds) {
     CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
                 inds.size(), ndim);
@@ -180,9 +163,9 @@ int Tensor::get_size(vector<int> shape) {
 }
 
 vector<data_t> Tensor::get_data() {
-    vector<data_t> data(this->shape.size());
+    vector<data_t> data;
     for (int i = 0; i < this->shape.size(); i++) {
-        data[i] = this->data[i];
+        data.push_back(this->data[i]);
     }
     return data;
 }
@@ -269,7 +252,6 @@ size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
     return offset;
 }
 
-
 Tensor cat(vector<Tensor> tensors, int dim) {
     if (tensors.size() == 0) {
         return Tensor();
@@ -298,9 +280,10 @@ Tensor cat(vector<Tensor> tensors, int dim) {
     for (int i = 0; i < tensors.size(); i++) {
         size_t target_offset = 0;
         size_t self_offset = 0;
+        vector<data_t> tensor_data = tensors[i].get_data();
         while (target_offset < total_size) {
-            copy(tensors[i].data.dp + self_offset,
-                 tensors[i].data.dp + step_sizes[i] + self_offset,
+            copy(tensor_data.data() + self_offset,
+                 tensor_data.data() + step_sizes[i] + self_offset,
                  data.begin() + target_offset + t_offset);
             self_offset += step_sizes[i];
             target_offset += sum_step_sizes;

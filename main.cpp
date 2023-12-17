@@ -11,7 +11,7 @@ using namespace ts;
 //
 int main() {
     
-    Tensor t1 = rand({2,2, 2});
+    Tensor t1 (rand({2, 2}));
     cout << t1 << endl;
-    cout << tile(t1, {2,2}) << endl;
+    // cout << t1({1,0}) << endl;
 }

@@ -23,7 +23,7 @@ class Tensor {
     size_t offset;
     dt dtype;
     Tensor();
-    Tensor(int i_dim);
+    // Tensor(int i_dim);
 
     ~Tensor(){};
     Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
@@ -42,10 +42,15 @@ class Tensor {
 
     Tensor operator()(int index);
     Tensor operator()(int index, pair<int, int> range);
-    // data_t &operator[](initializer_list<size_t> inds);
-    // data_t operator[](initializer_list<size_t> inds) const;
+    data_t& operator()(vector<size_t> inds);
+    data_t operator()(vector<size_t> inds) const;
+
+    // Tensor operator[](int index);
     data_t &operator[](vector<size_t> inds);
     data_t operator[](vector<size_t> inds) const;
+
+    // Tensor operator=(Tensor t);
+
     size_t get_dim() const;
     size_t size(int i) const;
 
