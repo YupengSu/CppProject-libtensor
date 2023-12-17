@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+#include "base_tensor.hpp"
 #include "exception.hpp"
 #include "storage.hpp"
 
@@ -14,19 +15,12 @@ using namespace std;
 
 namespace ts {
 
-Tensor::Tensor(){
+Tensor::Tensor() {
     this->ndim = 0;
     this->shape = Size(0);
     this->stride.reserve(0);
     this->offset = 0;
 }
-// Tensor::Tensor(int i_dim) : data(i_dim) {
-//     this->ndim = i_dim;
-//     this->shape = Size(i_dim);
-//     this->stride.reserve(i_dim);
-//     this->offset = 0;
-// }
-
 Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
                dt dtype) {
     if (i_shape.size() == 0) {
@@ -40,16 +34,7 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
     this->data = Storage(i_data.data(), this->shape.size());
     this->dtype = dtype;
     this->offset = 0;
-    init_stride();
-}
-void Tensor::init_stride() {
-    stride.resize(ndim);
-
-    int st = 1;
-    for (int i = ndim - 1; i >= 0; --i) {
-        stride[i] = st;
-        st *= shape[i];
-    }
+    this->stride = init_stride(this->shape.shape);
 }
 
 Tensor::Tensor(const Storage &i_data, const Size &i_shape,
@@ -58,7 +43,6 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
     this->ndim = i_shape.ndim;
     this->dtype = dtype;
 }
-
 Tensor Tensor::slice(int idx, int dim) {
     CHECK_IN_RANGE(dim, 0, ndim,
                    "Dimension out of range (expected to be in range of [0, "
@@ -83,6 +67,48 @@ Tensor Tensor::slice(int idx, int dim) {
     Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype);
 
     return nt;
+}
+
+Tensor Tensor::permute(vector<int> dims) {
+    CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %d", ndim,
+                dims.size());
+    vector<int> new_shape = vector<int>(ndim);
+    vector<int> new_stride = vector<int>(ndim);
+    for (int i = 0; i < ndim; i++) {
+        new_shape[i] = shape[dims[i]];
+        new_stride[i] = stride[dims[i]];
+    }
+    Storage new_data = Storage(data, offset);
+    return Tensor(new_data, Size(new_shape), new_stride, dtype);
+}
+
+Tensor Tensor::transpose(int dim1, int dim2) {
+    CHECK_IN_RANGE(dim1, 0, ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   ndim, dim1);
+    CHECK_IN_RANGE(dim2, 0, ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   ndim, dim2);
+    vector<int> new_shape = shape.shape;
+    vector<int> new_stride = stride;
+    swap(new_shape[dim1], new_shape[dim2]);
+    swap(new_stride[dim1], new_stride[dim2]);
+    Storage new_data = Storage(data, offset);
+    return Tensor(new_data, Size(new_shape), new_stride, dtype);
+}
+
+Tensor Tensor::view(vector<int> shape) {
+    int size = 1;
+    for (int i = 0; i < shape.size(); i++) {
+        size *= shape[i];
+    }
+    CHECK_EQUAL(size, this->shape.size(), "Tensor size mismatch: %d vs %d",
+                size, this->shape.size());
+    Storage new_data = Storage(data, offset);
+    vector<int> new_stride = init_stride(shape);
+    return Tensor(new_data, Size(shape), new_stride, dtype);
 }
 
 ostream &operator<<(ostream &os, Tensor t) {
@@ -111,7 +137,6 @@ ostream &operator<<(ostream &os, Tensor t) {
     os << "]";
     return os;
 }
-
 Tensor Tensor::operator()(int index) { return slice(index); }
 Tensor Tensor::operator()(int index, pair<int, int> range) {
     Tensor new_data = slice(index);
@@ -119,9 +144,6 @@ Tensor Tensor::operator()(int index, pair<int, int> range) {
     new_data.data.dp += range.first * new_data.stride[0];
     return new_data;
 }
-// data_t &Tensor::operator()(vector<size_t> inds) { return (*this)[inds]; }
-// data_t Tensor::operator()(vector<size_t> inds) const { return (*this)[inds]; }
-
 data_t &Tensor::operator[](vector<size_t> inds) {
     CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
                 inds.size(), ndim);
@@ -148,12 +170,39 @@ data_t Tensor::operator[](vector<size_t> inds) const {
     }
     return data[offset];
 }
+Tensor &Tensor::operator=(BaseTensor<> bt) {
+    Tensor t = Tensor(bt.get_data(), bt.shape.shape);
+
+    CHECK_EQUAL(ndim, t.ndim, "Tensor dimension mismatch: %d vs %d", ndim,
+                t.ndim);
+    for (int i = 0; i < ndim; i++) {
+        CHECK_EQUAL(shape[i], t.shape[i], "Tensor shape mismatch: %d vs %d",
+                    shape[i], t.shape[i]);
+    }
+    for (int i = 0; i < shape.size(); i++) {
+        data[i] = t.data[i];
+    }
+    return *this;
+}
+Tensor &Tensor::operator=(Tensor bt) {
+    CHECK_EQUAL(ndim, bt.ndim, "Tensor dimension mismatch: %d vs %d", ndim,
+                bt.ndim);
+    for (int i = 0; i < ndim; i++) {
+        CHECK_EQUAL(shape[i], bt.shape[i], "Tensor shape mismatch: %d vs %d",
+                    shape[i], bt.shape[i]);
+    }
+    for (int i = 0; i < shape.size(); i++) {
+        data[i] = bt.data[i];
+    }
+    return *this;
+}
+
+
+
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
-
 void *Tensor::data_ptr() { return (void *)data.bp.get(); }
-
 int Tensor::get_size(vector<int> shape) {
     int size = 1;
     for (int i = 0; i < ndim; i++) {
@@ -161,7 +210,6 @@ int Tensor::get_size(vector<int> shape) {
     }
     return size;
 }
-
 vector<data_t> Tensor::get_data() {
     vector<data_t> data;
     for (int i = 0; i < this->shape.size(); i++) {
@@ -169,9 +217,18 @@ vector<data_t> Tensor::get_data() {
     }
     return data;
 }
+vector<int> init_stride(vector<int> shape) {
+    vector<int> stride(shape.size());
+    int st = 1;
+    for (int i = shape.size() - 1; i >= 0; --i) {
+        stride[i] = st;
+        st *= shape[i];
+    }
+    return stride;
+}
+
 
 Tensor tensor(BaseTensor<> bt) { return Tensor(bt.get_data(), bt.shape.shape); }
-
 Tensor rand(Size sz) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
@@ -180,7 +237,6 @@ Tensor rand(Size sz) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
 Tensor zeros(Size sz) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
@@ -189,7 +245,6 @@ Tensor zeros(Size sz) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
 Tensor ones(Size sz) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
@@ -198,7 +253,6 @@ Tensor ones(Size sz) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
 Tensor full(Size sz, data_t val) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
@@ -207,7 +261,6 @@ Tensor full(Size sz, data_t val) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
 Tensor eye(Size sz) {
     CHECK_IN_RANGE(sz.ndim, 0, 3,
                    "Eye dimension out of range (expected to be in range of [0, "
@@ -229,7 +282,6 @@ Tensor eye(Size sz) {
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
 }
-
 size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
     // Validate input: indices size and shape dimensions should match
     if (indices.size() != shape.ndim) {
@@ -251,7 +303,6 @@ size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
 
     return offset;
 }
-
 Tensor cat(vector<Tensor> tensors, int dim) {
     if (tensors.size() == 0) {
         return Tensor();
@@ -294,9 +345,7 @@ Tensor cat(vector<Tensor> tensors, int dim) {
     new_shape[dim] = sum_step_sizes / first.stride[dim];
     return Tensor(data, new_shape);
 }
-
 // TODO: below
-
 vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     CHECK_EQUAL(v1.size(), v2.size(), "Vector size mismatch: %d vs %d",
                 v1.size(), v2.size());
@@ -306,7 +355,6 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     }
     return ret;
 }
-
 Tensor tile(Tensor t, vector<int> reps) {
     CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %d",
                 t.ndim, reps.size());
@@ -320,5 +368,43 @@ Tensor tile(Tensor t, vector<int> reps) {
     }
     return new_t;
 }
+Tensor transpose(Tensor t, int dim1, int dim2) {
+    CHECK_IN_RANGE(dim1, 0, t.ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   t.ndim, dim1);
+    CHECK_IN_RANGE(dim2, 0, t.ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   t.ndim, dim2);
+    vector<int> new_shape = t.shape.shape;
+    vector<int> new_stride = t.stride;
+    swap(new_shape[dim1], new_shape[dim2]);
+    swap(new_stride[dim1], new_stride[dim2]);
+    Storage new_data = Storage(t.data, t.offset);
+    return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
+}
+Tensor permute(Tensor t, vector<int> dims) {
+    CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %d",
+                t.ndim, dims.size());
+    vector<int> new_shape = vector<int>(t.ndim);
+    vector<int> new_stride = vector<int>(t.ndim);
+    for (int i = 0; i < t.ndim; i++) {
+        new_shape[i] = t.shape[dims[i]];
+        new_stride[i] = t.stride[dims[i]];
+    }
+    Storage new_data = Storage(t.data, t.offset);
+    return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
+}
 
+Tensor view (Tensor t, vector<int> shape) {
+    int size = 1;
+    for (int i = 0; i < shape.size(); i++) {
+        size *= shape[i];
+    }
+    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %d", size, t.shape.size());
+    Storage new_data = Storage(t.data, t.offset);
+    vector<int> new_stride = init_stride(shape);
+    return Tensor(new_data, shape, new_stride, t.dtype);
+}
 }  // namespace ts

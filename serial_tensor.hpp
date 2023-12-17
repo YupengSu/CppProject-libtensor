@@ -32,36 +32,31 @@ class Tensor {
     Tensor(const Storage &i_data, const Size &i_shape,
            const vector<int> i_stride, dt dtype);
 
-    void init_stride();
-
-    // data_t &operator[](int index);
-    // data_t &operator[](initializer_list<int> inds);
-
-    // ostream &operator<<(ostream &os);
     friend ostream &operator<<(ostream &os, Tensor t);
-
     Tensor operator()(int index);
     Tensor operator()(int index, pair<int, int> range);
-    data_t& operator()(vector<size_t> inds);
+    data_t &operator()(vector<size_t> inds);
     data_t operator()(vector<size_t> inds) const;
 
-    // Tensor operator[](int index);
     data_t &operator[](vector<size_t> inds);
     data_t operator[](vector<size_t> inds) const;
 
-    // Tensor operator=(Tensor t);
+    Tensor &operator=(BaseTensor<> bt);
+    Tensor &operator=(Tensor bt);
 
     size_t get_dim() const;
     size_t size(int i) const;
-
     vector<data_t> get_data();
-
     Tensor slice(int idx, int dim = 0);
+    Tensor permute(vector<int> dims);
+    Tensor transpose(int dim1, int dim2);
+    Tensor view(vector<int> shape);
     void *data_ptr();
 
    private:
     int get_size(vector<int> shape);
 };
+vector<int>init_stride(vector<int> shape);
 
 Tensor tensor(BaseTensor<> bt);
 Tensor rand(Size sz);
@@ -71,4 +66,7 @@ Tensor full(Size sz, data_t val);
 Tensor eye(Size sz);
 Tensor cat(vector<Tensor> tensors, int dim);
 Tensor tile(Tensor t, vector<int> reps);
+Tensor permute(Tensor t, vector<int> dims);
+Tensor transpose(Tensor t, int dim1, int dim2);
+Tensor view(Tensor t, vector<int> shape);
 }  // namespace ts
