@@ -7,12 +7,13 @@
 #include <ostream>
 #include <vector>
 #include "size.hpp"
+#include "storage.hpp"
 
 using namespace std;
 
 namespace ts {
 
-template <class value_type = float>
+template <class value_type = data_t>
 class BaseTensor {
    public:
     int dim;

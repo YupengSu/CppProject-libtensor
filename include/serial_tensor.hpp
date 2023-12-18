@@ -1,7 +1,6 @@
 #pragma once
 #include <cstddef>
 #include <cstdio>
-#include <initializer_list>
 #include <iostream>
 #include <ostream>
 #include <vector>
@@ -9,11 +8,13 @@
 #include "base_tensor.hpp"
 #include "size.hpp"
 #include "storage.hpp"
+#include "config.hpp"
+#include "exception.hpp"
 
 using namespace std;
 
 namespace ts {
-using data_t = float;
+
 class Tensor {
    public:
     Storage data;

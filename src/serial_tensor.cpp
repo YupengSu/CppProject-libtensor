@@ -1,15 +1,5 @@
 #include "serial_tensor.hpp"
 
-#include <cstddef>
-#include <cstdio>
-#include <exception>
-#include <initializer_list>
-#include <iostream>
-#include <vector>
-
-#include "base_tensor.hpp"
-#include "exception.hpp"
-#include "storage.hpp"
 
 using namespace std;
 
@@ -232,7 +222,7 @@ Tensor tensor(BaseTensor<> bt) { return Tensor(bt.get_data(), bt.shape.shape); }
 Tensor rand(Size sz) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
-        data[i] = (data_t)random() / RAND_MAX;
+        data[i] = (double)random() / RAND_MAX;
     }
     Storage st(data.data(), sz.size());
     return Tensor(data, sz.shape);
