@@ -22,12 +22,16 @@ Storage::Storage(const Storage& other, size_t offset) {
     this->dp = other.dp + offset;
 }
 
-Storage::Storage(size_t size, data_t val) : Storage(size) {
+Storage::Storage(data_t val, size_t size, dt dtype) : Storage(size) {
     for (int i = 0; i < size; i++) dp[i] = val;
-}
+    for (int i = 0; i < size; i++) dp[i].set_dtype(dtype);
+    this->dtype = dtype;
+}   
 
-Storage::Storage(const data_t* data, size_t size) : Storage(size) {
+Storage::Storage(const data_t* data, size_t size, dt dtype) : Storage(size) {
     for (int i = 0; i < size; i++) dp[i] = data[i];
+    for (int i = 0; i < size; i++) dp[i].set_dtype(dtype);
+    this->dtype = dtype;
 }
 Storage::Storage(const Storage& other) = default;
 //  Storage(Storage&& other) = default;

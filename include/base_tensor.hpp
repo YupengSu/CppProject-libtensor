@@ -13,7 +13,7 @@ using namespace std;
 
 namespace ts {
 
-template <class value_type = data_t>
+template <class value_type = float>
 class BaseTensor {
    public:
     int dim;
@@ -45,16 +45,7 @@ class BaseTensor {
         return this->data[index];
     }
 
-    template <class iterT>
-    BaseTensor(iterT begin, iterT end, dt dtype = float32) {
-        this->dim = 1;
-        // this->shape = Size((int)ts.size());
-        this->shape = Size(begin - end);
-        for (iterT i = begin; i != end; i++) {
-            this->data.push_back(BaseTensor<value_type>(*i));
-        }
-        this->set_dtype(dtype);
-    }
+
 
     BaseTensor(value_type data, dt dtype = float32) {
         this->dim = 0;
@@ -62,6 +53,8 @@ class BaseTensor {
         this->scaler = data;
         this->set_dtype(dtype);
     }
+
+    // BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32)
 
     BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32) {
         this->data = {};

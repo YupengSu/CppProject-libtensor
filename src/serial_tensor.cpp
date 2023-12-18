@@ -1,5 +1,6 @@
 #include "serial_tensor.hpp"
-
+#include <vector>
+#include "config.hpp"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
         this->shape = Size(i_shape);
     }
 
-    this->data = Storage(i_data.data(), this->shape.size());
+    this->data = Storage(i_data.data(), this->shape.size(), dtype);
     this->dtype = dtype;
     this->offset = 0;
     this->stride = init_stride(this->shape.shape);
@@ -160,8 +161,14 @@ data_t Tensor::operator[](vector<size_t> inds) const {
     }
     return data[offset];
 }
+
 Tensor &Tensor::operator=(BaseTensor<> bt) {
-    Tensor t = Tensor(bt.get_data(), bt.shape.shape);
+    vector<data_t> nt (bt.shape.size());
+    int i = 0;
+    for (auto a:bt.get_data()) {
+        nt[i++]=a;
+    }
+    Tensor t = Tensor(nt, bt.shape.shape);
 
     CHECK_EQUAL(ndim, t.ndim, "Tensor dimension mismatch: %d vs %d", ndim,
                 t.ndim);
@@ -186,9 +193,6 @@ Tensor &Tensor::operator=(Tensor bt) {
     }
     return *this;
 }
-
-
-
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
@@ -217,8 +221,15 @@ vector<int> init_stride(vector<int> shape) {
     return stride;
 }
 
-
-Tensor tensor(BaseTensor<> bt) { return Tensor(bt.get_data(), bt.shape.shape); }
+Tensor tensor(BaseTensor<> bt, dt dtype) {
+    vector<data_t> nt (bt.shape.size());
+    int i = 0;
+    for (auto a:bt.get_data()) {
+        nt[i]=a;
+        nt[i++].set_dtype(dtype);
+    }
+    return Tensor(nt, bt.shape.shape, dtype); 
+}
 Tensor rand(Size sz) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
@@ -387,12 +398,13 @@ Tensor permute(Tensor t, vector<int> dims) {
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
 }
 
-Tensor view (Tensor t, vector<int> shape) {
+Tensor view(Tensor t, vector<int> shape) {
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
     }
-    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %d", size, t.shape.size());
+    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %d", size,
+                t.shape.size());
     Storage new_data = Storage(t.data, t.offset);
     vector<int> new_stride = init_stride(shape);
     return Tensor(new_data, shape, new_stride, t.dtype);

@@ -58,8 +58,8 @@ class Tensor {
     int get_size(vector<int> shape);
 };
 vector<int>init_stride(vector<int> shape);
+Tensor tensor(BaseTensor<> bt, dt dtype = float32);
 
-Tensor tensor(BaseTensor<> bt);
 Tensor rand(Size sz);
 Tensor zeros(Size sz);
 Tensor ones(Size sz);

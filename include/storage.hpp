@@ -19,13 +19,14 @@ class Storage {
     data_t* dp;
     size_t size;
     shared_ptr<Vdata> bp;
+    dt dtype;
     Storage();
     Storage(size_t size) ;
     Storage(const Storage& other, size_t offset);
 
-    Storage(size_t size, data_t val);
+    Storage(data_t val, size_t size, dt dtype=float32);
 
-    Storage(const data_t* data, size_t size);
+    Storage(const data_t* data, size_t size, dt dtype=float32);
     Storage(const Storage& other);
     ~Storage() ;
 
