@@ -1,12 +1,18 @@
 #pragma once
-#include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <ostream>
 
-#define DEFAULT_DTYPE int8
+#define DEFAULT_DTYPE dt::int8
+
 using namespace std;
 namespace ts {
-enum dt { int8, float32, float64, int32, bool8 };
+enum class dt { 
+    int8, float32, float64, int32, bool8
+
+};
+
+ ostream &operator<<(ostream &os, const dt dtype);
 
 typedef union {
     uint8_t tensor_int8;
@@ -17,32 +23,33 @@ typedef union {
 } data_tt;
 
 class data_t {
+    public:
     data_tt data;
     dt dtype = DEFAULT_DTYPE;
 
    public:
     data_t() = default;
-    data_t(data_tt data) : data(data) {}
-    data_t(int8_t data) { this->data.tensor_int8 = data; }
+    data_t(data_tt data) : data(data){}
+    data_t(int8_t data) { this->data.tensor_int8 = data; this->dtype= dt::int8;}
     data_t(float data) {
         this->data.tensor_float32 = data;
+        this->dtype = dt::float32;
     }
-    data_t(double data) { this->data.tensor_float64 = data; }
-    data_t(uint8_t data) { this->data.tensor_int8 = data; }
-    data_t(uint32_t data) { this->data.tensor_int32 = data; }
-    data_t(bool data) { this->data.tensor_bool = data; }
+    data_t(double data) { this->data.tensor_float64 = data; this->dtype = dt::float64;}
+    data_t(int32_t data) { this->data.tensor_int32 = data; this->dtype = dt::int32; }
+    data_t(bool data) { this->data.tensor_bool = data; this->dtype = dt::bool8; }
     template <typename T>
     T &get_data() {
         switch (dtype) {
-            case int8:
+            case dt::int8:
                 return *(T *)(&data);
-            case float32:
+            case dt::float32:
                 return *(T *)(&data);
-            case bool8:
+            case dt::bool8:
                 return *(T *)(&data);
-            case int32:
+            case dt::int32:
                 return *(T *)(&data);
-            case float64:
+            case dt::float64:
                 return *(T *)(&data);
             default:
                 break;
@@ -53,110 +60,110 @@ class data_t {
     data_t to_dt(dt target) {
         data_t res;
         switch (target) {
-            case int8:
-                res.dtype = int8;
+            case dt::int8:
+                res.dtype = dt::int8;
                 switch (dtype) {
-                    case int8:
+                    case dt::int8:
                         res = (int8_t)this->data.tensor_int8;
                         break;
-                    case float32:
+                    case dt::float32:
                         res = (int8_t)this->data.tensor_float32;
                         break;
-                    case bool8:
+                    case dt::bool8:
                         res = (int8_t)this->data.tensor_bool;
                         break;
-                    case int32:
+                    case dt::int32:
                         res = (int8_t)this->data.tensor_int32;
                         break;
-                    case float64:
+                    case dt::float64:
                         res = (int8_t)this->data.tensor_float64;
                         break;
                     default:
                         break;
                 }
                 break;
-            case float32:
-                res.dtype = float32;
+            case dt::float32:
+                res.dtype = dt::float32;
                 switch (dtype) {
-                    case int8:
+                    case dt::int8:
                         res = (float)this->data.tensor_int8;
                         break;
-                    case float32:
+                    case dt::float32:
                         res = (float)this->data.tensor_float32;
                         break;
-                    case bool8:
+                    case dt::bool8:
                         res = (float)this->data.tensor_bool;
                         break;
-                    case int32:
+                    case dt::int32:
                         res = (float)this->data.tensor_int32;
                         break;
-                    case float64:
+                    case dt::float64:
                         res = (float)this->data.tensor_float64;
                         break;
                     default:
                         break;
                 }
                 break;
-            case bool8:
-                res.dtype = bool8;
+            case dt::bool8:
+                res.dtype = dt::bool8;
                 switch (dtype) {
-                    case int8:
+                    case dt::int8:
                         res = (bool)this->data.tensor_int8;
                         break;
-                    case float32:
+                    case dt::float32:
                         res = (bool)this->data.tensor_float32;
                         break;
-                    case bool8:
+                    case dt::bool8:
                         res = (bool)this->data.tensor_bool;
                         break;
-                    case int32:
+                    case dt::int32:
                         res = (bool)this->data.tensor_int32;
                         break;
-                    case float64:
+                    case dt::float64:
                         res = (bool)this->data.tensor_float64;
                         break;
                     default:
                         break;
                 }
                 break;
-            case int32:
-                res.dtype = int32;
+            case dt::int32:
+                res.dtype = dt::int32;
                 switch (dtype) {
-                    case int8:
+                    case dt::int8:
                         res = (int)this->data.tensor_int8;
                         break;
-                    case float32:
+                    case dt::float32:
                         res = (int)this->data.tensor_float32;
                         break;
-                    case bool8:
+                    case dt::bool8:
                         res = (int)this->data.tensor_bool;
                         break;
-                    case int32:
+                    case dt::int32:
                         res = (int)this->data.tensor_int32;
                         break;
-                    case float64:
+                    case dt::float64:
                         res = (int)this->data.tensor_float64;
                         break;
                     default:
                         break;
                 }
                 break;
-            case float64:
-                res.dtype = float64;
+            case dt::float64:
+                res.dtype = dt::float64;
                 switch (dtype) {
-                    case int8:
+                    case dt::int8:
                         res = (double)this->data.tensor_int8;
                         break;
-                    case float32:
+                    case dt::float32:
                         res = (double)this->data.tensor_float32;
                         break;
-                    case bool8:
+                    case dt::bool8:
                         res = (double)this->data.tensor_bool;
                         break;
-                    case int32:
+                    case dt::int32:
                         res = (double)this->data.tensor_int32;
                         break;
-                    case float64:
+                    case dt::float64:
                         res = (double)this->data.tensor_float64;
                         break;
                     default:
@@ -178,19 +185,19 @@ class data_t {
         data_t tmp = this->to_dt(dtype);
         this->dtype = dtype;
         switch (dtype) {
-            case int8:
+            case dt::int8:
                 this->data.tensor_int8 = tmp.data.tensor_int8;
                 break;
-            case float32:
+            case dt::float32:
                 this->data.tensor_float32 = tmp.data.tensor_float32;
                 break;
-            case bool8:
+            case dt::bool8:
                 this->data.tensor_bool = tmp.data.tensor_bool;
                 break;
-            case int32:
+            case dt::int32:
                 this->data.tensor_int32 = tmp.data.tensor_int32;
                 break;
-            case float64:
+            case dt::float64:
                 this->data.tensor_float64 = tmp.data.tensor_float64;
                 break;
             default:
@@ -201,19 +208,19 @@ class data_t {
     template <typename T>
     T &operator=(T i_data) {
         switch (dtype) {
-            case int8:
+            case dt::int8:
                 this->data.tensor_int8 = (uint8_t)i_data;
                 break;
-            case float32:
+            case dt::float32:
                 this->data.tensor_float32 = (float)i_data;
                 break;
-            case bool8:
+            case dt::bool8:
                 this->data.tensor_bool = (bool)i_data;
                 break;
-            case int32:
+            case dt::int32:
                 this->data.tensor_int32 = (int)i_data;
                 break;
-            case float64:
+            case dt::float64:
                 this->data.tensor_float64 = (double)i_data;
                 break;
             default:
@@ -225,19 +232,19 @@ class data_t {
     template <typename T>
     friend ostream &operator<<(ostream &os, T data) {
         switch (data.dtype) {
-            case int8:
+            case dt::int8:
                 os << (int)data.data.tensor_int8;
                 break;
-            case float32:
+            case dt::float32:
                 os << data.data.tensor_float32;
                 break;
-            case bool8:
+            case dt::bool8:
                 os << data.data.tensor_bool;
                 break;
-            case int32:
+            case dt::int32:
                 os << data.data.tensor_int32;
                 break;
-            case float64:
+            case dt::float64:
                 os << data.data.tensor_float64;
                 break;
             default:
@@ -245,5 +252,8 @@ class data_t {
         }
         return os;
     }
+
+
+
 };
 }  // namespace ts

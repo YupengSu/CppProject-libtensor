@@ -24,9 +24,9 @@ class Storage {
     Storage(size_t size) ;
     Storage(const Storage& other, size_t offset);
 
-    Storage(data_t val, size_t size, dt dtype=float32);
+    Storage(data_t val, size_t size, dt dtype=DEFAULT_DTYPE);
 
-    Storage(const data_t* data, size_t size, dt dtype=float32);
+    Storage(const data_t* data, size_t size, dt dtype=DEFAULT_DTYPE);
     Storage(const Storage& other);
     ~Storage() ;
 
@@ -37,5 +37,7 @@ class Storage {
 
     size_t offset();
 };
+
+data_t rand_data_t(dt dtype);
 
 }  // namespace ts

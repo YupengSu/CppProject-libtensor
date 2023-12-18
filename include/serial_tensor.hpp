@@ -28,7 +28,7 @@ class Tensor {
 
     ~Tensor(){};
     Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
-           dt dtype = float32);
+           dt dtype = DEFAULT_DTYPE);
 
     Tensor(const Storage &i_data, const Size &i_shape,
            const vector<int> i_stride, dt dtype);
@@ -53,18 +53,20 @@ class Tensor {
     Tensor transpose(int dim1, int dim2);
     Tensor view(vector<int> shape);
     void *data_ptr();
-
+    size_t size() const;
+    string type() const;
    private:
     int get_size(vector<int> shape);
 };
 vector<int>init_stride(vector<int> shape);
-Tensor tensor(BaseTensor<> bt, dt dtype = float32);
+Tensor tensor(BaseTensor<> bt, dt dtype = DEFAULT_DTYPE);
 
-Tensor rand(Size sz);
-Tensor zeros(Size sz);
-Tensor ones(Size sz);
-Tensor full(Size sz, data_t val);
-Tensor eye(Size sz);
+Tensor rand(Size sz, dt dtype = DEFAULT_DTYPE);
+Tensor zeros(Size sz, dt dtype = DEFAULT_DTYPE);
+Tensor ones(Size sz, dt dtype = DEFAULT_DTYPE);
+Tensor full(Size sz, data_t val, dt dtype = DEFAULT_DTYPE);
+Tensor eye(Size sz, dt dtype = DEFAULT_DTYPE);
+
 Tensor cat(vector<Tensor> tensors, int dim);
 Tensor tile(Tensor t, vector<int> reps);
 Tensor permute(Tensor t, vector<int> dims);

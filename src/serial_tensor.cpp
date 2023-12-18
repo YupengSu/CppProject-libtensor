@@ -1,4 +1,5 @@
 #include "serial_tensor.hpp"
+#include <climits>
 #include <vector>
 #include "config.hpp"
 
@@ -196,7 +197,24 @@ Tensor &Tensor::operator=(Tensor bt) {
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
+size_t Tensor::size() const { return this->shape.size(); }
+
 void *Tensor::data_ptr() { return (void *)data.bp.get(); }
+string Tensor::type() const {
+    switch (this->dtype) {
+        case dt::int8:
+            return "int8";
+        case dt::float32:
+            return "float32";
+        case dt::int32:
+            return "int32";
+        case dt::float64:
+            return "float64";
+        case dt::bool8:
+            return "bool8";
+    }
+}
+
 int Tensor::get_size(vector<int> shape) {
     int size = 1;
     for (int i = 0; i < ndim; i++) {
@@ -230,39 +248,62 @@ Tensor tensor(BaseTensor<> bt, dt dtype) {
     }
     return Tensor(nt, bt.shape.shape, dtype); 
 }
-Tensor rand(Size sz) {
+Tensor rand(Size sz, dt dtype) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
-        data[i] = (double)random() / RAND_MAX;
+        data[i].set_dtype(dtype);
+        switch(dtype) {
+            case dt::float32:
+                data[i] = (float)random() / RAND_MAX;
+                break;
+            case dt::int32:
+                data[i] = (int)random() % INT_MAX;
+                break;
+            case dt::int8:
+                data[i] = ((int)random()) % 256;
+                break;
+            case dt::float64:
+                data[i] = (double)random() / RAND_MAX;
+                break;
+
+            case dt::bool8:
+                data[i] = (double)random() / RAND_MAX > 0.5;
+                break;
+            default:
+                throw std::invalid_argument("Invalid dtype");
+        }
     }
-    Storage st(data.data(), sz.size());
-    return Tensor(data, sz.shape);
+    Storage st(data.data(), sz.size(), dtype);
+    return Tensor(data, sz.shape, dtype);
 }
-Tensor zeros(Size sz) {
+Tensor zeros(Size sz, dt dtype) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
+        data[i].set_dtype(dtype);
         data[i] = 0;
     }
-    Storage st(data.data(), sz.size());
-    return Tensor(data, sz.shape);
+    Storage st(data.data(), sz.size(), dtype);
+    return Tensor(data, sz.shape, dtype);
 }
-Tensor ones(Size sz) {
+Tensor ones(Size sz, dt dtype) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
+        data[i].set_dtype(dtype);
         data[i] = 1;
     }
-    Storage st(data.data(), sz.size());
-    return Tensor(data, sz.shape);
+    Storage st(data.data(), sz.size(), dtype);
+    return Tensor(data, sz.shape, dtype);
 }
-Tensor full(Size sz, data_t val) {
+Tensor full(Size sz, data_t val, dt dtype) {
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
+        data[i].set_dtype(dtype);
         data[i] = val;
     }
-    Storage st(data.data(), sz.size());
-    return Tensor(data, sz.shape);
+    Storage st(data.data(), sz.size(), dtype);
+    return Tensor(data, sz.shape, dtype);
 }
-Tensor eye(Size sz) {
+Tensor eye(Size sz, dt dtype) {
     CHECK_IN_RANGE(sz.ndim, 0, 3,
                    "Eye dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -275,13 +316,15 @@ Tensor eye(Size sz) {
     }
     vector<data_t> data(sz.size());
     for (int i = 0; i < sz.size(); i++) {
+        data[i].set_dtype(dtype);
         data[i] = 0;
     }
     for (int i = 0; i < sz.size(); i += sz.shape[1] + 1) {
+        data[i].set_dtype(dtype);
         data[i] = 1;
     }
-    Storage st(data.data(), sz.size());
-    return Tensor(data, sz.shape);
+    Storage st(data.data(), sz.size(), dtype);
+    return Tensor(data, sz.shape, dtype);
 }
 size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
     // Validate input: indices size and shape dimensions should match

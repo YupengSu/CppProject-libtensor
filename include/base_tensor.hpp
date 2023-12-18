@@ -6,6 +6,7 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+#include "config.hpp"
 #include "size.hpp"
 #include "storage.hpp"
 
@@ -47,7 +48,7 @@ class BaseTensor {
 
 
 
-    BaseTensor(value_type data, dt dtype = float32) {
+    BaseTensor(value_type data, dt dtype = DEFAULT_DTYPE) {
         this->dim = 0;
         this->shape = Size();
         this->scaler = data;
@@ -56,7 +57,7 @@ class BaseTensor {
 
     // BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32)
 
-    BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32) {
+    BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = DEFAULT_DTYPE) {
         this->data = {};
 
         for (BaseTensor<value_type> i : data) {
@@ -169,15 +170,25 @@ class BaseTensor {
 
         if (this->dim == 0) {
             switch (dtype) {
-                case int8:
-                    this->scaler = (int8_t)this->scaler;
-                    this->dtype = int8;
+                case dt::int8:
+                    this->scaler = (uint8_t)this->scaler;
                     break;
-                case float32:
+                case dt::float32:
                     this->scaler = (float)this->scaler;
-                    this->dtype = float32;
+                    break;
+                case dt::bool8:
+                    this->scaler = (bool)this->scaler;
+                    break;
+                case dt::int32:
+                    this->scaler = (int)this->scaler;
+                    break;
+                case dt::float64:
+                    this->scaler = (double)this->scaler;
+                    break;
+                default:
                     break;
             }
+            this->dtype=dtype;
         } else {
             for (BaseTensor<value_type> &ts : this->data) {
                 ts.set_dtype(dtype);
@@ -186,13 +197,8 @@ class BaseTensor {
         this->dtype = dtype;
     }
 
-    string type() {
-        switch (this->dtype) {
-            case int8:
-                return "int8";
-            case float32:
-                return "float32";
-        }
+    dt type() {
+        return this->dtype;
     }
 
     void *data_ptr() {
