@@ -47,3 +47,4 @@ _deps
 *.app
 
 build/
+.cache/

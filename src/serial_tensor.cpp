@@ -62,7 +62,7 @@ Tensor Tensor::slice(int idx, int dim) {
 }
 
 Tensor Tensor::permute(vector<int> dims) {
-    CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %d", ndim,
+    CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu", ndim,
                 dims.size());
     vector<int> new_shape = vector<int>(ndim);
     vector<int> new_stride = vector<int>(ndim);
@@ -96,7 +96,7 @@ Tensor Tensor::view(vector<int> shape) {
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
     }
-    CHECK_EQUAL(size, this->shape.size(), "Tensor size mismatch: %d vs %d",
+    CHECK_EQUAL(size, this->shape.size(), "Tensor size mismatch: %d vs %zu",
                 size, this->shape.size());
     Storage new_data = Storage(data, offset);
     vector<int> new_stride = init_stride(shape);
@@ -137,7 +137,7 @@ Tensor Tensor::operator()(int index, pair<int, int> range) {
     return new_data;
 }
 data_t &Tensor::operator[](vector<size_t> inds) {
-    CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
+    CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
     for (auto idx : inds) {
@@ -150,7 +150,7 @@ data_t &Tensor::operator[](vector<size_t> inds) {
     return data[offset];
 }
 data_t Tensor::operator[](vector<size_t> inds) const {
-    CHECK_EQUAL(ndim, inds.size(), "Invalid %dD indices for %dD tensor",
+    CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
     for (auto idx : inds) {
@@ -391,7 +391,7 @@ Tensor cat(vector<Tensor> tensors, int dim) {
 }
 // TODO: below
 vector<int> vec_mul(vector<int> v1, vector<int> v2) {
-    CHECK_EQUAL(v1.size(), v2.size(), "Vector size mismatch: %d vs %d",
+    CHECK_EQUAL(v1.size(), v2.size(), "Vector size mismatch: %zu vs %zu",
                 v1.size(), v2.size());
     vector<int> ret = vector<int>(v1.size());
     for (int i = 0; i < v1.size(); i++) {
@@ -400,7 +400,7 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     return ret;
 }
 Tensor tile(Tensor t, vector<int> reps) {
-    CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %d",
+    CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, reps.size());
     Tensor new_t = Tensor(t);
     for (int i = t.ndim; i >= 0; i--) {
@@ -429,7 +429,7 @@ Tensor transpose(Tensor t, int dim1, int dim2) {
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
 }
 Tensor permute(Tensor t, vector<int> dims) {
-    CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %d",
+    CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, dims.size());
     vector<int> new_shape = vector<int>(t.ndim);
     vector<int> new_stride = vector<int>(t.ndim);
@@ -446,7 +446,7 @@ Tensor view(Tensor t, vector<int> shape) {
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
     }
-    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %d", size,
+    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %zu", size,
                 t.shape.size());
     Storage new_data = Storage(t.data, t.offset);
     vector<int> new_stride = init_stride(shape);
