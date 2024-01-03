@@ -229,8 +229,8 @@ class data_t {
         return *(T *)(&data);
     }
 
-    template <typename T>
-    friend ostream &operator<<(ostream &os, T data) {
+    // template <typename T>
+    friend ostream &operator<<(ostream &os, data_t data) {
         switch (data.dtype) {
             case dt::int8:
                 os << (int)data.data.tensor_int8;

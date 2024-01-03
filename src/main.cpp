@@ -6,11 +6,22 @@ using namespace ts;
 int main() {
     
 
-    Tensor t1 = rand({5,6}, dt::bool8);
-    cout << t1.type() << endl;
-    cout << t1.size() << endl;
-    cout << t1.data_ptr() << endl;
-     (t1[{0,1}] = 0);
+    Tensor t1 = tensor({
+        {
+            {
+                {1,2},
+                {3,4}
+            },
+            {   
+                {5,6},
+                {7,8}
+            },
+            {
+                {9,10},
+                {11,12}
+            }
+        }
+        }, dt::int32);
     cout << t1;
 
 }

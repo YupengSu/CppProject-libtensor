@@ -67,7 +67,9 @@ class BaseTensor {
         if (first.dim == 0) {
             this->shape = Size((int)this->data.size());
         } else {
-            this->shape = Size(first.shape, (int)this->data.size());
+            vector<int> shape(first.shape.shape);
+            shape.insert(shape.begin(), (int)this->data.size());
+            this->shape = Size(shape);
         }
         this->dim = first.dim + 1;
 

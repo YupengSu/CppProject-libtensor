@@ -127,6 +127,7 @@ ostream &operator<<(ostream &os, Tensor t) {
         }
     }
     os << "]";
+
     return os;
 }
 Tensor Tensor::operator()(int index) { return slice(index); }

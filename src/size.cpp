@@ -77,7 +77,7 @@ Size::Size(vector<int> shape) : ndim(shape.size()), shape(shape) {}
 Size::Size(initializer_list<int> shape) : ndim(shape.size()), shape(shape) {}
 Size::Size(const Size &other, size_t skip) : shape(other.ndim - 1) {
     int i = 0;
-    for (; i < skip; ++i) shape[i] = other.shape[i];
+    for (; i < skip; ++i) shape[i] += other.shape[i];
     for (; i < shape.size(); ++i) shape[i] = other.shape[i + 1];
     ndim = shape.size();
 }
