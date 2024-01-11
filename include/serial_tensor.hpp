@@ -72,5 +72,5 @@ Tensor tile(Tensor t, vector<int> reps);
 Tensor permute(Tensor t, vector<int> dims);
 Tensor transpose(Tensor t, int dim1, int dim2);
 Tensor view(Tensor t, vector<int> shape);
-Tensor eq(const Tensor &t1, const Tensor &t2);
+Tensor eq(Tensor t1, Tensor t2);
 }  // namespace ts
