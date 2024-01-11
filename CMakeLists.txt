@@ -6,10 +6,12 @@ enable_testing()
 
 add_executable(libtensor 
 main.cpp 
-tensor.hpp 
+# tensor.hpp 
 exception.cpp
 serial_tensor.cpp 
-size.hpp)
+# size.hpp
+math.cpp
+)
 
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
