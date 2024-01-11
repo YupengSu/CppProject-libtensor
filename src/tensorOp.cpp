@@ -2,6 +2,7 @@
 #include <climits>
 #include <vector>
 #include <fstream>
+#include "exception"
 
 #include "config.hpp"
 
