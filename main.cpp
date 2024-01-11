@@ -16,11 +16,26 @@ int main() {
     // Tensor t1 = rand({3,2});
     // Tensor t2 = rand({3,2});
 
-    Tensor t1 = rand({2,2});
-    Tensor t2 = rand({2,2});
+    // Tensor t1 = rand({2,2});
+    // Tensor t2 = rand({2,2});
+    // cout << t1 << endl;
+    // cout << t2 << endl;
+    Tensor t1 = tensor({
+                {0.1,1.2},
+                {2.2,3.1},
+                {4.9,5.2},
+        
+        }, dt::float32);
+        
     cout << t1 << endl;
+    Tensor t2 = tensor({
+                {0.2,1.3},
+                {2.2,3.1},
+                {4.9,5.2},
+        }, dt::float32);
     cout << t2 << endl;
-    
+    cout.setf(ios::boolalpha);
+    cout << eq(t1,t2) << endl;
     // cout << cat({t1,t2}, 1) << endl;
 
     // Tensor t3 = tile(t1, {2,2});
