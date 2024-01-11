@@ -6,6 +6,7 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+
 #include "config.hpp"
 #include "size.hpp"
 #include "storage.hpp"
@@ -46,8 +47,6 @@ class BaseTensor {
         return this->data[index];
     }
 
-
-
     BaseTensor(value_type data, dt dtype = DEFAULT_DTYPE) {
         this->dim = 0;
         this->shape = Size();
@@ -55,9 +54,8 @@ class BaseTensor {
         this->set_dtype(dtype);
     }
 
-    // BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32)
-
-    BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = DEFAULT_DTYPE) {
+    BaseTensor(initializer_list<BaseTensor<value_type>> data,
+               dt dtype = DEFAULT_DTYPE) {
         this->data = {};
 
         for (BaseTensor<value_type> i : data) {
@@ -82,15 +80,6 @@ class BaseTensor {
         this->set_dtype(dtype);
     }
 
-    ostream &operator<<(ostream &os) {
-        os << "[";
-        for (value_type i : data) {
-            os << i << " ";
-        }
-        os << ']' << endl;
-        return os;
-    }
-
     friend ostream &operator<<(ostream &os, BaseTensor<value_type> &tsr) {
         if (tsr.dim == 0) {
             os << tsr.scaler;
@@ -110,57 +99,6 @@ class BaseTensor {
             os << ']';
 
             return os;
-        }
-    }
-
-    template <class T>
-    bool operator==(BaseTensor<T> ts) {
-        if (this->dim != ts.dim) {
-            return false;
-        }
-        if (this->dim == 0) {
-            return this->scaler == ts.scaler;
-        }
-        if (this->shape != ts.shape) {
-            return false;
-        }
-        for (int i = 0; i < this->data.size(); i++) {
-            if (this->data[i] != ts.data[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-    template <class T>
-    bool operator!=(BaseTensor<T> ts) {
-        if (this->dim != ts.dim) {
-            return true;
-        }
-        if (this->dim == 0) {
-            return this->scaler != ts.scaler;
-        }
-        if (this->shape != ts.shape) {
-            return true;
-        }
-        for (int i = 0; i < this->data.size(); i++) {
-            if (this->data[i] != ts.data[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    BaseTensor<value_type> copy() {
-        if (this->dim == 0) {
-            return {BaseTensor<value_type>(this->scaler)};
-        } else {
-            BaseTensor<value_type> newT;
-            for (BaseTensor<value_type> &ts : this->data) {
-                newT.data.push_back(ts.copy());
-            }
-            newT.dim = this->dim;
-            newT.shape = this->shape;
-            return newT;
         }
     }
 
@@ -190,7 +128,7 @@ class BaseTensor {
                 default:
                     break;
             }
-            this->dtype=dtype;
+            this->dtype = dtype;
         } else {
             for (BaseTensor<value_type> &ts : this->data) {
                 ts.set_dtype(dtype);
@@ -198,19 +136,6 @@ class BaseTensor {
         }
         this->dtype = dtype;
     }
-
-    dt type() {
-        return this->dtype;
-    }
-
-    void *data_ptr() {
-        if (this->dim == 0) {
-            return &this->scaler;
-        } else {
-            return &this->data;
-        }
-    }
-
 
     vector<value_type> get_data() {
         vector<value_type> data;
@@ -226,11 +151,6 @@ class BaseTensor {
         }
         return data;
     }
-
 };
-
-
-
-
 
 }  // namespace ts
