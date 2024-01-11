@@ -6,7 +6,7 @@ include(CTest)
 enable_testing()
 
 include_directories("include/")
-FILE(GLOB SRC "src/*")
+FILE(GLOB SRC "src/*.cpp")
 
 add_executable(libtensor ${SRC} main.cpp)
 
