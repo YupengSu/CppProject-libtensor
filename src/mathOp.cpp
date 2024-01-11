@@ -280,7 +280,7 @@ namespace ts
         int size = t.data.size;
         for (int i = 0; i < size; i++)
         {
-            data[i] = std::log(t.data[i]);
+            data[i] = std::log((float)t.data[i]);
         }
         return Tensor(data, t.shape.shape);
     }
@@ -592,24 +592,7 @@ namespace ts
     }
 
     ///////////////comparison
-    Tensor eq(const Tensor t1, const Tensor t2)
-    {
-        CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
-        vector<data_t> data(t1.data.size);
-        int size = t1.data.size;
-        for (int i = 0; i < size; i++)
-        {
-            if (t1.data[i] == t2.data[i])
-            {
-                data[i] = 1;
-            }
-            else
-            {
-                data[i] = 0;
-            }
-        }
-        return Tensor(data, t1.shape.shape);
-    }
+
 
     Tensor eq(const Tensor t1, const Tensor t2)
     {
@@ -628,7 +611,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::eq(const Tensor &other)
@@ -648,7 +631,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator==(const Tensor &other)

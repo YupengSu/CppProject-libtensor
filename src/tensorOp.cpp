@@ -511,26 +511,7 @@ namespace ts
         return Tensor(new_data, shape, new_stride, t.dtype);
     }
 
-    Tensor eq(Tensor t1, Tensor t2)
-    {
-        CHECK_EQUAL(t1.ndim, t2.ndim, "Tensor dimension mismatch: %d vs %d",
-                    t1.ndim, t2.ndim);
-        for (int i = 0; i < t1.ndim; i++)
-        {
-            CHECK_EQUAL(t1.shape[i], t2.shape[i], "Tensor shape mismatch: %d vs %d",
-                        t1.shape[i], t2.shape[i]);
-        }
-        vector<data_t> data(t1.shape.size());
-        vector<data_t> data1 = t1.get_data();
-        vector<data_t> data2 = t2.get_data();
-        for (int i = 0; i < t1.shape.size(); i++)
-        {
-            data[i].set_dtype(dt::bool8);
-            data[i] = data1[i] == data2[i];
-        }
-        Storage st(data.data(), t1.shape.size(), dt::bool8);
-        return Tensor(data, t1.shape.shape, dt::bool8);
-    }
+
 
     //save and load
     void save(Tensor t, string filename)

@@ -252,6 +252,332 @@ class data_t {
         return false;
     }
 
+    data_t& operator+(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 += data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 += data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool += data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 += data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 += data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t& operator-(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 -= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 -= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool -= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 -= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 -= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t& operator*(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 *= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 *= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool *= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 *= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 *= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t& operator/(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 /= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 /= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool /= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 /= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 /= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    bool operator==(int32_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 == data;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 == data;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool == data;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 == data;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 == data;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    data_t operator+=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 += data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 += data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool += data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 += data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 += data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t operator-=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 -= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 -= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool -= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 -= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 -= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t operator*=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 *= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 *= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool *= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 *= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 *= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    data_t operator/=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                this->data.tensor_int8 /= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                this->data.tensor_float32 /= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                this->data.tensor_bool /= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                this->data.tensor_int32 /= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                this->data.tensor_float64 /= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return *this;
+    }
+
+    bool operator<(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 < data.data.tensor_int8;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 < data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool < data.data.tensor_bool;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 < data.data.tensor_int32;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 < data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    bool operator>(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 > data.data.tensor_int8;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 > data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool > data.data.tensor_bool;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 > data.data.tensor_int32;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 > data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    bool operator!=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 != data.data.tensor_int8;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 != data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool != data.data.tensor_bool;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 != data.data.tensor_int32;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 != data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    bool operator>= (data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 >= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 >= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool >= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 >= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 >= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    bool operator<=(data_t data) {
+        switch (dtype) {
+            case dt::int8:
+                return this->data.tensor_int8 <= data.data.tensor_int8;
+                break;
+            case dt::float32:
+                return this->data.tensor_float32 <= data.data.tensor_float32;
+                break;
+            case dt::bool8:
+                return this->data.tensor_bool <= data.data.tensor_bool;
+                break;
+            case dt::int32:
+                return this->data.tensor_int32 <= data.data.tensor_int32;
+                break;
+            case dt::float64:
+                return this->data.tensor_float64 <= data.data.tensor_float64;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    
+
+
+
     // template <typename T>
     friend ostream &operator<<(ostream &os, data_t data) {
         switch (data.dtype) {
