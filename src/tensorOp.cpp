@@ -568,7 +568,7 @@ namespace ts
                 file >> shape[i];
             }
             vector<data_t> data;
-            data_t temp;
+            int temp;
             while (file >> temp) //read data
             {
                 data.push_back(temp);
