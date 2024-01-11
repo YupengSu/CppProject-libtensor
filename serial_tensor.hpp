@@ -92,7 +92,7 @@ namespace ts
               Tensor operator>=(const Tensor &other);
               Tensor operator<(const Tensor &other);
               Tensor operator<=(const Tensor &other);
-              
+
 
        private:
               int get_size(vector<int> shape);
@@ -134,4 +134,9 @@ namespace ts
 
        //other
        Tensor einsum(string eq, vector<Tensor> tensors);
+
+       //save and load
+       void save(Tensor t, string filename);
+       Tensor load(string filename);
+       
 } // namespace ts

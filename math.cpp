@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <fstream>
 
 #include "serial_tensor.hpp"
 #include "exception.hpp"
@@ -1012,7 +1013,7 @@ namespace ts
             }
 
             data[0] = dot_product;
-            return Tensor(data, {});//scalar //todo test
+            return Tensor(data, {}); // scalar //todo test
         }
         else if (eq == "i,i->i")
         {
@@ -1061,7 +1062,7 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            if(t1.shape.size() != 1 || t2.shape.size() != 1)
+            if (t1.shape.size() != 1 || t2.shape.size() != 1)
             {
                 throw std::runtime_error("Tensors are not vectors");
             }
@@ -1080,7 +1081,6 @@ namespace ts
                 }
             }
             return Tensor(data, {rows, cols2});
-
         }
         else if (eq == "bij,bjk->bik")
         {
@@ -1095,7 +1095,7 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            if(t1.shape.size() != 3 || t2.shape.size() != 3)
+            if (t1.shape.size() != 3 || t2.shape.size() != 3)
             {
                 throw std::runtime_error("Tensors are not matrices");
             }
@@ -1108,7 +1108,7 @@ namespace ts
             int cols2 = shape2[2];
 
             vector<data_t> data(batches * rows1 * cols2);
-            for(size_t b = 0; b < batches; ++b)
+            for (size_t b = 0; b < batches; ++b)
             {
                 for (size_t i = 0; i < rows1; ++i)
                 {
@@ -1126,5 +1126,54 @@ namespace ts
             return Tensor(data, {batches, rows1, cols2});
         }
         throw std::runtime_error("Invalid equation for einsum");
+    }
+
+    void save(Tensor t, string filename)
+    {
+        ofstream file(filename);
+        if (file.is_open())
+        {
+            file << t.shape.size() << endl;
+            for (size_t i = 0; i < t.shape.size(); ++i)
+            {
+                file << t.shape[i] << endl;
+                for (size_t j = 0; j < t.shape[i]; ++j)
+                {
+                    file << t.data[i * t.shape[i] + j] << endl;
+                }
+            }
+            file.close();
+        }
+        else
+        {
+            throw runtime_error("Unable to open file");
+        }
+    }
+
+    Tensor load(string filename)
+    {
+        ifstream file(filename);
+        if (file.is_open())
+        {
+            int size;
+            file >> size;
+            vector<int> shape(size);
+            for (int i = 0; i < size; i++)
+            {
+                file >> shape[i];
+            }
+            vector<data_t> data;
+            data_t temp;
+            while (file >> temp)
+            {
+                data.push_back(temp);
+            }
+            file.close();
+            return Tensor(data, shape);
+        }
+        else
+        {
+            throw runtime_error("Unable to open file");
+        }
     }
 }
