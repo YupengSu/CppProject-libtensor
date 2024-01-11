@@ -3,7 +3,7 @@
 #include <iostream>
 #include <ostream>
 
-#define DEFAULT_DTYPE dt::int8
+#define DEFAULT_DTYPE dt::float32
 
 using namespace std;
 namespace ts {
@@ -256,7 +256,7 @@ class data_t {
     friend ostream &operator<<(ostream &os, data_t data) {
         switch (data.dtype) {
             case dt::int8:
-                os << (int)data.data.tensor_int8;
+                os << data.data.tensor_int8;
                 break;
             case dt::float32:
                 os << data.data.tensor_float32;

@@ -241,11 +241,14 @@ vector<int> init_stride(vector<int> shape) {
 }
 
 Tensor tensor(BaseTensor<> bt, dt dtype) {
+    cout << bt;
+    cout << bt.dtype<< endl;
+
     vector<data_t> nt (bt.shape.size());
     int i = 0;
     for (auto a:bt.get_data()) {
-        nt[i]=a;
-        nt[i++].set_dtype(dtype);
+        nt[i].set_dtype(dtype);
+        nt[i++]=a;
     }
     return Tensor(nt, bt.shape.shape, dtype); 
 }
