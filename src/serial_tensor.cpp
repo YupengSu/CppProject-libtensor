@@ -453,4 +453,21 @@ Tensor view(Tensor t, vector<int> shape) {
     vector<int> new_stride = init_stride(shape);
     return Tensor(new_data, shape, new_stride, t.dtype);
 }
+
+Tensor eq(const Tensor &t1, const Tensor &t2) {
+    CHECK_EQUAL(t1.ndim, t2.ndim, "Tensor dimension mismatch: %d vs %d",
+                t1.ndim, t2.ndim);
+    for (int i = 0; i < t1.ndim; i++) {
+        CHECK_EQUAL(t1.shape[i], t2.shape[i], "Tensor shape mismatch: %d vs %d",
+                    t1.shape[i], t2.shape[i]);
+    }
+    vector<data_t> data(t1.shape.size());
+    for (int i = 0; i < t1.shape.size(); i++) {
+        data[i].set_dtype(dt::bool8);
+        data[i] = t1.data[i] == t2.data[i];
+    }
+    Storage st(data.data(), t1.shape.size(), dt::bool8);
+    return Tensor(data, t1.shape.shape, dt::bool8);
+}
+
 }  // namespace ts
