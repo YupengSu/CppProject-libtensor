@@ -1002,18 +1002,17 @@ namespace ts
             const Tensor &t2 = tensors[1];
             CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match for dot product");
 
-            const Size &shape = t1.shape();
-            const data_t *data1 = t1.data();
-            const data_t *data2 = t2.data();
+            const Size &shape = t1.shape;
+            vector<data_t> data(t1.shape[0]);
             data_t dot_product = 0;
 
             for (size_t i = 0; i < shape.size(); ++i)
             {
-                dot_product += data1[i] * data2[i];
+                dot_product += t1.data[i] * t2.data[i];
             }
 
-            result = dot_product;
-            return Tensor(result, {});
+            data[0] = dot_product;
+            return Tensor(data, {});//scalar //todo test
         }
         else if (eq == "i,i->i")
         {
@@ -1025,17 +1024,13 @@ namespace ts
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
             CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match for outer product");
-            const Size &shape = t1.shape();
-            const data_t *data1 = t1.data();
-            const data_t *data2 = t2.data();
-            std::vector<data_t> result(shape.size());
-
+            const Size &shape = t1.shape;
+            vector<data_t> data(shape.size());
             for (size_t i = 0; i < shape.size(); ++i)
             {
-                result[i] = data1[i] * data2[i];
+                data[i] = t1.data[i] * t2.data[i];
             }
-
-            return Tensor(result, shape);
+            return Tensor(data, {shape[0]});
         }
         else if (eq == "ii->i")
         {
@@ -1045,14 +1040,17 @@ namespace ts
                 throw std::runtime_error("Insufficient number of tensors for diagnoal");
             }
             const Tensor &t1 = tensors[0];
-            const Size &shape = t1.shape();
-            const data_t *data1 = t1.data();
-            vector<data_t> result(shape.size());
-            for (size_t i = 0; i < shape.size(); ++i)
+            const Size &shape = t1.shape;
+            if (shape.size() != 2 || shape[0] != shape[1])
             {
-                result[i] = data1[i * shape[1] + i];
+                throw std::runtime_error("Tensor is not a square matrix");
             }
-            return Tensor(result, {shape[0]});
+            vector<data_t> data(shape[0]);
+            for (size_t i = 0; i < shape[0]; ++i)
+            {
+                data[i] = t1.data[i * shape[0] + i];
+            }
+            return Tensor(data, {shape[0]});
         }
         else if (eq == "i,j->ij")
         {
@@ -1063,31 +1061,26 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            CHECK_MATRIX_SHAPE(t1, "First tensor is not a matrix");
-            CHECK_MATRIX_SHAPE(t2, "Second tensor is not a matrix");
-            const Size &shape1 = t1.shape();
-            const Size &shape2 = t2.shape();
-            size_t rows = shape1[0];
-            size_t cols1 = shape1[1];
-            size_t cols2 = shape2[1];
-            const data_t *data1 = t1.data();
-            const data_t *data2 = t2.data();
-            std::vector<data_t> result(rows * cols2);
+            if(t1.shape.size() != 1 || t2.shape.size() != 1)
+            {
+                throw std::runtime_error("Tensors are not vectors");
+            }
+            const Size &shape1 = t1.shape;
+            const Size &shape2 = t2.shape;
+            int rows = shape1[0];
+            int cols1 = shape1[1];
+            int cols2 = shape2[1];
 
+            vector<data_t> data(rows * cols2);
             for (size_t i = 0; i < rows; ++i)
             {
                 for (size_t j = 0; j < cols2; ++j)
                 {
-                    data_t element = 0;
-                    for (size_t k = 0; k < cols1; ++k)
-                    {
-                        element += data1[i * cols1 + k] * data2[k * cols2 + j];
-                    }
-                    result[i * cols2 + j] = element;
+                    data[i * cols2 + j] = t1.data[i] * t2.data[j];
                 }
             }
+            return Tensor(data, {rows, cols2});
 
-            return Tensor(result, {rows, cols2});
         }
         else if (eq == "bij,bjk->bik")
         {
@@ -1102,20 +1095,20 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            CHECK_BATCH_MATRIX_SHAPE(t1, "First tensor is not a batch matrix");
-            CHECK_BATCH_MATRIX_SHAPE(t2, "Second tensor is not a batch matrix");
-            const Size &shape1 = t1.shape();
-            const Size &shape2 = t2.shape();
-            size_t batches = shape1[0];
-            size_t rows1 = shape1[1];
-            size_t cols1 = shape1[2];
-            size_t rows2 = shape2[1];
-            size_t cols2 = shape2[2];
-            const data_t *data1 = t1.data();
-            const data_t *data2 = t2.data();
-            std::vector<data_t> result(batches * rows1 * cols2);
+            if(t1.shape.size() != 3 || t2.shape.size() != 3)
+            {
+                throw std::runtime_error("Tensors are not matrices");
+            }
+            const Size &shape1 = t1.shape;
+            const Size &shape2 = t2.shape;
+            int batches = shape1[0];
+            int rows1 = shape1[1];
+            int cols1 = shape1[2];
+            int rows2 = shape2[1];
+            int cols2 = shape2[2];
 
-            for (size_t b = 0; b < batches; ++b)
+            vector<data_t> data(batches * rows1 * cols2);
+            for(size_t b = 0; b < batches; ++b)
             {
                 for (size_t i = 0; i < rows1; ++i)
                 {
@@ -1124,14 +1117,13 @@ namespace ts
                         data_t element = 0;
                         for (size_t k = 0; k < cols1; ++k)
                         {
-                            element += data1[(b * rows1 + i) * cols1 + k] * data2[(b * rows2 + k) * cols2 + j];
+                            element += t1.data[(b * rows1 + i) * cols1 + k] * t2.data[(b * rows2 + k) * cols2 + j];
                         }
-                        result[(b * rows1 + i) * cols2 + j] = element;
+                        data[(b * rows1 + i) * cols2 + j] = element;
                     }
                 }
             }
-
-            return Tensor(result, {batches, rows1, cols2});
+            return Tensor(data, {batches, rows1, cols2});
         }
         throw std::runtime_error("Invalid equation for einsum");
     }
