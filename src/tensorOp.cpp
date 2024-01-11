@@ -1,6 +1,8 @@
 #include "serial_tensor.hpp"
 #include <climits>
 #include <vector>
+#include <fstream>
+
 #include "config.hpp"
 
 using namespace std;
@@ -528,6 +530,56 @@ namespace ts
         }
         Storage st(data.data(), t1.shape.size(), dt::bool8);
         return Tensor(data, t1.shape.shape, dt::bool8);
+    }
+
+    //save and load
+    void save(Tensor t, string filename)
+    {
+        ofstream file(filename);
+        if (file.is_open())
+        {
+            file << t.shape.size() << endl;
+            for (size_t i = 0; i < t.shape.size(); ++i)
+            {
+                file << t.shape[i] << endl;
+                for (size_t j = 0; j < t.shape[i]; ++j)
+                {
+                    file << t.data[i * t.shape[i] + j] << endl;
+                }
+            }
+            file.close();
+        }
+        else
+        {
+            throw runtime_error("Unable to open file");
+        }
+    }
+
+    Tensor load(string filename)
+    {
+        ifstream file(filename);
+        if (file.is_open())
+        {
+            int size;
+            file >> size;
+            vector<int> shape(size);
+            for (int i = 0; i < size; i++)
+            {
+                file >> shape[i];
+            }
+            vector<data_t> data;
+            data_t temp;
+            while (file >> temp) //read data
+            {
+                data.push_back(temp);
+            }
+            file.close();
+            return Tensor(data, shape);
+        }
+        else
+        {
+            throw runtime_error("Unable to open file");
+        }
     }
 
 } // namespace ts

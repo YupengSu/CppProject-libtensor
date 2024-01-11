@@ -139,4 +139,9 @@ namespace ts
 
     // other
     Tensor einsum(string eq, vector<Tensor> tensors);
+
+    //save and load
+    void save(Tensor t, string filename);
+    Tensor load(string filename);
+    
 } // namespace ts

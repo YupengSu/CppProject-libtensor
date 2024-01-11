@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+
+
 #include "serial_tensor.hpp"
 
 namespace ts
@@ -1114,4 +1116,6 @@ namespace ts
         }
         throw std::runtime_error("Invalid equation for einsum");
     }
+
+    
 }
