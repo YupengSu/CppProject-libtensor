@@ -4,7 +4,6 @@
 using namespace ts;
 
 int main() {
-    
 
     Tensor t1 = tensor({
                 {0.1,1.2},

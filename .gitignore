@@ -48,3 +48,5 @@ _deps
 
 build/
 .cache/
+.vscode/
+Cuda_Test/

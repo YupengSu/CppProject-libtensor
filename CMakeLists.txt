@@ -8,7 +8,7 @@ enable_testing()
 include_directories("include/")
 FILE(GLOB SRC "src/*")
 
-add_executable(libtensor ${SRC})
+add_executable(libtensor ${SRC} main.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
