@@ -225,6 +225,7 @@ namespace ts
         case dt::bool8:
             return "bool8";
         }
+        return "unknown";
     }
 
     int Tensor::get_size(vector<int> shape)
