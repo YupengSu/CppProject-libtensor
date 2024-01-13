@@ -50,7 +50,7 @@ namespace ts
 
         size_t get_dim() const;
         size_t size(int i) const;
-        vector<data_t> get_data();
+        vector<data_t> get_data() const;
         Tensor slice(int idx, int dim = 0);
         Tensor permute(vector<int> dims);
         Tensor transpose(int dim1, int dim2);

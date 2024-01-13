@@ -23,7 +23,15 @@ int main() {
         },
         dt::float32);
     cout << t2 << endl;
-    cout.setf(ios::boolalpha);
-    cout << eq(t1, t2) << endl;
-    cout << &t1[{1, 1}] - &t1[{0, 0}] << endl;
+
+    cout << "dev::cpu:" << endl;
+    Tensor t3 = t1 + t2;
+    cout << t3 << endl;
+
+    t1 = t1.to(dev::cuda);
+    t2 = t2.to(dev::cuda);
+
+    cout << "dev::cuda:" << endl;
+    Tensor t4 = t1 + t2;
+    cout << t4 << endl;
 }

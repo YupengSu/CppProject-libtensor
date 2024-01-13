@@ -236,7 +236,7 @@ namespace ts
         }
         return size;
     }
-    vector<data_t> Tensor::get_data()
+    vector<data_t> Tensor::get_data() const
     {
         vector<data_t> data;
         for (int i = 0; i < this->shape.size(); i++)

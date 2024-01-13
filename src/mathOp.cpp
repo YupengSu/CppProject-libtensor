@@ -8,6 +8,7 @@
 #include <regex>
 
 #include "serial_tensor.hpp"
+#include "cuda_util.cuh"
 
 namespace ts
 {
@@ -29,6 +30,8 @@ namespace ts
         return true;
     }
 
+    extern "C" void addMM(data_t* c, const data_t* a, const data_t* b, const int size);
+
     //////////////add operators
 
     Tensor add(const Tensor t1, const Tensor t2)
@@ -37,9 +40,16 @@ namespace ts
         CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
         vector<data_t> data(t1.data.size);
         int size = t1.data.size;
-        for (int i = 0; i < size; i++)
+        if (t1.device == dev::cpu)
         {
-            data[i] = t1.data[i] + t2.data[i];
+            for (int i = 0; i < size; i++)
+            {
+                data[i] = t1.data[i] + t2.data[i];
+            }
+        }
+        else
+        {
+            addMM(t1.get_data().data(), t2.get_data().data(), data.data(), size);
         }
         return Tensor(data, t1.shape.shape);
     }
