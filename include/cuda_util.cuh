@@ -19,4 +19,5 @@ namespace ts {
     extern void addMM(void* c, void* a, void* b, int size);
     extern void addKernel(void* dst, Tensor a, Tensor b, size_t size);
     extern void addKernelNum(void* dst, Tensor a, data_t b, size_t size);
+    extern void c_get_data_t(data_t& dst, void * ptr);
 }

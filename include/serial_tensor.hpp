@@ -41,6 +41,7 @@ namespace ts
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
         Tensor operator()(int index, pair<int, int> range);
+
         data_t &operator()(vector<size_t> inds);
         data_t operator()(vector<size_t> inds) const;
 
@@ -49,7 +50,7 @@ namespace ts
 
         data_t &operator[](size_t inds);
         data_t operator[](size_t inds) const;
-
+        
         Tensor &operator=(BaseTensor<> bt);
         // Tensor &operator=(Tensor bt);
 

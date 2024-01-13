@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "config.hpp"
@@ -21,6 +22,10 @@ void checkCudaError(cudaError_t err, const char* file, int line) {
 }
 
 #define checkCudaError(err) checkCudaError(err, __FILE__, __LINE__)
+
+__global__ void get_data_t(data_t& dst, void * ptr) {
+    dst = *(data_t*)ptr;
+}
 
 __device__ void add_data_t(data_t& dst, data_t& a, data_t& b) {
     switch (a.dtype) {
@@ -88,13 +93,15 @@ extern void c_cudaMemcpy(void* dst, void* src, size_t size,
     checkCudaError(cudaMemcpy(dst, src, size, (cudaMemcpyKind)kind));
 }
 
-extern void c_cudaFree(void* src) { checkCudaError(cudaFree(src)); }
+extern void c_cudaFree(void* src) { 
+    checkCudaError(cudaFree(src)); 
+    }
+
 
 extern void addMM(void* c, void* a, void* b, size_t size) {
     data_t* dev_c = (data_t*)c;
     data_t* dev_a = (data_t*)a;
     data_t* dev_b = (data_t*)b;
-    size_t bytes = size * sizeof(data_t);
     size_t threadsPerBlock = THREAD_PER_BLOCK;
     size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
     addMMKernel<<<blocksPerGrid, threadsPerBlock>>>(dev_c, dev_a, dev_b, size);
@@ -108,7 +115,6 @@ extern void addKernel(void* dst, Tensor a, Tensor b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
-    size_t bytes = size * sizeof(data_t);
     size_t threadsPerBlock = THREAD_PER_BLOCK;
     size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
     int * shape;
@@ -128,7 +134,6 @@ extern void addKernelNum(void *dst, Tensor a, data_t b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_c = (data_t*)dst;
     b = b.to_dt(a.dtype);
-    size_t bytes = size * sizeof(data_t);
     size_t threadsPerBlock = THREAD_PER_BLOCK;
     size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
     int * shape;
@@ -144,5 +149,12 @@ extern void addKernelNum(void *dst, Tensor a, data_t b, size_t size) {
     checkCudaError(cudaDeviceSynchronize());
 }
 
-
+extern void c_get_data_t(data_t& dst, void * ptr) {
+    data_t* tmp;
+    cudaMalloc(&tmp, sizeof(data_t));
+    get_data_t<<<1, 1>>>(*tmp, ptr);
+    cudaMemcpy(&dst, tmp, sizeof(data_t), cudaMemcpyDeviceToHost);
+    checkCudaError(cudaGetLastError());
+    checkCudaError(cudaDeviceSynchronize());
+}
 }  // namespace ts

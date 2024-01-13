@@ -31,28 +31,6 @@ bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg) {
 
 //////////////add operators
 
-// Tensor add(const Tensor t1, const Tensor t2) {
-//     CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
-//     CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
-//     int size = t1.data.size;
-//     Storage new_data;
-//     if (t1.device == dev::cpu) {
-//         new_data = Storage(size, dev::cpu);
-//         new_data.dtype = t1.dtype;
-//         for (int i = 0; i < size; i++) {
-//             new_data.dp[i] = t1.data[i] + t2.data[i];
-//         }
-//     } else {
-//         new_data = Storage(size, dev::cuda);
-//         new_data.dtype = t1.dtype;
-//         data_t *add1 = t1.data.dp;
-//         data_t *add2 = t2.data.dp;
-//         addMM(new_data.dp, add1, add2, size);
-//     }
-//     return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
-//                   t1.dtype, t1.device);
-// }
-
 Tensor add(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
     CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
@@ -61,7 +39,8 @@ Tensor add(const Tensor t1, const Tensor t2) {
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
-            new_data.dp[i] = t1.data[i] + t2.data[i];
+            new_data[i] = t1.data[i] + t2.data[i];
+            new_data[i].set_dtype(t1.dtype);
         }
     } else {
         data_t *add1 = t1.data.dp;
@@ -73,14 +52,13 @@ Tensor add(const Tensor t1, const Tensor t2) {
 }
 
 Tensor add(const Tensor t1, data_t t2) {
-    // CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
-    // CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
     int size = t1.data.size;
     Storage new_data = Storage(size, t1.device);
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             new_data[i] = t1[i] + t2;
+            new_data[i].set_dtype(t1.dtype);
         }
 
     } else {
@@ -93,14 +71,7 @@ Tensor add(const Tensor t1, data_t t2) {
 
 Tensor Tensor::add(const Tensor &other) { return ts::add(*this, other); }
 
-Tensor Tensor::add(data_t other) {
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
-    for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] + other;
-    }
-    return Tensor(data, this->shape.shape);
-}
+Tensor Tensor::add(data_t other) { return ts::add(*this, other); }
 
 Tensor Tensor::operator+(const Tensor &other) { return ts::add(*this, other); }
 Tensor Tensor::operator+(const data_t other) { return ts::add(*this, other); }

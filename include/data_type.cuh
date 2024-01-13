@@ -604,7 +604,7 @@ class data_t {
     friend ostream &operator<<(ostream &os, data_t data) {
         switch (data.dtype) {
             case dt::int8:
-                os << data.data.tensor_int8;
+                os << (short)data.data.tensor_int8;
                 break;
             case dt::float32:
                 os << data.data.tensor_float32;

@@ -92,7 +92,7 @@ ostream &operator<<(ostream &os, Tensor t) {
 
     if (t.ndim == 1) {
         for (size_t i = 0; i < t.shape[0]; ++i) {
-            os << t[{i}];
+            os << t[i];
             if (i != t.shape[0] - 1) os << ", ";
         }
     } else if (t.ndim == 2) {
@@ -257,7 +257,7 @@ Tensor rand(Size sz, dt dtype) {
         data[i].set_dtype(dtype);
         switch (dtype) {
             case dt::float32:
-                data[i] = (float)random() / RAND_MAX;
+                data[i] = (float)random() / (float)RAND_MAX;
                 break;
             case dt::int32:
                 data[i] = (int)random() % INT_MAX;
