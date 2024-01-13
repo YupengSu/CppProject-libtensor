@@ -44,10 +44,9 @@ namespace ts
         this->device = device;
     }
 
-    Tensor Tensor::to(dev device) const
+    Tensor Tensor::to(dev device)
     {
-        Tensor t = *this;
-        t.device = device;
-        return t;
+        this->device = device; 
+        return *this;
     }
 } // namespace ts

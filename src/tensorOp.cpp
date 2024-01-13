@@ -245,6 +245,15 @@ namespace ts
         }
         return data;
     }
+    double* Tensor::double_data() const
+    {
+        double* doubleData = new double[this->shape.size()];
+        for (int i = 0; i < this->shape.size(); ++i) {
+            doubleData[i] = (double) this->data[i];
+            cout << doubleData[i] << endl;
+        }
+        return doubleData;
+    }
     vector<int> init_stride(vector<int> shape)
     {
         vector<int> stride(shape.size());

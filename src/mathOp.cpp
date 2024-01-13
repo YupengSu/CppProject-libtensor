@@ -42,6 +42,7 @@ namespace ts
         int size = t1.data.size;
         if (t1.device == dev::cpu)
         {
+            cout << "cpu compute" << endl;
             for (int i = 0; i < size; i++)
             {
                 data[i] = t1.data[i] + t2.data[i];
@@ -49,7 +50,8 @@ namespace ts
         }
         else
         {
-            addMM(t1.get_data().data(), t2.get_data().data(), data.data(), size);
+            cout << "cuda compute" << endl;
+            addMM(t1.double_data(), t2.double_data(), data.data(), size);
         }
         return Tensor(data, t1.shape.shape);
     }

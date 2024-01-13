@@ -34,7 +34,7 @@ namespace ts
         Tensor(const Storage &i_data, const Size &i_shape, const vector<int> i_stride,
                dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
-        Tensor to(dev device) const;
+        Tensor to(dev device);
 
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
@@ -51,6 +51,7 @@ namespace ts
         size_t get_dim() const;
         size_t size(int i) const;
         vector<data_t> get_data() const;
+        double* double_data() const;
         Tensor slice(int idx, int dim = 0);
         Tensor permute(vector<int> dims);
         Tensor transpose(int dim1, int dim2);
