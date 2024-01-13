@@ -27,6 +27,7 @@ namespace ts
         dt dtype;
         dev device;
         Tensor();
+        Tensor(const Tensor &other) = default;
         // Tensor(int i_dim);
         ~Tensor(){};
         Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
@@ -47,7 +48,7 @@ namespace ts
         data_t operator[](vector<size_t> inds) const;
 
         Tensor &operator=(BaseTensor<> bt);
-        Tensor &operator=(Tensor bt);
+        // Tensor &operator=(Tensor bt);
 
         size_t get_dim() const;
         size_t size(int i) const;

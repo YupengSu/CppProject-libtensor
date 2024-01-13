@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "cuda_util.cuh"
+#include "data_type.cuh"
 #include "serial_tensor.hpp"
+#include "storage.hpp"
 
 namespace ts {
 bool CHECK_SAME_SHAPE(Tensor t1, Tensor t2, string msg) {
@@ -25,29 +27,32 @@ bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg) {
     return true;
 }
 
-extern void addMM(void *c, void *a, void *b, int size);
+// extern void addMM(void *c, void *a, void *b, int size);
 
 //////////////add operators
 
 Tensor add(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
     CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
-    vector<data_t> data(t1.data.size);
     int size = t1.data.size;
+    Storage new_data;
     if (t1.device == dev::cpu) {
+        new_data = Storage(size, dev::cpu);
+        new_data.dtype = t1.dtype;
         cout << "cpu compute" << endl;
         for (int i = 0; i < size; i++) {
-            data[i] = t1.data[i] + t2.data[i];
+            new_data.dp[i] = t1.data[i] + t2.data[i];
         }
     } else {
-        double result[size];
+        new_data = Storage(size, dev::cuda);
+        new_data.dtype = t1.dtype;
         cout << "cuda compute" << endl;
-        addMM(result, t2.get_data().data(), t1.get_data().data(), size);
-        for (int i = 0; i < size; i++) {
-            data[i] = result[i];
-        }
+        data_t *add1 = t1.data.dp;
+        data_t *add2 = t2.data.dp;
+        addMM(new_data.dp, add1, add2, size);
     }
-    return Tensor(data, t1.shape.shape);
+    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+                  t1.dtype, t1.device);
 }
 
 Tensor add(const Tensor t1, data_t t2) {
