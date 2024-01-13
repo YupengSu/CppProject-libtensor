@@ -7,7 +7,7 @@
 #include <vector>
 using namespace std;
 
-using namespace ts;
+namespace ts {
 
 ostream &Size::operator<<(ostream &os) {
     os << "(";
@@ -96,3 +96,6 @@ size_t Size::size() const {
     }
     return sz;
 }
+
+}
+

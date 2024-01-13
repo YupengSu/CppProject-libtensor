@@ -79,6 +79,9 @@ Tensor Tensor::view(vector<int> shape) {
 }
 
 ostream &operator<<(ostream &os, Tensor t) {
+    if (t.device == dev::cuda) {
+        t = t.to(dev::cpu);
+    }
     std::ios_base::fmtflags flags = os.flags();
     os.setf(std::ios::fixed);
     os.precision(4);

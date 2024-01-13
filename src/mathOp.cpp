@@ -39,14 +39,12 @@ Tensor add(const Tensor t1, const Tensor t2) {
     if (t1.device == dev::cpu) {
         new_data = Storage(size, dev::cpu);
         new_data.dtype = t1.dtype;
-        cout << "cpu compute" << endl;
         for (int i = 0; i < size; i++) {
             new_data.dp[i] = t1.data[i] + t2.data[i];
         }
     } else {
         new_data = Storage(size, dev::cuda);
         new_data.dtype = t1.dtype;
-        cout << "cuda compute" << endl;
         data_t *add1 = t1.data.dp;
         data_t *add2 = t2.data.dp;
         addMM(new_data.dp, add1, add2, size);
