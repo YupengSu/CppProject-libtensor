@@ -25,6 +25,7 @@ Storage::Storage(const Storage& other, size_t offset) {
 }
 
 Storage::Storage(data_t val, size_t size, dt dtype, dev device) : Storage(size) {
+    
     for (int i = 0; i < size; i++) dp[i] = val;
     for (int i = 0; i < size; i++) dp[i].set_dtype(dtype);
     this->dtype = dtype;

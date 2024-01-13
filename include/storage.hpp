@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <memory>
+#include "data_type.cuh"
 #include "config.hpp"
 using namespace std;
 
@@ -15,12 +16,17 @@ class Storage {
         data_t data_[1];
     };
 
+
+
    public:
     data_t* dp;
     size_t size;
     shared_ptr<Vdata> bp;
     dt dtype;
+
     dev device;
+
+    void* cuda_dp;
 
     Storage();
     Storage(size_t size) ;

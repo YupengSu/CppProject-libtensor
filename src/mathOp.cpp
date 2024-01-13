@@ -42,7 +42,7 @@ Tensor add(const Tensor t1, const Tensor t2) {
     } else {
         double result[size];
         cout << "cuda compute" << endl;
-        addMM(result, t2.double_data(), t1.double_data(), size);
+        addMM(result, t2.get_data().data(), t1.get_data().data(), size);
         for (int i = 0; i < size; i++) {
             data[i] = result[i];
         }

@@ -6,10 +6,10 @@ using namespace ts;
 
 clock_t start,end_time;
 int main() {
-    Tensor t1 = rand({128,64,64},
+    Tensor t1 = rand({32,32,32},
         dt::float32);
 
-    Tensor t2 = rand({128,64,64},
+    Tensor t2 = rand({32,32,32},
         dt::float32);
     cout << t1.device << endl;
 

@@ -9,7 +9,7 @@
 
 #include "config.hpp"
 #include "size.hpp"
-#include "storage.hpp"
+#include "data_type.cuh"
 
 using namespace std;
 
