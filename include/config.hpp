@@ -4,6 +4,7 @@
 #include <ostream>
 
 #define DEFAULT_DTYPE dt::float32
+#define DEFAULT_DEVICE dev::cpu
 
 using namespace std;
 namespace ts {
@@ -11,8 +12,46 @@ enum class dt {
     int8, float32, float64, int32, bool8
 
 };
+enum class dev { 
+    cpu, cuda
+};
 
- ostream &operator<<(ostream &os, const dt dtype);
+ostream &operator<<(ostream &os, const dt dtype) {
+    switch (dtype) {
+        case dt::int8:
+            os << "dtype::int8";
+            break;
+        case dt::float32:
+            os << "dtype::float32";
+            break;
+        case dt::bool8:
+            os << "dtype::bool8";
+            break;
+        case dt::int32:
+            os << "dtype::int32";
+            break;
+        case dt::float64:
+            os << "dtype::float64";
+            break;
+        default:
+            break;
+    }
+    return os;
+}
+
+ostream &operator<<(ostream &os, const dev device) {
+    switch (device) {
+        case dev::cpu:
+            os << "dev::cpu";
+            break;
+        case dev::cuda:
+            os << "dev::cuda";
+            break;
+        default:
+            break;
+    }
+    return os;
+}
 
 typedef union {
     uint8_t tensor_int8;
@@ -574,10 +613,6 @@ class data_t {
         return false;
     }
 
-    
-
-
-
     // template <typename T>
     friend ostream &operator<<(ostream &os, data_t data) {
         switch (data.dtype) {
@@ -601,8 +636,6 @@ class data_t {
         }
         return os;
     }
-
-
 
 };
 }  // namespace ts

@@ -10,7 +10,6 @@ using namespace std;
 
 namespace ts
 {
-
     Tensor Tensor::slice(int idx, int dim)
     {
         CHECK_IN_RANGE(dim, 0, ndim,

@@ -15,7 +15,7 @@ namespace ts
         this->offset = 0;
     }
     Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
-                   dt dtype)
+                   dt dtype, dev device)
     {
         if (i_shape.size() == 0)
         {
@@ -28,17 +28,26 @@ namespace ts
             this->shape = Size(i_shape);
         }
 
-        this->data = Storage(i_data.data(), this->shape.size(), dtype);
+        this->data = Storage(i_data.data(), this->shape.size(), dtype, device);
         this->dtype = dtype;
+        this->device = device;
         this->offset = 0;
         this->stride = init_stride(this->shape.shape);
     }
 
     Tensor::Tensor(const Storage &i_data, const Size &i_shape,
-                   const vector<int> i_stride, dt dtype)
+                   const vector<int> i_stride, dt dtype, dev device)
         : data(i_data), stride(i_stride), shape(i_shape)
     {
         this->ndim = i_shape.ndim;
         this->dtype = dtype;
+        this->device = device;
+    }
+
+    Tensor Tensor::to(dev device) const
+    {
+        Tensor t = *this;
+        t.device = device;
+        return t;
     }
 } // namespace ts

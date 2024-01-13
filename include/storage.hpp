@@ -20,13 +20,15 @@ class Storage {
     size_t size;
     shared_ptr<Vdata> bp;
     dt dtype;
+    dev device;
+
     Storage();
     Storage(size_t size) ;
     Storage(const Storage& other, size_t offset);
 
-    Storage(data_t val, size_t size, dt dtype=DEFAULT_DTYPE);
+    Storage(data_t val, size_t size, dt dtype=DEFAULT_DTYPE, dev device=DEFAULT_DEVICE);
 
-    Storage(const data_t* data, size_t size, dt dtype=DEFAULT_DTYPE);
+    Storage(const data_t* data, size_t size, dt dtype=DEFAULT_DTYPE, dev device=DEFAULT_DEVICE);
     Storage(const Storage& other);
     ~Storage() ;
 
@@ -36,6 +38,8 @@ class Storage {
     data_t& operator[](size_t idx);
 
     size_t offset();
+
+    
 };
 
 data_t rand_data_t(dt dtype);

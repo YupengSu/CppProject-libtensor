@@ -5,16 +5,24 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-
+#include <regex>
 
 #include "serial_tensor.hpp"
 
 namespace ts
 {
-
     bool CHECK_SAME_SHAPE(Tensor t1, Tensor t2, string msg)
     {
         if (t1.shape != t2.shape)
+        {
+            throw runtime_error(msg);
+        }
+        return true;
+    }
+
+    bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg)
+    {
+        if (t1.device != t2.device)
         {
             throw runtime_error(msg);
         }
@@ -26,6 +34,7 @@ namespace ts
     Tensor add(const Tensor t1, const Tensor t2)
     {
         CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+        CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
         vector<data_t> data(t1.data.size);
         int size = t1.data.size;
         for (int i = 0; i < size; i++)
@@ -593,7 +602,6 @@ namespace ts
 
     ///////////////comparison
 
-
     Tensor eq(const Tensor t1, const Tensor t2)
     {
         CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
@@ -651,7 +659,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     // ne
@@ -672,7 +680,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::ne(const Tensor &other)
@@ -692,7 +700,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator!=(const Tensor &other)
@@ -712,7 +720,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     // gt
@@ -733,7 +741,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::gt(const Tensor &other)
@@ -753,7 +761,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator>(const Tensor &other)
@@ -773,7 +781,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     // ge
@@ -794,7 +802,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::ge(const Tensor &other)
@@ -814,7 +822,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator>=(const Tensor &other)
@@ -834,7 +842,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     // lt
@@ -855,7 +863,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::lt(const Tensor &other)
@@ -875,7 +883,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator<(const Tensor &other)
@@ -895,7 +903,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     // le
@@ -916,7 +924,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, t1.shape.shape);
+        return Tensor(data, t1.shape.shape, dt::bool8);
     }
 
     Tensor Tensor::le(const Tensor &other)
@@ -936,7 +944,7 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     Tensor Tensor::operator<=(const Tensor &other)
@@ -956,37 +964,42 @@ namespace ts
                 data[i] = false;
             }
         }
-        return Tensor(data, this->shape.shape);
+        return Tensor(data, this->shape.shape, dt::bool8);
     }
 
     //////////////other
     Tensor einsum(string eq, vector<Tensor> tensors)
     {
-        if (eq == "i,i->")
+        std::cout.setf(std::ios::fixed, std::ios::floatfield);
+        std::regex dot("([a-zA-Z]),\\1->");
+        std::regex outer("([a-zA-Z]),([a-zA-Z])->\\1\\2");
+        std::regex batch("([a-zA-Z])([a-zA-Z])([a-zA-Z]),\\1\\3([a-zA-Z])->\\1\\2\\4");
+        std::regex diag("([a-zA-Z])\\1->\\1");
+        std::regex elewise("([a-zA-Z]),\\1->\\1");
+
+        if (regex_match(eq, dot))
         {
             // dot production
             if (tensors.size() < 2)
             {
                 throw std::runtime_error("Insufficient number of tensors for dot product");
             }
-
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
+
             CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match for dot product");
-
             const Size &shape = t1.shape;
-            vector<data_t> data(t1.shape[0]);
-            data_t dot_product = 0;
-
+            vector<data_t> data(1);
+            // data_t dot_product;
             for (size_t i = 0; i < shape.size(); ++i)
             {
-                dot_product += t1.data[i] * t2.data[i];
+                data[0] += t1.data[i] * t2.data[i];
+                cout << "data1 " << t1.data[i] << " data2 " << t2.data[i] << endl;
             }
-
-            data[0] = dot_product;
-            return Tensor(data, {});//scalar //todo test
+            cout << data[0] << endl;
+            return Tensor(data, {}); // scalar //todo test
         }
-        else if (eq == "i,i->i")
+        else if (regex_match(eq, elewise))
         {
             // element-wise production
             if (tensors.size() < 2)
@@ -996,15 +1009,14 @@ namespace ts
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
             CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match for outer product");
-            const Size &shape = t1.shape;
-            vector<data_t> data(shape.size());
-            for (size_t i = 0; i < shape.size(); ++i)
+            vector<data_t> data(t1.data.size);
+            for (size_t i = 0; i < t1.data.size; ++i)
             {
                 data[i] = t1.data[i] * t2.data[i];
             }
-            return Tensor(data, {shape[0]});
+            return Tensor(data, {t1.shape.shape});
         }
-        else if (eq == "ii->i")
+        else if (regex_match(eq, diag))
         {
             // diagnoal of t1
             if (tensors.size() < 1)
@@ -1013,7 +1025,7 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Size &shape = t1.shape;
-            if (shape.size() != 2 || shape[0] != shape[1])
+            if (shape[0] != shape[1] || t1.ndim != 2)
             {
                 throw std::runtime_error("Tensor is not a square matrix");
             }
@@ -1024,7 +1036,7 @@ namespace ts
             }
             return Tensor(data, {shape[0]});
         }
-        else if (eq == "i,j->ij")
+        else if (regex_match(eq, outer))
         {
             // outer product
             if (tensors.size() < 2)
@@ -1033,28 +1045,19 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            if(t1.shape.size() != 1 || t2.shape.size() != 1)
+            size_t n = t1.shape.shape[0];
+            size_t m = t2.shape.shape[1];
+            vector<data_t> data(n * m);
+            for (size_t i = 0; i < n; ++i)
             {
-                throw std::runtime_error("Tensors are not vectors");
-            }
-            const Size &shape1 = t1.shape;
-            const Size &shape2 = t2.shape;
-            int rows = shape1[0];
-            int cols1 = shape1[1];
-            int cols2 = shape2[1];
-
-            vector<data_t> data(rows * cols2);
-            for (size_t i = 0; i < rows; ++i)
-            {
-                for (size_t j = 0; j < cols2; ++j)
+                for (size_t j = 0; j < m; ++j)
                 {
-                    data[i * cols2 + j] = t1.data[i] * t2.data[j];
+                    data[i * m + j] = t1.data[i] * t2.data[j];
                 }
             }
-            return Tensor(data, {rows, cols2});
-
+            return Tensor(data, {t1.shape.shape[0], t2.shape.shape[1]});
         }
-        else if (eq == "bij,bjk->bik")
+        else if (regex_match(eq, batch))
         {
             // batch matrix multiplication
             if (tensors.size() < 2)
@@ -1067,7 +1070,7 @@ namespace ts
             }
             const Tensor &t1 = tensors[0];
             const Tensor &t2 = tensors[1];
-            if(t1.shape.size() != 3 || t2.shape.size() != 3)
+            if (t1.ndim != 3 || t2.ndim!= 3)
             {
                 throw std::runtime_error("Tensors are not matrices");
             }
@@ -1080,18 +1083,16 @@ namespace ts
             int cols2 = shape2[2];
 
             vector<data_t> data(batches * rows1 * cols2);
-            for(size_t b = 0; b < batches; ++b)
+            for (size_t b = 0; b < batches; ++b)
             {
                 for (size_t i = 0; i < rows1; ++i)
                 {
                     for (size_t j = 0; j < cols2; ++j)
                     {
-                        data_t element = 0;
                         for (size_t k = 0; k < cols1; ++k)
                         {
-                            element += t1.data[(b * rows1 + i) * cols1 + k] * t2.data[(b * rows2 + k) * cols2 + j];
+                            data[(b * rows1 + i) * cols2 + j] += t1.data[(b * rows1 + i) * cols1 + k] * t2.data[(b * rows2 + k) * cols2 + j];
                         }
-                        data[(b * rows1 + i) * cols2 + j] = element;
                     }
                 }
             }
@@ -1099,6 +1100,4 @@ namespace ts
         }
         throw std::runtime_error("Invalid equation for einsum");
     }
-
-    
 }

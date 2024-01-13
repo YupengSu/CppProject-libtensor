@@ -24,15 +24,17 @@ namespace ts
         vector<int> stride;
         size_t offset;
         dt dtype;
+        dev device;
         Tensor();
         // Tensor(int i_dim);
         ~Tensor(){};
         Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
-               dt dtype = DEFAULT_DTYPE);
+               dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
-        Tensor(const Storage &i_data, const Size &i_shape,
-               const vector<int> i_stride, dt dtype);
+        Tensor(const Storage &i_data, const Size &i_shape, const vector<int> i_stride,
+               dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
+        Tensor to(dev device) const;
 
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
