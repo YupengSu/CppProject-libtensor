@@ -8,13 +8,15 @@
 
 using namespace std;
 namespace ts {
-enum class dt { 
-    int8, float32, float64, int32, bool8
+enum class dt {
+    int8,
+    float32,
+    float64,
+    int32,
+    bool8
 
 };
-enum class dev { 
-    cpu, cuda
-};
+enum class dev { cpu, cuda };
 
 ostream &operator<<(ostream &os, const dt dtype);
 
@@ -29,38 +31,56 @@ typedef union {
 } data_tt;
 
 class data_t {
-    public:
+   public:
     data_tt data;
     dt dtype = DEFAULT_DTYPE;
 
    public:
     data_t() = default;
-    data_t(data_tt data) : data(data){}
-    data_t(int8_t data) { this->data.tensor_int8 = data; this->dtype= dt::int8;}
+    data_t(data_tt data) : data(data) {}
+    data_t(int8_t data) {
+        this->data.tensor_int8 = data;
+        this->dtype = dt::int8;
+    }
     data_t(float data) {
         this->data.tensor_float32 = data;
         this->dtype = dt::float32;
     }
-    data_t(double data) { this->data.tensor_float64 = data; this->dtype = dt::float64;}
-    data_t(int32_t data) { this->data.tensor_int32 = data; this->dtype = dt::int32; }
-    data_t(bool data) { this->data.tensor_bool = data; this->dtype = dt::bool8; }
+    data_t(double data) {
+        this->data.tensor_float64 = data;
+        this->dtype = dt::float64;
+    }
+    data_t(int32_t data) {
+        this->data.tensor_int32 = data;
+        this->dtype = dt::int32;
+    }
+    data_t(bool data) {
+        this->data.tensor_bool = data;
+        this->dtype = dt::bool8;
+    }
+
     template <typename T>
-    T &get_data() {
+    operator T() {
         switch (dtype) {
             case dt::int8:
-                return *(T *)(&data);
+                return T(data.tensor_int8);
+                break;
             case dt::float32:
-                return *(T *)(&data);
+                return T(data.tensor_float32);
+                break;
             case dt::bool8:
-                return *(T *)(&data);
+                return T(data.tensor_bool);
+                break;
             case dt::int32:
-                return *(T *)(&data);
+                return T(data.tensor_int32);
+                break;
             case dt::float64:
-                return *(T *)(&data);
+                return T(data.tensor_float64);
+                break;
             default:
                 break;
         }
-        return *(T *)(&data);
+        return T(data.tensor_int8);
     }
 
     data_t to_dt(dt target) {
@@ -182,11 +202,6 @@ class data_t {
         return res;
     }
 
-    template <typename T>
-    operator T() {
-        return *(T *)(&data);
-    }
-
     void set_dtype(dt dtype) {
         data_t tmp = this->to_dt(dtype);
         this->dtype = dtype;
@@ -258,7 +273,7 @@ class data_t {
         return false;
     }
 
-    data_t& operator+(data_t data) {
+    data_t &operator+(data_t data) {
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 += data.data.tensor_int8;
@@ -281,7 +296,7 @@ class data_t {
         return *this;
     }
 
-    data_t& operator-(data_t data) {
+    data_t &operator-(data_t data) {
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 -= data.data.tensor_int8;
@@ -304,7 +319,7 @@ class data_t {
         return *this;
     }
 
-    data_t& operator*(data_t data) {
+    data_t &operator*(data_t data) {
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 *= data.data.tensor_int8;
@@ -327,7 +342,7 @@ class data_t {
         return *this;
     }
 
-    data_t& operator/(data_t data) {
+    data_t &operator/(data_t data) {
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 /= data.data.tensor_int8;
@@ -534,7 +549,7 @@ class data_t {
         return false;
     }
 
-    bool operator>= (data_t data) {
+    bool operator>=(data_t data) {
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 >= data.data.tensor_int8;
@@ -603,6 +618,5 @@ class data_t {
         }
         return os;
     }
-
 };
 }  // namespace ts

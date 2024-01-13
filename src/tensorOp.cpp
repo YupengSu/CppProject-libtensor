@@ -250,7 +250,6 @@ namespace ts
         double* doubleData = new double[this->shape.size()];
         for (int i = 0; i < this->shape.size(); ++i) {
             doubleData[i] = (double) this->data[i];
-            cout << doubleData[i] << endl;
         }
         return doubleData;
     }
