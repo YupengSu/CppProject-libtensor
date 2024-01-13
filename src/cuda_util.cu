@@ -2,8 +2,6 @@
 #include <cuda_runtime.h>
 #include <iostream>
 
-#define THREAD_PER_BLOCK 256
-
 namespace ts {
     void checkCudaError(cudaError_t err, const char* file, int line) {
         if (err != cudaSuccess) {
@@ -11,8 +9,6 @@ namespace ts {
             exit(1);
         }
     }
-    
-    #define checkCudaError(err) checkCudaError(err, __FILE__, __LINE__)
     
     __global__ void addMMKernel(double* c, double* a, double* b, int size) {
         int i = blockIdx.x * blockDim.x + threadIdx.x;

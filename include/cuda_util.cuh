@@ -1,24 +1,13 @@
 #pragma once
-#include "config.hpp"
+#define THREAD_PER_BLOCK 256
 
 namespace ts{
+    void checkCudaError(cudaError_t err, const char* file, int line);
 
-    __global__ void addMMKernel(data_t* c, const data_t* a, const data_t* b, const int size);
+    #define checkCudaError(err) checkCudaError(err, __FILE__, __LINE__)
+    
+    __global__ void addMMKernel(double* c, double* a, double* b, int size);
 
-    extern void addMM(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void addMNKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void subMMKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void subMNKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void mulMMKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void mulMNKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void divMMKernel(data_t* c, const data_t* a, const data_t* b, const int size);
-
-    __global__ void divMNKernel(data_t* c, const data_t* a, const data_t* b, const int size);
+    extern void addMM(void* c, void* a, void* b, int size);
 
 }
