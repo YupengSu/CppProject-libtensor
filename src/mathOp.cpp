@@ -65,13 +65,7 @@ Tensor add(const Tensor t1, data_t t2) {
 }
 
 Tensor Tensor::add(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
-    for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] + other.data[i];
-    }
-    return Tensor(data, this->shape.shape);
+    return ts::add(*this, other);
 }
 
 Tensor Tensor::add(data_t other) {
@@ -84,13 +78,7 @@ Tensor Tensor::add(data_t other) {
 }
 
 Tensor Tensor::operator+(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
-    for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] + other.data[i];
-    }
-    return Tensor(data, this->shape.shape);
+    return ts::add(*this, other);
 }
 
 //////////////////sub operators

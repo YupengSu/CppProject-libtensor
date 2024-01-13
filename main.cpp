@@ -27,7 +27,7 @@ int main() {
     cout << "t1 on: " << t1.device << endl;
     cout << "t2 on: " << t2.device << endl;
     start=clock();
-    Tensor t4 = add(t1, t2);
+    Tensor t4 = t1 + t2;
     end_time=clock();
     endtime=(double)(end_time-start)/CLOCKS_PER_SEC;
 	cout<<"Total time:"<<endtime*1000<<"ms"<<endl;
