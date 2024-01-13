@@ -54,7 +54,10 @@ Storage::~Storage() = default;
 // Storage& operator=(const Storage& other) = delete;
 
 data_t Storage::operator[](size_t idx) const { return dp[idx]; }
-data_t& Storage::operator[](size_t idx) { return dp[idx]; }
+data_t& Storage::operator[](size_t idx) { 
+    // cerr << "Storage::operator[" << idx << ']' << endl;
+    return dp[idx]; 
+}
 
 size_t Storage::offset() { return dp - bp.get(); }
 data_t rand_data_t(dt dtype) {

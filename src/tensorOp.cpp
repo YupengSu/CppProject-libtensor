@@ -1,10 +1,12 @@
 #include <climits>
+#include <cstddef>
 #include <fstream>
 #include <vector>
 
 #include "base_tensor.hpp"
 #include "config.hpp"
 #include "exception"
+#include "exception.hpp"
 #include "serial_tensor.hpp"
 
 using namespace std;
@@ -31,7 +33,7 @@ Tensor Tensor::slice(int idx, int dim) {
     for (; i < new_stride.size(); ++i) {
         new_stride[i] = stride[i + 1];
     }
-    Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype);
+    Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 
     return nt;
 }
@@ -46,7 +48,7 @@ Tensor Tensor::permute(vector<int> dims) {
         new_stride[i] = stride[dims[i]];
     }
     Storage new_data = Storage(data, offset);
-    return Tensor(new_data, Size(new_shape), new_stride, dtype);
+    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
 Tensor Tensor::transpose(int dim1, int dim2) {
@@ -63,7 +65,7 @@ Tensor Tensor::transpose(int dim1, int dim2) {
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
     Storage new_data = Storage(data, offset);
-    return Tensor(new_data, Size(new_shape), new_stride, dtype);
+    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
 Tensor Tensor::view(vector<int> shape) {
@@ -75,7 +77,7 @@ Tensor Tensor::view(vector<int> shape) {
                 size, this->shape.size());
     Storage new_data = Storage(data, offset);
     vector<int> new_stride = init_stride(shape);
-    return Tensor(new_data, Size(shape), new_stride, dtype);
+    return Tensor(new_data, Size(shape), new_stride, dtype, device);
 }
 
 ostream &operator<<(ostream &os, Tensor t) {
@@ -141,6 +143,22 @@ data_t Tensor::operator[](vector<size_t> inds) const {
     }
     return data[offset];
 }
+
+data_t &Tensor::operator[](size_t idx) {
+    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
+                idx, this->size());
+    size_t offset = get_data_idx(idx, this->shape.shape, this->stride);
+    return data[offset];
+}
+
+data_t Tensor::operator[](size_t idx) const {
+    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
+                idx, this->size());
+    size_t offset = get_data_idx(idx, this->shape.shape, this->stride);
+    return data[offset];
+}
+
+
 
 Tensor &Tensor::operator=(BaseTensor<> bt) {
     vector<data_t> nt(bt.shape.size());
@@ -411,7 +429,7 @@ Tensor transpose(Tensor t, int dim1, int dim2) {
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
     Storage new_data = Storage(t.data, t.offset);
-    return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
+    return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 Tensor permute(Tensor t, vector<int> dims) {
     CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
@@ -423,7 +441,7 @@ Tensor permute(Tensor t, vector<int> dims) {
         new_stride[i] = t.stride[dims[i]];
     }
     Storage new_data = Storage(t.data, t.offset);
-    return Tensor(new_data, Size(new_shape), new_stride, t.dtype);
+    return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 
 Tensor view(Tensor t, vector<int> shape) {
@@ -435,7 +453,7 @@ Tensor view(Tensor t, vector<int> shape) {
                 t.shape.size());
     Storage new_data = Storage(t.data, t.offset);
     vector<int> new_stride = init_stride(shape);
-    return Tensor(new_data, shape, new_stride, t.dtype);
+    return Tensor(new_data, shape, new_stride, t.dtype, t.device);
 }
 
 // save and load
@@ -477,4 +495,11 @@ Tensor load(string filename) {
     }
 }
 
+size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride) {
+    size_t offset = 0;
+    for (int i = 0; i < shape.size(); i++) {
+        offset += index / stride[i] % shape[i] * stride[i];
+    }
+    return offset;
+}
 }  // namespace ts

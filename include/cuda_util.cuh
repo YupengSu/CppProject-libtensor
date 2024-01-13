@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include "serial_tensor.hpp"
 
 #define THREAD_PER_BLOCK 256
 
@@ -16,4 +17,6 @@ namespace ts {
     extern void c_cudaFree(void* src);
     extern void c_cudaMemcpy(void* dst, void* src, size_t count,c_cudaMemcpyKind kind);
     extern void addMM(void* c, void* a, void* b, int size);
+    extern void addKernel(void* dst, Tensor a, Tensor b, size_t size);
+    extern void addKernelNum(void* dst, Tensor a, data_t b, size_t size);
 }

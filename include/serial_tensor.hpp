@@ -47,6 +47,9 @@ namespace ts
         data_t &operator[](vector<size_t> inds);
         data_t operator[](vector<size_t> inds) const;
 
+        data_t &operator[](size_t inds);
+        data_t operator[](size_t inds) const;
+
         Tensor &operator=(BaseTensor<> bt);
         // Tensor &operator=(Tensor bt);
 
@@ -64,6 +67,7 @@ namespace ts
 
 
         Tensor operator+(const Tensor &other);
+        Tensor operator+(const data_t other);
         Tensor operator-(const Tensor &other);
         Tensor operator*(const Tensor &other);
         Tensor operator/(const Tensor &other);
@@ -149,4 +153,6 @@ namespace ts
     void save(Tensor t, string filename);
     Tensor load(string filename);
     
+    static size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride);
+
 } // namespace ts

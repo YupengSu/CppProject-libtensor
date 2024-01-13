@@ -24,8 +24,6 @@ class Storage {
 
     dev device;
 
-    void* cuda_dp;
-
     Storage();
     Storage(size_t size, dev device=DEFAULT_DEVICE) ;
     Storage(const Storage& other, size_t offset);

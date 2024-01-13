@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iostream>
 #include <ostream>
+#include <type_traits>
 
 #include "config.hpp"
 
@@ -95,6 +96,7 @@ class data_t {
         }
         return T(data.tensor_int8);
     }
+
 
     data_t to_dt(dt target) {
         data_t res;
@@ -264,6 +266,7 @@ class data_t {
     }
 
     bool operator==(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 == data.data.tensor_int8;
@@ -287,6 +290,7 @@ class data_t {
     }
 
     data_t operator+(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 + data.data.tensor_int8;
@@ -304,6 +308,7 @@ class data_t {
     }
 
     data_t operator-(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 - data.data.tensor_int8;
@@ -321,6 +326,7 @@ class data_t {
     }
 
     data_t operator*(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 * data.data.tensor_int8;
@@ -338,6 +344,7 @@ class data_t {
     }
 
     data_t operator/(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 / data.data.tensor_int8;
@@ -378,6 +385,7 @@ class data_t {
     }
 
     data_t operator+=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 += data.data.tensor_int8;
@@ -401,6 +409,7 @@ class data_t {
     }
 
     data_t operator-=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 -= data.data.tensor_int8;
@@ -424,6 +433,7 @@ class data_t {
     }
 
     data_t operator*=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 *= data.data.tensor_int8;
@@ -447,6 +457,7 @@ class data_t {
     }
 
     data_t operator/=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 /= data.data.tensor_int8;
@@ -470,6 +481,7 @@ class data_t {
     }
 
     bool operator<(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 < data.data.tensor_int8;
@@ -493,6 +505,7 @@ class data_t {
     }
 
     bool operator>(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 > data.data.tensor_int8;
@@ -516,6 +529,7 @@ class data_t {
     }
 
     bool operator!=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 != data.data.tensor_int8;
@@ -539,6 +553,7 @@ class data_t {
     }
 
     bool operator>=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 >= data.data.tensor_int8;
@@ -562,6 +577,7 @@ class data_t {
     }
 
     bool operator<=(data_t data) {
+        data = data.to_dt(dtype);
         switch (dtype) {
             case dt::int8:
                 return this->data.tensor_int8 <= data.data.tensor_int8;
@@ -608,6 +624,5 @@ class data_t {
         return os;
     }
 };
-
 
 }  // namespace ts
