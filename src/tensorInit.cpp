@@ -44,7 +44,7 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
 }
 
 Tensor Tensor::to(dev device) {
-    if (this->device == device) return Tensor(*this);
+
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
         if (this->device == dev::cpu) {
@@ -69,4 +69,9 @@ Tensor Tensor::to(dev device) {
     }
     return Tensor(new_data, this->shape, this->stride, this->dtype, device);
 }
+
+
+Tensor Tensor::cuda() { return this->to(dev::cuda); }
+Tensor Tensor::cpu() { return this->to(dev::cpu); }
+Tensor Tensor::clone() { return this->to(this->device); }
 }  // namespace ts

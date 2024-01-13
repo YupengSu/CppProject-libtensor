@@ -36,8 +36,12 @@ namespace ts
         Tensor(const Storage &i_data, const Size &i_shape, const vector<int> i_stride,
                dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
-        Tensor to(dev device);
 
+        Tensor to(dev device);
+        Tensor cuda();
+        Tensor cpu();
+        Tensor clone();
+        
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
         Tensor operator()(int index, pair<int, int> range);
