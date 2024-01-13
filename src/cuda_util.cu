@@ -14,20 +14,18 @@ namespace ts {
     
     #define checkCudaError(err) checkCudaError(err, __FILE__, __LINE__)
     
-    template <typename data_t>
-    __global__ void addMMKernel(data_t* c, const data_t* a, const data_t* b, int size) {
+    __global__ void addMMKernel(double* c, double* a, double* b, int size) {
         int i = blockIdx.x * blockDim.x + threadIdx.x;
         if (i < size) {
             c[i] = a[i] + b[i];
         }
     }
     
-    template <typename data_t>
-    extern "C" void addMM(data_t* c, const data_t* a, const data_t* b, const int size) {
-        data_t* dev_c;
-        data_t* dev_a;
-        data_t* dev_b;
-        size_t bytes = size * sizeof(data_t);
+    extern void addMM(void* c, void* a, void* b, int size) {
+        double* dev_c;
+        double* dev_a;
+        double* dev_b;
+        size_t bytes = size * sizeof(double);
     
         checkCudaError(cudaMalloc(&dev_c, bytes));
         checkCudaError(cudaMalloc(&dev_a, bytes));

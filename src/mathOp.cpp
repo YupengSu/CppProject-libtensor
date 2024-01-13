@@ -30,7 +30,7 @@ namespace ts
         return true;
     }
 
-    extern "C" void addMM(data_t* c, const data_t* a, const data_t* b, const int size);
+    extern void addMM(void* c, void* a, void* b, int size);
 
     //////////////add operators
 
