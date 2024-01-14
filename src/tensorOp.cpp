@@ -70,6 +70,7 @@ Tensor Tensor::transpose(int dim1, int dim2) {
 }
 
 Tensor Tensor::view(vector<int> shape) {
+    CHECK_TRUE(is_contiguous(), "View only support contiguous Tensor");
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
@@ -506,6 +507,7 @@ Tensor permute(Tensor t, vector<int> dims) {
 }
 
 Tensor view(Tensor t, vector<int> shape) {
+    CHECK_TRUE(t.is_contiguous(), "View only support contiguous Tensor");
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
@@ -566,5 +568,18 @@ size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
         index -= tmp * origin_stride[i];
     }
     return offset;
+}
+
+
+bool Tensor::is_contiguous() {
+    if (this->ndim == 1) {
+        return true;
+    }
+    for (int i = 0; i < this->ndim - 1; i++) {
+        if (this->stride[i] != this->shape[i + 1] * this->stride[i + 1]) {
+            return false;
+        }
+    }
+    return true;
 }
 }  // namespace ts

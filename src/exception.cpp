@@ -43,8 +43,8 @@ void CHECK_SAME_DEVICE(const Tensor& t1, const Tensor& t2) {
 void CHECK_INDEX_VALID(int x, const Tensor& t) {
     CHECK_IN_RANGE(x, 0, t.size(), "Index %zu out of range [0, %zu)", x, t.size());
 }
-}  // namespace st
 
-namespace ts {
+
+
 
 };  // namespace ts

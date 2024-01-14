@@ -43,7 +43,6 @@ namespace ts
         Tensor cpu();
         Tensor clone();
 
-        bool is_contiguous();
         
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
@@ -67,7 +66,6 @@ namespace ts
         size_t get_dim() const;
         size_t size(int i) const;
         vector<data_t> get_serial_data() const;
-        double* double_data() const;
         Tensor slice(int idx, int dim = 0);
         Tensor permute(vector<int> dims);
         Tensor transpose(int dim1, int dim2);
@@ -75,6 +73,7 @@ namespace ts
         void *data_ptr();
         size_t size() const;
         string type() const;
+        bool is_contiguous();
 
 
         Tensor operator+(const Tensor &other);
