@@ -5,10 +5,10 @@
 
 #include "base_tensor.hpp"
 #include "config.hpp"
+#include "cuda_util.cuh"
 #include "exception"
 #include "exception.hpp"
 #include "serial_tensor.hpp"
-#include "cuda_util.cuh"
 
 using namespace std;
 
@@ -238,8 +238,10 @@ vector<data_t> Tensor::get_serial_data() const {
     vector<data_t> data(this->shape.data_len());
     if (this->device == dev::cuda) {
         void *tmp;
-        c_cudaMalloc(&tmp, this->shape.data_len() * sizeof(data_t));
+        c_cudaMalloc(&tmp, this->data.size * sizeof(data_t));
         get_serial_tensor_kernel(tmp, *this);
+        cerr << this->data.size << endl;
+        cerr << "Error Occurs Here" << endl;
         c_cudaMemcpy(data.data(), tmp, this->data.size * sizeof(data_t),
                      c_cudaMemcpyDeviceToHost);
         c_cudaFree(tmp);

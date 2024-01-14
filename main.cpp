@@ -32,8 +32,8 @@ int main() {
     // t1 = t1.to(dev::cuda);
     // t2 = t2.to(dev::cuda);
 
-    Tensor t1 = rand({{55, 55}}, dt::float32);
-    Tensor t2 = rand({{55, 55}}, dt::float32);
+    Tensor t1 = rand({{5, 5}}, dt::float32);
+    Tensor t2 = rand({{5, 5}}, dt::float32);
 
     t1 = t1.to(dev::cuda);
     t2 = t2.to(dev::cuda);

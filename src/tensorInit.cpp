@@ -52,7 +52,6 @@ Tensor Tensor::to(dev device) {
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
         // if (this->device == dev::cpu) {
-    cerr << device << endl;
             memcpy(new_data.dp, this->get_serial_data().data(),
                    this->size() * sizeof(data_t));
 
