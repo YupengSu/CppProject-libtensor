@@ -15,8 +15,10 @@ Tensor::Tensor() {
     this->ndim = 0;
     this->shape = Size(0);
     this->stride.reserve(0);
+    this->origin_stride.reserve(0);
     this->offset = 0;
-}
+    this->dtype = DEFAULT_DTYPE;
+}   
 Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
                dt dtype, dev device) {
     if (i_shape.size() == 0) {
@@ -27,11 +29,12 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
         this->shape = Size(i_shape);
     }
 
-    this->data = Storage(i_data.data(), this->shape.size(), dtype, device);
+    this->data = Storage(i_data.data(), this->shape.data_len(), dtype, device);
     this->dtype = dtype;
     this->device = device;
     this->offset = 0;
     this->stride = init_stride(this->shape.shape);
+    this->origin_stride= vector<int>(this->stride);
 }
 
 Tensor::Tensor(const Storage &i_data, const Size &i_shape,
@@ -41,28 +44,32 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
     this->ndim = i_shape.ndim;
     this->dtype = dtype;
     this->device = device;
+    this->origin_stride = vector<int>(this->stride);
+    this->offset = 0;
 }
 
 Tensor Tensor::to(dev device) {
-
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
-        if (this->device == dev::cpu) {
-            memcpy(new_data.dp, this->get_data().data(),
+        // if (this->device == dev::cpu) {
+    cerr << device << endl;
+            memcpy(new_data.dp, this->get_serial_data().data(),
                    this->size() * sizeof(data_t));
-        } else {
-            c_cudaMemcpy(new_data.dp, this->data_ptr(),
-                         this->size() * sizeof(data_t),
-                         c_cudaMemcpyDefault);
-        }
+
+        // } else {
+        //     memcpy(new_data.dp, this->get_serial_data().data(),
+        //                  this->size() * sizeof(data_t),
+        //                  c_cudaMemcpyDefault);
+        // }
 
     } else {
         if (this->device == dev::cuda) {
-            c_cudaMemcpy(new_data.dp, this->get_data().data(),
+            c_cudaMemcpy(new_data.dp, this->get_serial_data().data(),
                          this->data.size * sizeof(data_t),
                          c_cudaMemcpyDeviceToDevice);
         } else {
-            c_cudaMemcpy(new_data.dp, this->get_data().data(),
+            
+            c_cudaMemcpy(new_data.dp, this->get_serial_data().data(),
                          this->data.size * sizeof(data_t),
                          c_cudaMemcpyHostToDevice);
         }

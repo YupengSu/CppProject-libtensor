@@ -32,6 +32,6 @@ class Size {
     Size(const Size &sz);
     size_t size(int i) const;
 
-    size_t size() const;
+    size_t data_len() const;
 };
 }  // namespace ts

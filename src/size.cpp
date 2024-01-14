@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <vector>
+#include "exception.hpp"
 using namespace std;
 
 namespace ts {
@@ -89,7 +90,7 @@ size_t Size::size(int i) const {
     return shape[i];
 }
 
-size_t Size::size() const {
+size_t Size::data_len() const {
     size_t sz = 1;
     for (int i = 0; i < ndim; i++) {
         sz *= shape[i];

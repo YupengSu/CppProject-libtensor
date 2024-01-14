@@ -8,6 +8,7 @@
 #include "exception"
 #include "exception.hpp"
 #include "serial_tensor.hpp"
+#include "cuda_util.cuh"
 
 using namespace std;
 
@@ -34,7 +35,6 @@ Tensor Tensor::slice(int idx, int dim) {
         new_stride[i] = stride[i + 1];
     }
     Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype, device);
-
     return nt;
 }
 
@@ -47,7 +47,7 @@ Tensor Tensor::permute(vector<int> dims) {
         new_shape[i] = shape[dims[i]];
         new_stride[i] = stride[dims[i]];
     }
-    Storage new_data = Storage(data, offset);
+    Storage new_data = Storage(data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
@@ -64,7 +64,7 @@ Tensor Tensor::transpose(int dim1, int dim2) {
     vector<int> new_stride = stride;
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
-    Storage new_data = Storage(data, offset);
+    Storage new_data = Storage(data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
@@ -73,9 +73,9 @@ Tensor Tensor::view(vector<int> shape) {
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
     }
-    CHECK_EQUAL(size, this->shape.size(), "Tensor size mismatch: %d vs %zu",
-                size, this->shape.size());
-    Storage new_data = Storage(data, offset);
+    CHECK_EQUAL(size, this->shape.data_len(), "Tensor size mismatch: %d vs %zu",
+                size, this->shape.data_len());
+    Storage new_data = Storage(data, 0);
     vector<int> new_stride = init_stride(shape);
     return Tensor(new_data, Size(shape), new_stride, dtype, device);
 }
@@ -145,23 +145,23 @@ data_t Tensor::operator[](vector<size_t> inds) const {
 }
 
 data_t &Tensor::operator[](size_t idx) {
-    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
-                idx, this->size());
-    size_t offset = get_data_idx(idx, this->shape.shape, this->stride);
+    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+                   this->size());
+    size_t offset =
+        get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
     return data[offset];
 }
 
 data_t Tensor::operator[](size_t idx) const {
-    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
-                idx, this->size());
-    size_t offset = get_data_idx(idx, this->shape.shape, this->stride);
+    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+                   this->size());
+    size_t offset =
+        get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
     return data[offset];
 }
 
-
-
 Tensor &Tensor::operator=(BaseTensor<> bt) {
-    vector<data_t> nt(bt.shape.size());
+    vector<data_t> nt(bt.shape.data_len());
     int i = 0;
     for (auto a : bt.get_data()) {
         nt[i++] = a;
@@ -174,7 +174,7 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
         CHECK_EQUAL(shape[i], t.shape[i], "Tensor shape mismatch: %d vs %d",
                     shape[i], t.shape[i]);
     }
-    for (int i = 0; i < shape.size(); i++) {
+    for (int i = 0; i < shape.data_len(); i++) {
         data[i] = t.data[i];
     }
     return *this;
@@ -197,7 +197,7 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
-size_t Tensor::size() const { return this->shape.size(); }
+size_t Tensor::size() const { return this->shape.data_len(); }
 
 void *Tensor::data_ptr() { return (void *)data.bp.get(); }
 string Tensor::type() const {
@@ -223,14 +223,37 @@ int Tensor::get_size(vector<int> shape) {
     }
     return size;
 }
-vector<data_t> Tensor::get_data() const {
-    vector<data_t> data(this->shape.size());
-    for (int i = 0; i < this->shape.size(); i++) {
-        data[i] = this->data[i];
+// vector<data_t> Tensor::get_serial_data() const {
+//     vector<data_t> data(this->shape.data_len());
+//     for (int i = 0; i < this->shape.data_len(); i++) {
+//         size_t offset = get_data_idx(
+//             i, this->shape.shape, this->stride, this->origin_stride);
+//         data[i] = this->data[offset];
+//         offset += this->stride[i];
+//     }
+//     return data;
+// }
+
+vector<data_t> Tensor::get_serial_data() const {
+    vector<data_t> data(this->shape.data_len());
+    if (this->device == dev::cuda) {
+        void *tmp;
+        c_cudaMalloc(&tmp, this->shape.data_len() * sizeof(data_t));
+        get_serial_tensor_kernel(tmp, *this);
+        c_cudaMemcpy(data.data(), tmp, this->data.size * sizeof(data_t),
+                     c_cudaMemcpyDeviceToHost);
+        c_cudaFree(tmp);
+
+    } else {
+        for (int i = 0; i < this->shape.data_len(); i++) {
+            size_t offset = get_data_idx(i, this->shape.shape, this->stride,
+                                         this->origin_stride);
+            data[i] = this->data[offset];
+            offset += this->stride[i];
+        }
     }
     return data;
 }
-
 
 vector<int> init_stride(vector<int> shape) {
     vector<int> stride(shape.size());
@@ -243,7 +266,7 @@ vector<int> init_stride(vector<int> shape) {
 }
 
 Tensor tensor(BaseTensor<> bt, dt dtype) {
-    vector<data_t> nt(bt.shape.size());
+    vector<data_t> nt(bt.shape.data_len());
     int i = 0;
     for (auto a : bt.get_data()) {
         nt[i].set_dtype(dtype);
@@ -252,8 +275,8 @@ Tensor tensor(BaseTensor<> bt, dt dtype) {
     return Tensor(nt, bt.shape.shape, dtype);
 }
 Tensor rand(Size sz, dt dtype) {
-    vector<data_t> data(sz.size());
-    for (int i = 0; i < sz.size(); i++) {
+    vector<data_t> data(sz.data_len());
+    for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         switch (dtype) {
             case dt::float32:
@@ -276,34 +299,34 @@ Tensor rand(Size sz, dt dtype) {
                 throw std::invalid_argument("Invalid dtype");
         }
     }
-    Storage st(data.data(), sz.size(), dtype);
+    Storage st(data.data(), sz.data_len(), dtype);
     return Tensor(data, sz.shape, dtype);
 }
 Tensor zeros(Size sz, dt dtype) {
-    vector<data_t> data(sz.size());
-    for (int i = 0; i < sz.size(); i++) {
+    vector<data_t> data(sz.data_len());
+    for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = 0;
     }
-    Storage st(data.data(), sz.size(), dtype);
+    Storage st(data.data(), sz.data_len(), dtype);
     return Tensor(data, sz.shape, dtype);
 }
 Tensor ones(Size sz, dt dtype) {
-    vector<data_t> data(sz.size());
-    for (int i = 0; i < sz.size(); i++) {
+    vector<data_t> data(sz.data_len());
+    for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = 1;
     }
-    Storage st(data.data(), sz.size(), dtype);
+    Storage st(data.data(), sz.data_len(), dtype);
     return Tensor(data, sz.shape, dtype);
 }
 Tensor full(Size sz, data_t val, dt dtype) {
-    vector<data_t> data(sz.size());
-    for (int i = 0; i < sz.size(); i++) {
+    vector<data_t> data(sz.data_len());
+    for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = val;
     }
-    Storage st(data.data(), sz.size(), dtype);
+    Storage st(data.data(), sz.data_len(), dtype);
     return Tensor(data, sz.shape, dtype);
 }
 Tensor eye(Size sz, dt dtype) {
@@ -317,16 +340,16 @@ Tensor eye(Size sz, dt dtype) {
     } else if (sz.ndim == 1) {
         sz = Size({sz.shape[0], sz.shape[0]});
     }
-    vector<data_t> data(sz.size());
-    for (int i = 0; i < sz.size(); i++) {
+    vector<data_t> data(sz.data_len());
+    for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = 0;
     }
-    for (int i = 0; i < sz.size(); i += sz.shape[1] + 1) {
+    for (int i = 0; i < sz.data_len(); i += sz.shape[1] + 1) {
         data[i].set_dtype(dtype);
         data[i] = 1;
     }
-    Storage st(data.data(), sz.size(), dtype);
+    Storage st(data.data(), sz.data_len(), dtype);
     return Tensor(data, sz.shape, dtype);
 }
 size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
@@ -370,7 +393,7 @@ Tensor cat(vector<Tensor> tensors, int dim) {
                         "Tensor shape mismatch: %d vs %d", first.shape[j],
                         tensors[i].shape[j]);
         }
-        total_size += tensors[i].shape.size();
+        total_size += tensors[i].shape.data_len();
     }
 
     vector<data_t> data(total_size);
@@ -378,7 +401,7 @@ Tensor cat(vector<Tensor> tensors, int dim) {
     for (int i = 0; i < tensors.size(); i++) {
         size_t target_offset = 0;
         size_t self_offset = 0;
-        vector<data_t> tensor_data = tensors[i].get_data();
+        vector<data_t> tensor_data = tensors[i].get_serial_data();
         while (target_offset < total_size) {
             copy(tensor_data.data() + self_offset,
                  tensor_data.data() + step_sizes[i] + self_offset,
@@ -428,7 +451,7 @@ Tensor transpose(Tensor t, int dim1, int dim2) {
     vector<int> new_stride = t.stride;
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
-    Storage new_data = Storage(t.data, t.offset);
+    Storage new_data = Storage(t.data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 Tensor permute(Tensor t, vector<int> dims) {
@@ -440,7 +463,7 @@ Tensor permute(Tensor t, vector<int> dims) {
         new_shape[i] = t.shape[dims[i]];
         new_stride[i] = t.stride[dims[i]];
     }
-    Storage new_data = Storage(t.data, t.offset);
+    Storage new_data = Storage(t.data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 
@@ -449,9 +472,9 @@ Tensor view(Tensor t, vector<int> shape) {
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
     }
-    CHECK_EQUAL(size, t.shape.size(), "Tensor size mismatch: %d vs %zu", size,
-                t.shape.size());
-    Storage new_data = Storage(t.data, t.offset);
+    CHECK_EQUAL(size, t.shape.data_len(), "Tensor size mismatch: %d vs %zu",
+                size, t.shape.data_len());
+    Storage new_data = Storage(t.data, 0);
     vector<int> new_stride = init_stride(shape);
     return Tensor(new_data, shape, new_stride, t.dtype, t.device);
 }
@@ -460,8 +483,8 @@ Tensor view(Tensor t, vector<int> shape) {
 void save(Tensor t, string filename) {
     ofstream file(filename);
     if (file.is_open()) {
-        file << t.shape.size() << endl;
-        for (size_t i = 0; i < t.shape.size(); ++i) {
+        file << t.shape.data_len() << endl;
+        for (size_t i = 0; i < t.shape.data_len(); ++i) {
             file << t.shape[i] << endl;
             for (size_t j = 0; j < t.shape[i]; ++j) {
                 file << t.data[i * t.shape[i] + j] << endl;
@@ -495,10 +518,14 @@ Tensor load(string filename) {
     }
 }
 
-size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride) {
+size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
+                    vector<int> origin_stride) {
     size_t offset = 0;
-    for (int i = 0; i < shape.size(); i++) {
-        offset += index / stride[i] % shape[i] * stride[i];
+    size_t tmp = 0;
+    for (int i = 0; i < shape_v.size(); i++) {
+        tmp = index / origin_stride[i];
+        offset += tmp * stride[i];
+        index -= tmp * origin_stride[i];
     }
     return offset;
 }

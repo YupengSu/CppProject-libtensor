@@ -10,7 +10,6 @@
 #include "storage.hpp"
 #include "config.hpp"
 #include "data_type.cuh"
-#include "exception.hpp"
 
 using namespace std;
 
@@ -20,10 +19,11 @@ namespace ts
     {
     public:
         Storage data;
-        int ndim;
+        int ndim=0;
         Size shape;
         vector<int> stride;
-        size_t offset;
+        vector<int> origin_stride;
+        size_t offset=0;
         dt dtype;
         dev device;
         Tensor();
@@ -41,6 +41,8 @@ namespace ts
         Tensor cuda();
         Tensor cpu();
         Tensor clone();
+
+        bool is_contiguous();
         
         friend ostream &operator<<(ostream &os, Tensor t);
         Tensor operator()(int index);
@@ -60,7 +62,7 @@ namespace ts
 
         size_t get_dim() const;
         size_t size(int i) const;
-        vector<data_t> get_data() const;
+        vector<data_t> get_serial_data() const;
         double* double_data() const;
         Tensor slice(int idx, int dim = 0);
         Tensor permute(vector<int> dims);
@@ -158,6 +160,6 @@ namespace ts
     void save(Tensor t, string filename);
     Tensor load(string filename);
     
-    static size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride);
+    static size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride, vector<int> origin_stride);
 
 } // namespace ts

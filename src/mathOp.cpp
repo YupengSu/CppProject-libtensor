@@ -11,43 +11,42 @@
 #include "data_type.cuh"
 #include "serial_tensor.hpp"
 #include "storage.hpp"
+#include "exception.hpp"
 
 namespace ts {
-bool CHECK_SAME_SHAPE(Tensor t1, Tensor t2, string msg) {
-    if (t1.shape != t2.shape) {
-        throw runtime_error(msg);
-    }
-    return true;
-}
+// bool CHECK_SAME_SHAPE(Tensor t1, Tensor t2, string msg) {
+//     CHECK_EXP_SAME_SHAPE(t1, t2);
+// }
 
-bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg) {
-    if (t1.device != t2.device) {
-        throw runtime_error(msg);
-    }
-    return true;
-}
+// bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg) {
+//     if (t1.device != t2.device) {
+//         throw runtime_error(msg);
+//     }
+//     return true;
+// }
 
 // extern void addMM(void *c, void *a, void *b, int size);
 
 //////////////add operators
 
 Tensor add(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
-    CHECK_SAME_DEVICE(t1, t2, "Tensor devices do not match");
-    int size = t1.data.size;
+    CHECK_SAME_SHAPE(t1, t2);
+    CHECK_SAME_DEVICE(t1, t2);
+    int size = t1.size();
     Storage new_data = Storage(size, t1.device);
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
-            new_data[i] = t1.data[i] + t2.data[i];
+            new_data[i] = t1[i] + t2[i];
             new_data[i].set_dtype(t1.dtype);
         }
+
     } else {
         data_t *add1 = t1.data.dp;
         data_t *add2 = t2.data.dp;
         addKernel(new_data.dp, t1, t2, size);
     }
-    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape),
                   t1.dtype, t1.device);
 }
 
@@ -78,7 +77,7 @@ Tensor Tensor::operator+(const data_t other) { return ts::add(*this, other); }
 
 //////////////////sub operators
 Tensor sub(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
     for (int i = 0; i < size; i++) {
@@ -97,7 +96,7 @@ Tensor sub(const Tensor t1, data_t t2) {
 }
 
 Tensor Tensor::sub(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -107,7 +106,7 @@ Tensor Tensor::sub(const Tensor &other) {
 }
 
 Tensor Tensor::operator-(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -128,7 +127,7 @@ Tensor Tensor::sub(data_t other) {
 ////////////////mul operators
 
 Tensor mul(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
     for (int i = 0; i < size; i++) {
@@ -147,7 +146,7 @@ Tensor mul(const Tensor t1, data_t t2) {
 }
 
 Tensor Tensor::operator*(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -157,7 +156,7 @@ Tensor Tensor::operator*(const Tensor &other) {
 }
 
 Tensor Tensor::mul(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -178,7 +177,7 @@ Tensor Tensor::mul(data_t other) {
 ////////////////////////div operators
 
 Tensor div(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
     for (int i = 0; i < size; i++) {
@@ -198,7 +197,7 @@ Tensor div(const Tensor t1, data_t t2) {
 }
 
 Tensor Tensor::div(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -211,7 +210,7 @@ Tensor Tensor::div(const Tensor &other) {
 }
 
 Tensor Tensor::operator/(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
     for (int i = 0; i < size; i++) {
@@ -465,7 +464,7 @@ Tensor Tensor::min(int dim) {
 ///////////////comparison
 
 Tensor eq(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -480,7 +479,7 @@ Tensor eq(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::eq(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -495,7 +494,7 @@ Tensor Tensor::eq(const Tensor &other) {
 }
 
 Tensor Tensor::operator==(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -511,7 +510,7 @@ Tensor Tensor::operator==(const Tensor &other) {
 
 // ne
 Tensor ne(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -526,7 +525,7 @@ Tensor ne(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::ne(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -541,7 +540,7 @@ Tensor Tensor::ne(const Tensor &other) {
 }
 
 Tensor Tensor::operator!=(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -557,7 +556,7 @@ Tensor Tensor::operator!=(const Tensor &other) {
 
 // gt
 Tensor gt(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -572,7 +571,7 @@ Tensor gt(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::gt(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -587,7 +586,7 @@ Tensor Tensor::gt(const Tensor &other) {
 }
 
 Tensor Tensor::operator>(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -603,7 +602,7 @@ Tensor Tensor::operator>(const Tensor &other) {
 
 // ge
 Tensor ge(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -618,7 +617,7 @@ Tensor ge(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::ge(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -633,7 +632,7 @@ Tensor Tensor::ge(const Tensor &other) {
 }
 
 Tensor Tensor::operator>=(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -649,7 +648,7 @@ Tensor Tensor::operator>=(const Tensor &other) {
 
 // lt
 Tensor lt(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -664,7 +663,7 @@ Tensor lt(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::lt(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -679,7 +678,7 @@ Tensor Tensor::lt(const Tensor &other) {
 }
 
 Tensor Tensor::operator<(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -695,7 +694,7 @@ Tensor Tensor::operator<(const Tensor &other) {
 
 // le
 Tensor le(const Tensor t1, const Tensor t2) {
-    CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(t1.data.size);
     int size = t1.data.size;
@@ -710,7 +709,7 @@ Tensor le(const Tensor t1, const Tensor t2) {
 }
 
 Tensor Tensor::le(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -725,7 +724,7 @@ Tensor Tensor::le(const Tensor &other) {
 }
 
 Tensor Tensor::operator<=(const Tensor &other) {
-    CHECK_SAME_SHAPE(*this, other, "Tensor shapes do not match");
+    CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
     vector<data_t> data(this->data.size);
     int size = this->data.size;
@@ -758,11 +757,11 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         const Tensor &t1 = tensors[0];
         const Tensor &t2 = tensors[1];
 
-        CHECK_SAME_SHAPE(t1, t2, "Tensor shapes do not match for dot product");
+        CHECK_SAME_SHAPE(t1, t2);
         const Size &shape = t1.shape;
         vector<data_t> data(1);
         // data_t dot_product;
-        for (size_t i = 0; i < shape.size(); ++i) {
+        for (size_t i = 0; i < shape.data_len(); ++i) {
             data[0] += t1.data[i] * t2.data[i];
             cout << "data1 " << t1.data[i] << " data2 " << t2.data[i] << endl;
         }
@@ -776,8 +775,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         }
         const Tensor &t1 = tensors[0];
         const Tensor &t2 = tensors[1];
-        CHECK_SAME_SHAPE(t1, t2,
-                         "Tensor shapes do not match for outer product");
+        CHECK_SAME_SHAPE(t1, t2);
         vector<data_t> data(t1.data.size);
         for (size_t i = 0; i < t1.data.size; ++i) {
             data[i] = t1.data[i] * t2.data[i];

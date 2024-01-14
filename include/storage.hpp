@@ -29,7 +29,7 @@ class Storage {
 
    public:
     data_t* dp;
-    size_t size;
+    size_t size=0;
     shared_ptr<data_t> bp;
     dt dtype;
 
