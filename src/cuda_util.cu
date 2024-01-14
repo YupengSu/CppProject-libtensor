@@ -197,9 +197,12 @@ __global__ void get_serial_tensorMM(void* dst, void* src, size_t size, const  in
 
 }
 
-extern void get_serial_tensor_kernel(void* dst, Tensor a) {
+extern void get_serial_tensor_kernel(void* dst, const Tensor a) {
+    cerr << "get_serial_tensor_kernel" << endl;
+
     data_t *dev_dst = (data_t*)dst;
     data_t *dev_src = (data_t*)a.data.dp;
+    cerr << a.shape;
     int* shape;
     int* stride;
     int* origin_stride;
@@ -221,8 +224,16 @@ extern void get_serial_tensor_kernel(void* dst, Tensor a) {
     size_t threadsPerBlock = THREAD_PER_BLOCK;
     size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
     get_serial_tensorMM<<<blocksPerGrid, threadsPerBlock>>>(dev_dst, dev_src, size, shape, stride, origin_stride, a.get_dim());
+
     checkCudaError(cudaGetLastError());
     checkCudaError(cudaDeviceSynchronize());
+
+    checkCudaError(cudaFree(shape));
+    checkCudaError(cudaFree(stride));
+    checkCudaError(cudaFree(origin_stride));
+
+    cerr << "get_serial_tensor_kernel Done" << endl;
+
 }
 
 extern void c_get_data_t(data_t& dst, void* ptr) {

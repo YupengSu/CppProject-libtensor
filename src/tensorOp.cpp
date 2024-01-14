@@ -238,7 +238,9 @@ vector<data_t> Tensor::get_serial_data() const {
     vector<data_t> data(this->shape.data_len());
     if (this->device == dev::cuda) {
         void *tmp;
+        cerr << "Mallocing " << this->data.size << endl;
         c_cudaMalloc(&tmp, this->data.size * sizeof(data_t));
+        cerr << "Malloced TMP" << endl;
         get_serial_tensor_kernel(tmp, *this);
         cerr << this->data.size << endl;
         cerr << "Error Occurs Here" << endl;

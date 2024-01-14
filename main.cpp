@@ -40,8 +40,14 @@ int main() {
     cout << "====================="<< "Testing on " << t1.device << "=====================" << endl;
 
     start = clock();
-    Tensor t3 =(t1 + t2);
+    Tensor t3 = (t1 + t2);
     cerr << "Slice: ";
+    // cerr << t3;
+    cerr << t3.device;
+    cout << t3.slice(0) << endl;
+    cerr << t3;
+    cout << t3.slice(0) << endl;
+    cerr << t3;
     cout << t3.slice(0) << endl;
 
     end_time = clock();
