@@ -41,11 +41,8 @@ int main() {
 
     start = clock();
     Tensor t3 = (t1 + t2);
-    cout << t3.slice(0) << endl;
-    cerr << t3;
-    cout << t3.slice(0) << endl;
-    cerr << t3;
-    cout << t3.slice(0) << endl;
+    t3 = 5;
+    cout << t3 << endl;
 
     end_time = clock();
     endtime = (double)(end_time - start) / CLOCKS_PER_SEC;

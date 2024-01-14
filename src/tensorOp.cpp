@@ -6,6 +6,7 @@
 #include "base_tensor.hpp"
 #include "config.hpp"
 #include "cuda_util.cuh"
+#include "data_type.cuh"
 #include "exception"
 #include "exception.hpp"
 #include "serial_tensor.hpp"
@@ -179,21 +180,57 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
     }
     return *this;
 }
-// Tensor &Tensor::operator=(BaseTensor<> bt)
-// {
-//     CHECK_EQUAL(ndim, bt.dim, "Tensor dimension mismatch: %d vs %d", ndim,
-//                 bt.dim);
-//     for (int i = 0; i < ndim; i++)
-//     {
-//         CHECK_EQUAL(shape[i], bt.shape[i], "Tensor shape mismatch: %d vs %d",
-//                     shape[i], bt.shape[i]);
-//     }
-//     for (int i = 0; i < shape.size(); i++)
-//     {
-//         data[i] = bt.data[i];
-//     }
-//     return *this;
-// }
+
+Tensor &Tensor::operator=(int val) {
+    for (int i = 0; i < this->size(); i++) {
+        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
+                                  this->origin_stride);
+        if (this->device == dev::cpu) {
+            this->data.dp[idx] = val;
+        } else {
+            data_t tmp;
+            tmp.set_dtype(this->dtype);
+            tmp = val;
+            c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
+                         c_cudaMemcpyHostToDevice);
+        }
+    }
+    return *this;
+}
+
+Tensor &Tensor::operator=(double val) {
+    for (int i = 0; i < this->size(); i++) {
+        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
+                                  this->origin_stride);
+        if (this->device == dev::cpu) {
+            this->data.dp[idx] = val;
+        } else {
+            data_t tmp;
+            tmp.set_dtype(this->dtype);
+            tmp = val;
+            c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
+                         c_cudaMemcpyHostToDevice);
+        }
+    }
+    return *this;
+}
+
+Tensor &Tensor::operator=(bool val) {
+    for (int i = 0; i < this->size(); i++) {
+        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
+                                  this->origin_stride);
+        if (this->device == dev::cpu) {
+            this->data.dp[idx] = val;
+        } else {
+            data_t tmp;
+            tmp.set_dtype(this->dtype);
+            tmp = val;
+            c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
+                         c_cudaMemcpyHostToDevice);
+        }
+    }
+    return *this;
+}
 
 size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
@@ -240,7 +277,8 @@ vector<data_t> Tensor::get_serial_data() const {
         void *tmp;
         c_cudaMalloc(&tmp, this->shape.data_len() * sizeof(data_t));
         get_serial_tensor_kernel(tmp, *this);
-        c_cudaMemcpy(new_data.data(), tmp, this->shape.data_len() * sizeof(data_t),
+        c_cudaMemcpy(new_data.data(), tmp,
+                     this->shape.data_len() * sizeof(data_t),
                      c_cudaMemcpyDeviceToHost);
         c_cudaFree(tmp);
 

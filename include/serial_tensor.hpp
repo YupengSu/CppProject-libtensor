@@ -15,6 +15,7 @@ using namespace std;
 
 namespace ts
 {
+    size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride, vector<int> origin_stride);
     class Tensor
     {
     public:
@@ -58,6 +59,9 @@ namespace ts
         data_t operator[](size_t inds) const;
         
         Tensor &operator=(BaseTensor<> bt);
+        Tensor &operator=(int val);
+        Tensor &operator=(double val);
+        Tensor &operator=(bool val);
         // Tensor &operator=(Tensor bt);
 
         size_t get_dim() const;
@@ -160,6 +164,5 @@ namespace ts
     void save(Tensor t, string filename);
     Tensor load(string filename);
     
-    static size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride, vector<int> origin_stride);
 
 } // namespace ts
