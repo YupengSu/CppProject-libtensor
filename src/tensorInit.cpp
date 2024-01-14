@@ -51,18 +51,17 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
 Tensor Tensor::to(dev device) {
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
-
             memcpy(new_data.dp, this->get_serial_data().data(),
                    this->size() * sizeof(data_t));
 
     } else {
         if (this->device == dev::cuda) {
             c_cudaMemcpy(new_data.dp, this->get_serial_data().data(),
-                         this->data.size * sizeof(data_t),
+                         this->shape.data_len() * sizeof(data_t),
                          c_cudaMemcpyDeviceToDevice);
         } else {
             c_cudaMemcpy(new_data.dp, this->get_serial_data().data(),
-                         this->data.size * sizeof(data_t),
+                         this->shape.data_len() * sizeof(data_t),
                          c_cudaMemcpyHostToDevice);
         }
     }

@@ -235,16 +235,12 @@ int Tensor::get_size(vector<int> shape) {
 // }
 
 vector<data_t> Tensor::get_serial_data() const {
-    vector<data_t> data(this->shape.data_len());
+    vector<data_t> new_data(this->shape.data_len());
     if (this->device == dev::cuda) {
         void *tmp;
-        cerr << "Mallocing " << this->data.size << endl;
-        c_cudaMalloc(&tmp, this->data.size * sizeof(data_t));
-        cerr << "Malloced TMP" << endl;
+        c_cudaMalloc(&tmp, this->shape.data_len() * sizeof(data_t));
         get_serial_tensor_kernel(tmp, *this);
-        cerr << this->data.size << endl;
-        cerr << "Error Occurs Here" << endl;
-        c_cudaMemcpy(data.data(), tmp, this->data.size * sizeof(data_t),
+        c_cudaMemcpy(new_data.data(), tmp, this->shape.data_len() * sizeof(data_t),
                      c_cudaMemcpyDeviceToHost);
         c_cudaFree(tmp);
 
@@ -252,11 +248,11 @@ vector<data_t> Tensor::get_serial_data() const {
         for (int i = 0; i < this->shape.data_len(); i++) {
             size_t offset = get_data_idx(i, this->shape.shape, this->stride,
                                          this->origin_stride);
-            data[i] = this->data[offset];
+            new_data[i] = this->data[offset];
             offset += this->stride[i];
         }
     }
-    return data;
+    return new_data;
 }
 
 vector<int> init_stride(vector<int> shape) {

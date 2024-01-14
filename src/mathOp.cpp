@@ -51,7 +51,7 @@ Tensor add(const Tensor t1, const Tensor t2) {
 }
 
 Tensor add(const Tensor t1, data_t t2) {
-    int size = t1.data.size;
+    int size = t1.shape.data_len();
     Storage new_data = Storage(size, t1.device);
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
@@ -78,8 +78,8 @@ Tensor Tensor::operator+(const data_t other) { return ts::add(*this, other); }
 //////////////////sub operators
 Tensor sub(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] - t2.data[i];
     }
@@ -87,8 +87,8 @@ Tensor sub(const Tensor t1, const Tensor t2) {
 }
 
 Tensor sub(const Tensor t1, data_t t2) {
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] - t2;
     }
@@ -97,8 +97,8 @@ Tensor sub(const Tensor t1, data_t t2) {
 
 Tensor Tensor::sub(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] - other.data[i];
     }
@@ -107,8 +107,8 @@ Tensor Tensor::sub(const Tensor &other) {
 
 Tensor Tensor::operator-(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] - other.data[i];
     }
@@ -116,8 +116,8 @@ Tensor Tensor::operator-(const Tensor &other) {
 }
 
 Tensor Tensor::sub(data_t other) {
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] - other;
     }
@@ -128,8 +128,8 @@ Tensor Tensor::sub(data_t other) {
 
 Tensor mul(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] * t2.data[i];
     }
@@ -137,8 +137,8 @@ Tensor mul(const Tensor t1, const Tensor t2) {
 }
 
 Tensor mul(const Tensor t1, data_t t2) {
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] * t2;
     }
@@ -147,8 +147,8 @@ Tensor mul(const Tensor t1, data_t t2) {
 
 Tensor Tensor::operator*(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] * other.data[i];
     }
@@ -157,8 +157,8 @@ Tensor Tensor::operator*(const Tensor &other) {
 
 Tensor Tensor::mul(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] * other.data[i];
     }
@@ -166,8 +166,8 @@ Tensor Tensor::mul(const Tensor &other) {
 }
 
 Tensor Tensor::mul(data_t other) {
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] * other;
     }
@@ -178,8 +178,8 @@ Tensor Tensor::mul(data_t other) {
 
 Tensor div(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] / t2.data[i];
     }
@@ -188,8 +188,8 @@ Tensor div(const Tensor t1, const Tensor t2) {
 
 Tensor div(const Tensor t1, data_t t2) {
     if (t2 == 0) throw runtime_error("Division by zero");
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = t1.data[i] / t2;
     }
@@ -198,8 +198,8 @@ Tensor div(const Tensor t1, data_t t2) {
 
 Tensor Tensor::div(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (other.data[i] == 0) {
             throw runtime_error("Division by zero");
@@ -211,8 +211,8 @@ Tensor Tensor::div(const Tensor &other) {
 
 Tensor Tensor::operator/(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (other.data[i] == 0) {
             throw runtime_error("Division by zero");
@@ -224,8 +224,8 @@ Tensor Tensor::operator/(const Tensor &other) {
 
 Tensor Tensor::div(data_t other) {
     if (other == 0) throw runtime_error("Division by zero");
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = this->data[i] / other;
     }
@@ -235,8 +235,8 @@ Tensor Tensor::div(data_t other) {
 ///////////log operators
 
 Tensor log(const Tensor t) {
-    vector<data_t> data(t.data.size);
-    int size = t.data.size;
+    vector<data_t> data(t.shape.data_len());
+    int size = t.shape.data_len();
     for (int i = 0; i < size; i++) {
         data[i] = std::log((float)t.data[i]);
     }
@@ -466,8 +466,8 @@ Tensor Tensor::min(int dim) {
 Tensor eq(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] == t2.data[i]) {
             data[i] = true;
@@ -481,8 +481,8 @@ Tensor eq(const Tensor t1, const Tensor t2) {
 Tensor Tensor::eq(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] == other.data[i]) {
             data[i] = true;
@@ -496,8 +496,8 @@ Tensor Tensor::eq(const Tensor &other) {
 Tensor Tensor::operator==(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] == other.data[i]) {
             data[i] = true;
@@ -512,8 +512,8 @@ Tensor Tensor::operator==(const Tensor &other) {
 Tensor ne(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] != t2.data[i]) {
             data[i] = true;
@@ -527,8 +527,8 @@ Tensor ne(const Tensor t1, const Tensor t2) {
 Tensor Tensor::ne(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] != other.data[i]) {
             data[i] = true;
@@ -542,8 +542,8 @@ Tensor Tensor::ne(const Tensor &other) {
 Tensor Tensor::operator!=(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] != other.data[i]) {
             data[i] = true;
@@ -558,8 +558,8 @@ Tensor Tensor::operator!=(const Tensor &other) {
 Tensor gt(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] > t2.data[i]) {
             data[i] = true;
@@ -573,8 +573,8 @@ Tensor gt(const Tensor t1, const Tensor t2) {
 Tensor Tensor::gt(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] > other.data[i]) {
             data[i] = true;
@@ -588,8 +588,8 @@ Tensor Tensor::gt(const Tensor &other) {
 Tensor Tensor::operator>(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] > other.data[i]) {
             data[i] = true;
@@ -604,8 +604,8 @@ Tensor Tensor::operator>(const Tensor &other) {
 Tensor ge(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] >= t2.data[i]) {
             data[i] = true;
@@ -619,8 +619,8 @@ Tensor ge(const Tensor t1, const Tensor t2) {
 Tensor Tensor::ge(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] >= other.data[i]) {
             data[i] = true;
@@ -634,8 +634,8 @@ Tensor Tensor::ge(const Tensor &other) {
 Tensor Tensor::operator>=(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] >= other.data[i]) {
             data[i] = true;
@@ -650,8 +650,8 @@ Tensor Tensor::operator>=(const Tensor &other) {
 Tensor lt(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] < t2.data[i]) {
             data[i] = true;
@@ -665,8 +665,8 @@ Tensor lt(const Tensor t1, const Tensor t2) {
 Tensor Tensor::lt(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] < other.data[i]) {
             data[i] = true;
@@ -680,8 +680,8 @@ Tensor Tensor::lt(const Tensor &other) {
 Tensor Tensor::operator<(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] < other.data[i]) {
             data[i] = true;
@@ -696,8 +696,8 @@ Tensor Tensor::operator<(const Tensor &other) {
 Tensor le(const Tensor t1, const Tensor t2) {
     CHECK_SAME_SHAPE(t1, t2);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(t1.data.size);
-    int size = t1.data.size;
+    vector<data_t> data(t1.shape.data_len());
+    int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
         if (t1.data[i] <= t2.data[i]) {
             data[i] = true;
@@ -711,8 +711,8 @@ Tensor le(const Tensor t1, const Tensor t2) {
 Tensor Tensor::le(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] <= other.data[i]) {
             data[i] = true;
@@ -726,8 +726,8 @@ Tensor Tensor::le(const Tensor &other) {
 Tensor Tensor::operator<=(const Tensor &other) {
     CHECK_SAME_SHAPE(*this, other);
     std::cout.setf(std::ios::boolalpha);
-    vector<data_t> data(this->data.size);
-    int size = this->data.size;
+    vector<data_t> data(this->shape.data_len());
+    int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
         if (this->data[i] <= other.data[i]) {
             data[i] = true;
@@ -776,8 +776,8 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         const Tensor &t1 = tensors[0];
         const Tensor &t2 = tensors[1];
         CHECK_SAME_SHAPE(t1, t2);
-        vector<data_t> data(t1.data.size);
-        for (size_t i = 0; i < t1.data.size; ++i) {
+        vector<data_t> data(t1.shape.data_len());
+        for (size_t i = 0; i < t1.shape.data_len(); ++i) {
             data[i] = t1.data[i] * t2.data[i];
         }
         return Tensor(data, {t1.shape.shape});

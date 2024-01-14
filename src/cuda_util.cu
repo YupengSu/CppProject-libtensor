@@ -48,8 +48,8 @@ __device__ void add_data_t(data_t& dst, data_t& a, data_t& b) {
     dst.dtype = a.dtype;
 }
 
-__device__ size_t get_idx(size_t index, const  int* shape_v,const  int* stride,
-                               const int* origin_stride, int dim) {
+__device__ size_t get_idx(size_t index, const int* shape_v, const int* stride,
+                          const int* origin_stride, int dim) {
     size_t offset = 0;
     size_t tmp = 0;
     for (int i = 0; i < dim; i++) {
@@ -66,24 +66,23 @@ __global__ void addMMKernel(data_t* c, data_t* a, data_t* b, size_t size) {
     }
 }
 
-
 __global__ void addTensorKernel(data_t* c, data_t* a, data_t* b, size_t size,
-                                int* shape, int* stride_a, int* stride_b, int* origin_stride,
-                                int dim) {
+                                int* shape, int* stride_a, int* stride_b,
+                                int* origin_stride, int dim) {
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < size) {
-        
-       size_t offset_a = get_idx(i, shape, stride_a, origin_stride, dim);
-        size_t offset_b =  get_idx(i, shape, stride_b, origin_stride, dim);
+        size_t offset_a = get_idx(i, shape, stride_a, origin_stride, dim);
+        size_t offset_b = get_idx(i, shape, stride_b, origin_stride, dim);
         // offset = i;
         add_data_t(c[i], a[offset_a], b[offset_b]);
     }
 }
 __global__ void addTensorKernelNum(data_t* c, data_t* a, data_t b, size_t size,
-                                   int* shape, int* stride, int*origin_stride, int dim) {
+                                   int* shape, int* stride, int* origin_stride,
+                                   int dim) {
     size_t i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < size) {
-       size_t offset= get_idx(i, shape, stride, origin_stride, dim);
+        size_t offset = get_idx(i, shape, stride, origin_stride, dim);
         // offset = i;
         add_data_t(c[i], a[offset], b);
     }
@@ -95,7 +94,6 @@ extern void c_cudaMalloc(void** ptr, size_t size) {
 
 extern void c_cudaMemcpy(void* dst, void* src, size_t size,
                          c_cudaMemcpyKind kind) {
-                            // cerr<<size/sizeof(data_t)<<endl;
     checkCudaError(cudaMemcpy(dst, src, size, (cudaMemcpyKind)kind));
 }
 
@@ -113,7 +111,6 @@ extern void addMM(void* c, void* a, void* b, size_t size) {
 }
 
 extern void addKernel(void* dst, Tensor a, Tensor b, size_t size) {
-
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -142,7 +139,8 @@ extern void addKernel(void* dst, Tensor a, Tensor b, size_t size) {
                               cudaMemcpyHostToDevice));
 
     addTensorKernel<<<blocksPerGrid, threadsPerBlock>>>(
-        dev_c, dev_a, dev_b, size, shape, stride_a, stride_b,origin_stride, a.get_dim());
+        dev_c, dev_a, dev_b, size, shape, stride_a, stride_b, origin_stride,
+        a.get_dim());
 
     checkCudaError(cudaGetLastError());
     checkCudaError(cudaDeviceSynchronize());
@@ -177,7 +175,7 @@ extern void addKernelNum(void* dst, Tensor a, data_t b, size_t size) {
                               cudaMemcpyHostToDevice));
 
     addTensorKernelNum<<<blocksPerGrid, threadsPerBlock>>>(
-        dev_c, dev_a, b, size, shape, stride,origin_stride, a.get_dim());
+        dev_c, dev_a, b, size, shape, stride, origin_stride, a.get_dim());
 
     checkCudaError(cudaGetLastError());
     checkCudaError(cudaDeviceSynchronize());
@@ -186,31 +184,29 @@ extern void addKernelNum(void* dst, Tensor a, data_t b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-__global__ void get_serial_tensorMM(void* dst, void* src, size_t size, const  int *shape, const int *stride, const int *origin_stride, int dim) {
-    data_t *dev_dst = (data_t*)dst;
-    data_t *dev_src = (data_t*)src;
+__global__ void get_serial_tensorMM(void* dst, void* src, size_t size,
+                                    const int* shape, const int* stride,
+                                    const int* origin_stride, int dim) {
+    data_t* dev_dst = (data_t*)dst;
+    data_t* dev_src = (data_t*)src;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < size) {
         size_t offset = get_idx(i, shape, stride, origin_stride, dim);
         dev_dst[i] = dev_src[offset];
     }
-
 }
 
 extern void get_serial_tensor_kernel(void* dst, const Tensor a) {
-    cerr << "get_serial_tensor_kernel" << endl;
 
-    data_t *dev_dst = (data_t*)dst;
-    data_t *dev_src = (data_t*)a.data.dp;
-    cerr << a.shape;
+    data_t* dev_dst = (data_t*)dst;
+    data_t* dev_src = (data_t*)a.data.dp;
     int* shape;
     int* stride;
     int* origin_stride;
-    size_t size = a.data.size;
-     checkCudaError(cudaMalloc(&shape, a.shape.shape.size() * sizeof(int)));
+    size_t size = a.shape.data_len();
+    checkCudaError(cudaMalloc(&shape, a.shape.shape.size() * sizeof(int)));
     checkCudaError(cudaMalloc(&stride, a.stride.size() * sizeof(int)));
-    checkCudaError(
-        cudaMalloc(&origin_stride, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMalloc(&origin_stride, a.shape.shape.size() * sizeof(int)));
     checkCudaError(cudaMemcpy(shape, a.shape.shape.data(),
                               a.shape.shape.size() * sizeof(int),
                               cudaMemcpyHostToDevice));
@@ -223,7 +219,8 @@ extern void get_serial_tensor_kernel(void* dst, const Tensor a) {
 
     size_t threadsPerBlock = THREAD_PER_BLOCK;
     size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
-    get_serial_tensorMM<<<blocksPerGrid, threadsPerBlock>>>(dev_dst, dev_src, size, shape, stride, origin_stride, a.get_dim());
+    get_serial_tensorMM<<<blocksPerGrid, threadsPerBlock>>>(
+        dev_dst, dev_src, size, shape, stride, origin_stride, a.get_dim());
 
     checkCudaError(cudaGetLastError());
     checkCudaError(cudaDeviceSynchronize());
@@ -231,18 +228,6 @@ extern void get_serial_tensor_kernel(void* dst, const Tensor a) {
     checkCudaError(cudaFree(shape));
     checkCudaError(cudaFree(stride));
     checkCudaError(cudaFree(origin_stride));
-
-    cerr << "get_serial_tensor_kernel Done" << endl;
-
 }
 
-extern void c_get_data_t(data_t& dst, void* ptr) {
-    data_t* tmp;
-    cudaMalloc(&tmp, sizeof(data_t));
-    get_data_t<<<1, 1>>>(*tmp, ptr);
-    cudaMemcpy(&dst, tmp, sizeof(data_t), cudaMemcpyDeviceToHost);
-    checkCudaError(cudaGetLastError());
-    checkCudaError(cudaDeviceSynchronize());
-    cudaFree(tmp);
-}
 }  // namespace ts
