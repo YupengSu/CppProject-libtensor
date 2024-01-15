@@ -42,6 +42,8 @@ namespace ts
         Tensor cuda();
         Tensor cpu();
         Tensor clone();
+        data_t &get(size_t index);
+        data_t get(size_t index)const;
 
         
         friend ostream &operator<<(ostream &os, Tensor t);
@@ -54,9 +56,10 @@ namespace ts
         data_t &operator[](vector<size_t> inds);
         data_t operator[](vector<size_t> inds) const;
 
-        data_t &operator[](size_t inds);
-        data_t operator[](size_t inds) const;
+        // data_t &operator[](size_t inds);
+        // data_t operator[](size_t inds) const;
         
+        Tensor operator[](size_t index);
         Tensor &operator=(BaseTensor<> bt);
         Tensor &operator=(int val);
         Tensor &operator=(double val);

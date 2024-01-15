@@ -41,7 +41,7 @@ int main() {
 
     start = clock();
     Tensor t3 = (t1 + t2);
-    t3 = 5;
+    t3[0] = 5;
     cout << t3 << endl;
 
     end_time = clock();

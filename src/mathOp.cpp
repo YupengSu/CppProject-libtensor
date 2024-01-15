@@ -14,18 +14,6 @@
 #include "exception.hpp"
 
 namespace ts {
-// bool CHECK_SAME_SHAPE(Tensor t1, Tensor t2, string msg) {
-//     CHECK_EXP_SAME_SHAPE(t1, t2);
-// }
-
-// bool CHECK_SAME_DEVICE(Tensor t1, Tensor t2, string msg) {
-//     if (t1.device != t2.device) {
-//         throw runtime_error(msg);
-//     }
-//     return true;
-// }
-
-// extern void addMM(void *c, void *a, void *b, int size);
 
 //////////////add operators
 
@@ -37,7 +25,7 @@ Tensor add(const Tensor t1, const Tensor t2) {
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
-            new_data[i] = t1[i] + t2[i];
+            new_data[i] = t1.get(i) + t2.get(i);
             new_data[i].set_dtype(t1.dtype);
         }
 
@@ -56,7 +44,7 @@ Tensor add(const Tensor t1, data_t t2) {
     new_data.dtype = t1.dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
-            new_data[i] = t1[i] + t2;
+            new_data[i] = t1.get(i) + t2;
             new_data[i].set_dtype(t1.dtype);
         }
 

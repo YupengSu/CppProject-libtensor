@@ -94,7 +94,7 @@ ostream &operator<<(ostream &os, Tensor t) {
 
     if (t.ndim == 1) {
         for (size_t i = 0; i < t.shape[0]; ++i) {
-            os << t[i];
+            os << t.get(i);
             if (i != t.shape[0] - 1) os << ", ";
         }
     } else if (t.ndim == 2) {
@@ -146,21 +146,25 @@ data_t Tensor::operator[](vector<size_t> inds) const {
     return data[offset];
 }
 
-data_t &Tensor::operator[](size_t idx) {
-    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
-                   this->size());
-    size_t offset =
-        get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
-    return data[offset];
-}
+// Tensor &Tensor::operator[](size_t idx) {
+//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+//                    this->size());
+//     size_t offset =
+//         get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
+//     return data[offset];
+// }
 
-data_t Tensor::operator[](size_t idx) const {
-    CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
-                   this->size());
-    size_t offset =
-        get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
-    return data[offset];
-}
+// data_t Tensor::operator[](size_t idx) const {
+//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+//                    this->size());
+//     size_t offset =
+//         get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
+//     return data[offset];
+// }
+
+    Tensor Tensor::operator[](size_t index) {
+        return slice(index);
+    }
 
 Tensor &Tensor::operator=(BaseTensor<> bt) {
     vector<data_t> nt(bt.shape.data_len());
@@ -581,5 +585,21 @@ bool Tensor::is_contiguous() {
         }
     }
     return true;
+}
+
+data_t &Tensor::get(size_t index) {
+    CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
+                   index, this->size());
+    size_t offset =
+        get_data_idx(index, this->shape.shape, this->stride, this->origin_stride);
+    return data[offset];
+}
+
+data_t Tensor::get(size_t index) const {
+    CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
+                   index, this->size());
+    size_t offset =
+        get_data_idx(index, this->shape.shape, this->stride, this->origin_stride);
+    return data[offset];
 }
 }  // namespace ts
