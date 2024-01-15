@@ -2,12 +2,13 @@
 
 #include <climits>
 #include <cstddef>
-#include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 
 #include "config.hpp"
 #include "cuda_util.cuh"
+#include "data_type.cuh"
 using namespace std;
 
 namespace ts {
@@ -31,22 +32,39 @@ Storage::Storage(const Storage& other, size_t offset) {
     this->size = other.size;
     this->bp = other.bp;
     this->dp = other.dp + offset;
+    this->device = other.device;
 }
 
 Storage::Storage(data_t val, size_t size, dt dtype, dev device)
     : Storage(size, device) {
-    for (int i = 0; i < size; i++) dp[i] = val;
-    for (int i = 0; i < size; i++) dp[i].set_dtype(dtype);
+    vector<data_t> tmp(size);
+    for (int i = 0; i < size; i++) tmp[i] = val;
+    for (int i = 0; i < size; i++) tmp[i].set_dtype(dtype);
     this->dtype = dtype;
     this->device = device;
+
+    if (device == dev::cpu) {
+        memcpy(this->dp, tmp.data(), size * sizeof(data_t));
+    } else {
+        c_cudaMemcpy(this->dp, tmp.data(), size * sizeof(data_t),
+                     c_cudaMemcpyHostToDevice);
+    }
 }
 
 Storage::Storage(const data_t* data, size_t size, dt dtype, dev device)
     : Storage(size, device) {
-    for (int i = 0; i < size; i++) dp[i] = data[i];
-    for (int i = 0; i < size; i++) dp[i].set_dtype(dtype);
+    vector<data_t> tmp(size);
+    for (int i = 0; i < size; i++) tmp[i] = data[i];
+    for (int i = 0; i < size; i++) tmp[i].set_dtype(dtype);
     this->dtype = dtype;
     this->device = device;
+
+    if (device == dev::cpu) {
+        memcpy(this->dp, tmp.data(), size * sizeof(data_t));
+    } else {
+        c_cudaMemcpy(this->dp, tmp.data(), size * sizeof(data_t),
+                     c_cudaMemcpyHostToDevice);
+    }
 }
 Storage::Storage(const Storage& other) = default;
 //  Storage(Storage&& other) = default;
@@ -58,14 +76,9 @@ Storage::~Storage() = default;
 //     return item{*this, idx};
 // }
 data_t& Storage::operator[](size_t idx) {
-    // cerr << "Storage::operator[" << idx << ']' << endl;
-    return dp[idx];
-
-
-}
-data_t Storage::operator[](size_t idx) const {
     return dp[idx];
 }
+data_t Storage::operator[](size_t idx) const { return dp[idx]; }
 
 size_t Storage::offset() { return dp - bp.get(); }
 data_t rand_data_t(dt dtype) {

@@ -43,10 +43,12 @@ int main() {
     Tensor t3 = (t1 + t2);
     cout << t3 << endl;
 
-    Tensor t4 = t3.transpose(0, 1);
-    t4[1]=1;
+    t3.info("t3");
+    save(t3, "./test.tsr");
+    t3 = load("./test.tsr");
+    t3.info("t3");
+    // cout << load("./test.tsr") << endl;
     cout << t3 << endl;
-    // cout << t3[{0,0}] << endl;
 
 
 

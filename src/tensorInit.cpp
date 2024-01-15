@@ -28,7 +28,7 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
         this->ndim = i_shape.size();
         this->shape = Size(i_shape);
     }
-
+    
     this->data = Storage(i_data.data(), this->shape.data_len(), dtype, device);
     this->dtype = dtype;
     this->device = device;

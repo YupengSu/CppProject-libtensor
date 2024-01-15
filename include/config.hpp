@@ -7,6 +7,7 @@
 #define DEFAULT_DEVICE dev::cpu
 
 using namespace std;
+const string save_path = "/home/mark455/WORKSPACE/CppProject-libtensor/save/";
 namespace ts {
 enum class dt {
     int8,

@@ -7,9 +7,9 @@
 #include "config.hpp"
 #include "cuda_util.cuh"
 #include "data_type.cuh"
-#include "exception"
 #include "exception.hpp"
 #include "serial_tensor.hpp"
+#include "storage.hpp"
 
 using namespace std;
 
@@ -61,8 +61,8 @@ Tensor Tensor::transpose(int dim1, int dim2) {
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
                    ndim, dim2);
-    vector<int> new_shape (shape.shape);
-    vector<int> new_stride (stride);
+    vector<int> new_shape(shape.shape);
+    vector<int> new_stride(stride);
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
 
@@ -182,7 +182,6 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
             this->get(i) = t.data[i];
         }
     } else {
-
         for (int i = 0; i < shape.data_len(); i++) {
             size_t idx = get_data_idx(i, *this);
 
@@ -487,49 +486,62 @@ Tensor view(Tensor t, vector<int> shape) {
 
 // save and load
 void save(Tensor t, string filename) {
-    ofstream file(filename);
+    vector<data_t> tmp = t.get_serial_data();
+    ofstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
-        file << t.shape.data_len() << endl;
-        for (size_t i = 0; i < t.shape.data_len(); ++i) {
-            file << t.shape[i] << endl;
-            for (size_t j = 0; j < t.shape[i]; ++j) {
-                file << t.get(i * t.shape[i] + j) << endl;
-            }
-        }
+        char *offset = 0;
+        // Dtype
+        file.write((char *)&t.dtype, sizeof(t.dtype));
+        // Device
+        file.write((char *)&t.device, sizeof(t.device));
+        // Ndim
+        file.write((char *)&t.ndim, sizeof(int));
+        // Then shape data
+        file.write((char *)t.shape.shape.data(), t.ndim * sizeof(int));
+        // Then data
+        file.write((char *)tmp.data(), tmp.size() * sizeof(data_t));
         file.close();
     } else {
         throw runtime_error("Unable to open file");
     }
+    cout << "Saved Successfully! [" << filename << "]" << endl;
 }
 
 Tensor load(string filename) {
-    ifstream file(filename);
+    ifstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
-        int size;
-        file >> size;
-        vector<int> shape(size);
-        for (int i = 0; i < size; i++) {
-            file >> shape[i];
+        int ndim;
+        int data_size = 1;
+        dt dtype;
+        dev device;
+
+        file.read((char *)&dtype, sizeof(dtype));
+        file.read((char *)&device, sizeof(device));
+        file.read((char *)&ndim, sizeof(ndim));
+
+        vector<int> shape(ndim);
+        file.read((char *)shape.data(), sizeof(int) * ndim);
+        for (int i = 0; i < ndim; i++) {
+            data_size *= shape[i];
         }
-        vector<data_t> data;
-        int temp;
-        while (file >> temp)  // read data
-        {
-            data.push_back(temp);
-        }
+        vector<data_t> data(data_size);
+        file.read((char *)data.data(), data_size * sizeof(data_t));
+
         file.close();
-        return Tensor(data, shape);
+        cout << "Load Successfully! [" << filename << "]" << endl;
+        return Tensor(data, shape, dtype, device);
     } else {
         throw runtime_error("Unable to open file");
     }
 }
-vector<int> get_dim_idx(size_t index, vector<int> shape, vector<int> origin_stride) {
+vector<int> get_dim_idx(size_t index, vector<int> shape,
+                        vector<int> origin_stride) {
     vector<int> indices(shape.size());
     for (int i = 0; i < shape.size(); i++) {
         size_t tmp = index / origin_stride[i];
         indices[i] = tmp;
         index -= tmp * origin_stride[i];
-    }   
+    }
     return indices;
 }
 
@@ -556,6 +568,15 @@ size_t get_data_idx(size_t index, Tensor t) {
     }
 
     return offset;
+}
+
+void Tensor::info(string name) {
+    cerr << "--------------------------" << endl;
+    cerr << "Tensor: " << name << endl;
+    cerr << "Dim:    " << ndim << endl;
+    cerr << "Shape:  " << shape << endl;
+    cerr << "Device: " << device << endl;
+    cerr << "--------------------------" << endl;
 }
 
 bool Tensor::is_contiguous() {
