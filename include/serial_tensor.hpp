@@ -56,14 +56,12 @@ namespace ts
         data_t &operator[](vector<size_t> inds);
         data_t operator[](vector<size_t> inds) const;
 
-        // data_t &operator[](size_t inds);
-        // data_t operator[](size_t inds) const;
         
         Tensor operator[](size_t index);
         Tensor &operator=(BaseTensor<> bt);
-        Tensor &operator=(int val);
+        // Tensor &operator=(int val);
         Tensor &operator=(double val);
-        Tensor &operator=(bool val);
+        // Tensor &operator=(bool val);
         // Tensor &operator=(Tensor bt);
 
         size_t get_dim() const;

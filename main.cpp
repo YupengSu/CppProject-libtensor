@@ -32,8 +32,8 @@ int main() {
     // t1 = t1.to(dev::cuda);
     // t2 = t2.to(dev::cuda);
 
-    Tensor t1 = rand({{5, 5}}, dt::float32);
-    Tensor t2 = rand({{5, 5}}, dt::float32);
+    Tensor t1 = rand({{5, 5}}, dt::int8);
+    Tensor t2 = rand({{5, 5}}, dt::int8);
 
     t1 = t1.to(dev::cuda);
     t2 = t2.to(dev::cuda);
@@ -41,8 +41,12 @@ int main() {
 
     start = clock();
     Tensor t3 = (t1 + t2);
-    t3[0] = 5;
     cout << t3 << endl;
+
+    t3[0] = {8,8,8,8,8};
+    // cout << t3[{0,0}] << endl;
+    cerr << t3;
+
 
     end_time = clock();
     endtime = (double)(end_time - start) / CLOCKS_PER_SEC;

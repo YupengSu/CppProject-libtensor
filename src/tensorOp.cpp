@@ -147,24 +147,26 @@ data_t Tensor::operator[](vector<size_t> inds) const {
 }
 
 // Tensor &Tensor::operator[](size_t idx) {
-//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
+//     idx,
 //                    this->size());
 //     size_t offset =
-//         get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
+//         get_data_idx(idx, this->shape.shape, this->stride,
+//         this->origin_stride);
 //     return data[offset];
 // }
 
 // data_t Tensor::operator[](size_t idx) const {
-//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu", idx,
+//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
+//     idx,
 //                    this->size());
 //     size_t offset =
-//         get_data_idx(idx, this->shape.shape, this->stride, this->origin_stride);
+//         get_data_idx(idx, this->shape.shape, this->stride,
+//         this->origin_stride);
 //     return data[offset];
 // }
 
-    Tensor Tensor::operator[](size_t index) {
-        return slice(index);
-    }
+Tensor Tensor::operator[](size_t index) { return slice(index); }
 
 Tensor &Tensor::operator=(BaseTensor<> bt) {
     vector<data_t> nt(bt.shape.data_len());
@@ -172,55 +174,27 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
     for (auto a : bt.get_data()) {
         nt[i++] = a;
     }
-    Tensor t = Tensor(nt, bt.shape.shape);
+    Tensor t = Tensor(nt, bt.shape.shape, this->dtype);
+    CHECK_SAME_SHAPE(*this, t);
+    if (this->device == dev::cpu) {
+        for (int i = 0; i < shape.data_len(); i++) {
+            this->get(i) = t.data[i];
+        }
+    } else {
 
-    CHECK_EQUAL(ndim, t.ndim, "Tensor dimension mismatch: %d vs %d", ndim,
-                t.ndim);
-    for (int i = 0; i < ndim; i++) {
-        CHECK_EQUAL(shape[i], t.shape[i], "Tensor shape mismatch: %d vs %d",
-                    shape[i], t.shape[i]);
-    }
-    for (int i = 0; i < shape.data_len(); i++) {
-        data[i] = t.data[i];
-    }
-    return *this;
-}
+        for (int i = 0; i < shape.data_len(); i++) {
+            size_t idx = get_data_idx(i, this->shape.shape, this->stride,
+                                    this->origin_stride);
 
-Tensor &Tensor::operator=(int val) {
-    for (int i = 0; i < this->size(); i++) {
-        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
-                                  this->origin_stride);
-        if (this->device == dev::cpu) {
-            this->data.dp[idx] = val;
-        } else {
-            data_t tmp;
-            tmp.set_dtype(this->dtype);
-            tmp = val;
-            c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
+            c_cudaMemcpy(this->data.dp + idx, &t.data[i], sizeof(data_t),
                          c_cudaMemcpyHostToDevice);
         }
     }
+
     return *this;
 }
 
 Tensor &Tensor::operator=(double val) {
-    for (int i = 0; i < this->size(); i++) {
-        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
-                                  this->origin_stride);
-        if (this->device == dev::cpu) {
-            this->data.dp[idx] = val;
-        } else {
-            data_t tmp;
-            tmp.set_dtype(this->dtype);
-            tmp = val;
-            c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
-                         c_cudaMemcpyHostToDevice);
-        }
-    }
-    return *this;
-}
-
-Tensor &Tensor::operator=(bool val) {
     for (int i = 0; i < this->size(); i++) {
         size_t idx = get_data_idx(i, this->shape.shape, this->stride,
                                   this->origin_stride);
@@ -265,16 +239,6 @@ int Tensor::get_size(vector<int> shape) {
     }
     return size;
 }
-// vector<data_t> Tensor::get_serial_data() const {
-//     vector<data_t> data(this->shape.data_len());
-//     for (int i = 0; i < this->shape.data_len(); i++) {
-//         size_t offset = get_data_idx(
-//             i, this->shape.shape, this->stride, this->origin_stride);
-//         data[i] = this->data[offset];
-//         offset += this->stride[i];
-//     }
-//     return data;
-// }
 
 vector<data_t> Tensor::get_serial_data() const {
     vector<data_t> new_data(this->shape.data_len());
@@ -531,7 +495,7 @@ void save(Tensor t, string filename) {
         for (size_t i = 0; i < t.shape.data_len(); ++i) {
             file << t.shape[i] << endl;
             for (size_t j = 0; j < t.shape[i]; ++j) {
-                file << t.data[i * t.shape[i] + j] << endl;
+                file << t.get(i * t.shape[i] + j) << endl;
             }
         }
         file.close();
@@ -574,7 +538,6 @@ size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
     return offset;
 }
 
-
 bool Tensor::is_contiguous() {
     if (this->ndim == 1) {
         return true;
@@ -590,16 +553,16 @@ bool Tensor::is_contiguous() {
 data_t &Tensor::get(size_t index) {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
-    size_t offset =
-        get_data_idx(index, this->shape.shape, this->stride, this->origin_stride);
+    size_t offset = get_data_idx(index, this->shape.shape, this->stride,
+                                 this->origin_stride);
     return data[offset];
 }
 
 data_t Tensor::get(size_t index) const {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
-    size_t offset =
-        get_data_idx(index, this->shape.shape, this->stride, this->origin_stride);
+    size_t offset = get_data_idx(index, this->shape.shape, this->stride,
+                                 this->origin_stride);
     return data[offset];
 }
 }  // namespace ts

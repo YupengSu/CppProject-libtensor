@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iostream>
 #include <ostream>
+#include <ratio>
 #include <type_traits>
 
 #include "config.hpp"
@@ -29,6 +30,7 @@ class data_t {
    public:
     data_t() = default;
     data_t(data_tt data) : data(data) {}
+
     template <class T>
     data_t(T data, dt dtype) {
         this->dtype = dtype;
@@ -73,29 +75,122 @@ class data_t {
         this->dtype = dt::bool8;
     }
 
-    template <typename T>
-    operator T() {
+
+    operator float() {
         switch (dtype) {
             case dt::int8:
-                return T(data.tensor_int8);
+                return float(data.tensor_int8);
                 break;
             case dt::float32:
-                return T(data.tensor_float32);
+                return float(data.tensor_float32);
                 break;
             case dt::bool8:
-                return T(data.tensor_bool);
+                return float(data.tensor_bool);
                 break;
             case dt::int32:
-                return T(data.tensor_int32);
+                return float(data.tensor_int32);
                 break;
             case dt::float64:
-                return T(data.tensor_float64);
+                return float(data.tensor_float64);
                 break;
             default:
                 break;
         }
-        return T(data.tensor_int8);
+        return float(data.tensor_float32);
     }
+
+    operator double() {
+        switch (dtype) {
+            case dt::int8:
+                return double(data.tensor_int8);
+                break;
+            case dt::float32:
+                return double(data.tensor_float32);
+                break;
+            case dt::bool8:
+                return double(data.tensor_bool);
+                break;
+            case dt::int32:
+                return double(data.tensor_int32);
+                break;
+            case dt::float64:
+                return double(data.tensor_float64);
+                break;
+            default:
+                break;
+        }
+        return double(data.tensor_float64);
+    }
+    operator bool() {
+        switch (dtype) {
+            case dt::int8:
+                return bool(data.tensor_int8);
+                break;
+            case dt::float32:
+                return bool(data.tensor_float32);
+                break;
+            case dt::bool8:
+                return bool(data.tensor_bool);
+                break;
+            case dt::int32:
+                return bool(data.tensor_int32);
+                break;
+            case dt::float64:
+                return bool(data.tensor_float64);
+                break;
+            default:
+                break;
+        }
+        return bool(data.tensor_bool);
+    }
+
+    operator int() {
+        switch (dtype) {
+            case dt::int8:
+                return int(data.tensor_int8);
+                break;
+            case dt::float32:
+                return int(data.tensor_float32);
+                break;
+            case dt::bool8:
+                return int(data.tensor_bool);
+                break;
+            case dt::int32:
+                return int(data.tensor_int32);
+                break;
+            case dt::float64:
+                return int(data.tensor_float64);
+                break;
+            default:
+                break;
+        }
+        return int(data.tensor_int32);
+    }
+
+    operator int8_t() {
+        switch (dtype) {
+            case dt::int8:
+                return int8_t(data.tensor_int8);
+                break;
+            case dt::float32:
+                return int8_t(data.tensor_float32);
+                break;
+            case dt::bool8:
+                return int8_t(data.tensor_bool);
+                break;
+            case dt::int32:
+                return int8_t(data.tensor_int32);
+                break;
+            case dt::float64:
+                return int8_t(data.tensor_float64);
+                break;
+            default:
+                break;
+        }
+        return int8_t(data.tensor_int8);
+    }
+
+
 
 
     data_t to_dt(dt target) {
@@ -242,7 +337,7 @@ class data_t {
     }
 
     template <typename T>
-    T &operator=(T i_data) {
+    data_t &operator=(T i_data) {
         switch (dtype) {
             case dt::int8:
                 this->data.tensor_int8 = (uint8_t)i_data;
@@ -262,7 +357,7 @@ class data_t {
             default:
                 break;
         }
-        return *(T *)(&data);
+        return *this;
     }
 
     bool operator==(data_t data) {
