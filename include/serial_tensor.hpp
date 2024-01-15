@@ -12,10 +12,11 @@
 #include "data_type.cuh"
 
 using namespace std;
-
 namespace ts
 {
-    size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride, vector<int> origin_stride);
+    class Tensor;
+    // size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride, vector<int> origin_stride);
+    size_t get_data_idx(size_t index, Tensor t);
     class Tensor
     {
     public:

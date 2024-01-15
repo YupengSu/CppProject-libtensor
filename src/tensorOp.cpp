@@ -61,10 +61,11 @@ Tensor Tensor::transpose(int dim1, int dim2) {
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
                    ndim, dim2);
-    vector<int> new_shape = shape.shape;
-    vector<int> new_stride = stride;
+    vector<int> new_shape (shape.shape);
+    vector<int> new_stride (stride);
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
+
     Storage new_data = Storage(data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
@@ -183,8 +184,7 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
     } else {
 
         for (int i = 0; i < shape.data_len(); i++) {
-            size_t idx = get_data_idx(i, this->shape.shape, this->stride,
-                                    this->origin_stride);
+            size_t idx = get_data_idx(i, *this);
 
             c_cudaMemcpy(this->data.dp + idx, &t.data[i], sizeof(data_t),
                          c_cudaMemcpyHostToDevice);
@@ -196,8 +196,7 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
 
 Tensor &Tensor::operator=(double val) {
     for (int i = 0; i < this->size(); i++) {
-        size_t idx = get_data_idx(i, this->shape.shape, this->stride,
-                                  this->origin_stride);
+        size_t idx = get_data_idx(i, *this);
         if (this->device == dev::cpu) {
             this->data.dp[idx] = val;
         } else {
@@ -253,8 +252,7 @@ vector<data_t> Tensor::get_serial_data() const {
 
     } else {
         for (int i = 0; i < this->shape.data_len(); i++) {
-            size_t offset = get_data_idx(i, this->shape.shape, this->stride,
-                                         this->origin_stride);
+            size_t offset = get_data_idx(i, *this);
             new_data[i] = this->data[offset];
             offset += this->stride[i];
         }
@@ -525,16 +523,38 @@ Tensor load(string filename) {
         throw runtime_error("Unable to open file");
     }
 }
+vector<int> get_dim_idx(size_t index, vector<int> shape, vector<int> origin_stride) {
+    vector<int> indices(shape.size());
+    for (int i = 0; i < shape.size(); i++) {
+        size_t tmp = index / origin_stride[i];
+        indices[i] = tmp;
+        index -= tmp * origin_stride[i];
+    }   
+    return indices;
+}
 
-size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
-                    vector<int> origin_stride) {
+// size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
+//                     vector<int> origin_stride) {
+//     size_t offset = 0;
+//     size_t tmp = 0;
+//     for (int i = 0; i < shape_v.size(); i++) {
+//         tmp = index / origin_stride[i];
+//         offset += tmp * stride[i];
+//         index -= tmp * origin_stride[i];
+//     }
+
+//     return offset;
+// }
+
+size_t get_data_idx(size_t index, Tensor t) {
     size_t offset = 0;
     size_t tmp = 0;
-    for (int i = 0; i < shape_v.size(); i++) {
-        tmp = index / origin_stride[i];
-        offset += tmp * stride[i];
-        index -= tmp * origin_stride[i];
+    for (int i = 0; i < t.shape.shape.size(); i++) {
+        tmp = index / t.origin_stride[i];
+        offset += tmp * t.stride[i];
+        index -= tmp * t.origin_stride[i];
     }
+
     return offset;
 }
 
@@ -553,16 +573,14 @@ bool Tensor::is_contiguous() {
 data_t &Tensor::get(size_t index) {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
-    size_t offset = get_data_idx(index, this->shape.shape, this->stride,
-                                 this->origin_stride);
+    size_t offset = get_data_idx(index, *this);
     return data[offset];
 }
 
 data_t Tensor::get(size_t index) const {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
-    size_t offset = get_data_idx(index, this->shape.shape, this->stride,
-                                 this->origin_stride);
+    size_t offset = get_data_idx(index, *this);
     return data[offset];
 }
 }  // namespace ts

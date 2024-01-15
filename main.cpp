@@ -43,9 +43,11 @@ int main() {
     Tensor t3 = (t1 + t2);
     cout << t3 << endl;
 
-    t3[0] = {8,8,8,8,8};
+    Tensor t4 = t3.transpose(0, 1);
+    t4[1]=1;
+    cout << t3 << endl;
     // cout << t3[{0,0}] << endl;
-    cerr << t3;
+
 
 
     end_time = clock();

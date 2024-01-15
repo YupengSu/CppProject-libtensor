@@ -34,7 +34,7 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
     this->device = device;
     this->offset = 0;
     this->stride = init_stride(this->shape.shape);
-    this->origin_stride= vector<int>(this->stride);
+    this->origin_stride = vector<int>(this->stride);
 }
 
 Tensor::Tensor(const Storage &i_data, const Size &i_shape,
@@ -44,7 +44,7 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
     this->ndim = i_shape.ndim;
     this->dtype = dtype;
     this->device = device;
-    this->origin_stride = vector<int>(this->stride);
+    this->origin_stride = init_stride(this->shape.shape);
     this->offset = 0;
 }
 
