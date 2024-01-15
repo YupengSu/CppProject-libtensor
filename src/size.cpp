@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "exception.hpp"
+
 using namespace std;
 
 namespace ts {
@@ -74,7 +75,8 @@ int Size::operator[](int index) const {
     return shape[index];
 }
 
-Size::Size() : shape({0}), ndim(0) {}
+Size::Size() : shape({0}), ndim(0) {
+}
 
 Size::Size(int len) : ndim(1) { shape = {len}; }
 Size::Size(vector<int> shape) : ndim(shape.size()), shape(shape) {}
@@ -100,6 +102,7 @@ size_t Size::data_len() const {
     }
     return sz;
 }
+
 
 }
 

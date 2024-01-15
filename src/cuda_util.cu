@@ -1,4 +1,3 @@
-#include <cuda_runtime.h>
 
 #include <cstddef>
 #include <cstdio>
@@ -13,7 +12,7 @@
 #include "size.hpp"
 
 namespace ts {
-void checkCudaError(cudaError_t err, const char* file, int line) {
+extern void checkCudaErrorFunc(cudaError_t err, const char* file, int line) {
     if (err != cudaSuccess) {
         std::cerr << "CUDA error: " << cudaGetErrorString(err) << " at " << file
                   << ":" << line << std::endl;
@@ -21,7 +20,8 @@ void checkCudaError(cudaError_t err, const char* file, int line) {
     }
 }
 
-#define checkCudaError(err) checkCudaError(err, __FILE__, __LINE__)
+#define checkCudaError(err) checkCudaErrorFunc(err, __FILE__, __LINE__)
+
 
 __global__ void get_data_t(data_t& dst, void* ptr) { dst = *(data_t*)ptr; }
 
@@ -90,6 +90,15 @@ __global__ void addTensorKernelNum(data_t* c, data_t* a, data_t b, size_t size,
 
 extern void c_cudaMalloc(void** ptr, size_t size) {
     checkCudaError(cudaMalloc(ptr, size));
+}
+
+extern void* c_cudaMallocHost(size_t size) {
+    void *ptr;
+    checkCudaError(cudaMallocHost(&ptr, size));
+    return ptr;
+}
+extern void c_cudaFreeHost(void * ptr) {
+    checkCudaError(cudaFreeHost(ptr));
 }
 
 extern void c_cudaMemcpy(void* dst, void* src, size_t size,
@@ -229,5 +238,6 @@ extern void get_serial_tensor_kernel(void* dst, const Tensor a) {
     checkCudaError(cudaFree(stride));
     checkCudaError(cudaFree(origin_stride));
 }
+
 
 }  // namespace ts
