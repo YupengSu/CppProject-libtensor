@@ -40,6 +40,7 @@ int main() {
     cout << "====================="<< "Testing on " << t1.device << "=====================" << endl;
 
     start = clock();
+    
     Tensor t3 = (t1 + t2);
     cout << t3 << endl;
 

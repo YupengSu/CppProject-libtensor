@@ -1,6 +1,7 @@
 #include <climits>
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <vector>
 
 #include "base_tensor.hpp"
@@ -10,7 +11,6 @@
 #include "exception.hpp"
 #include "serial_tensor.hpp"
 #include "storage.hpp"
-
 using namespace std;
 
 namespace ts {
@@ -571,11 +571,12 @@ size_t get_data_idx(size_t index, Tensor t) {
 }
 
 void Tensor::info(string name) {
+    int width = 18;
     cerr << "--------------------------" << endl;
-    cerr << "Tensor: " << name << endl;
-    cerr << "Dim:    " << ndim << endl;
-    cerr << "Shape:  " << shape << endl;
-    cerr << "Device: " << device << endl;
+    cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
+    cerr << "Dim:    " << setw(width) << left << ndim << "|" << endl;
+    cerr << "Shape:  " << setw(width) << left << shape << "|" << endl;
+    cerr << "Device: " <<  setw(width) << left << device << "|" << endl;
     cerr << "--------------------------" << endl;
 }
 

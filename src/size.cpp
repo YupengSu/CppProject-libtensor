@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <iostream>
+#include <string>
 #include <vector>
 #include "exception.hpp"
 using namespace std;
@@ -11,26 +12,28 @@ using namespace std;
 namespace ts {
 
 ostream &Size::operator<<(ostream &os) {
-    os << "(";
+    string str = "";
+    str += "(";
     for (int i = 0; i < shape.size(); i++) {
-        os << shape[i];
+        str += to_string(shape[i]);
         if (i != shape.size() - 1) {
-            os << ", ";
+            str += ", ";
         }
     }
-    os << ')';
-    return os;
+    str += ')';
+    return os << str;
 }
 ostream &operator<<(ostream &os, Size sz) {
-    os << "(";
+    string str = "";
+    str += "(";
     for (int i = 0; i < sz.shape.size(); i++) {
-        os << sz.shape[i];
+        str += to_string(sz.shape[i]);
         if (i != sz.shape.size() - 1) {
-            os << ", ";
+            str += ", ";
         }
     }
-    os << ')';
-    return os;
+    str += ')';
+    return os << str;
 }
 
 bool Size::operator==(Size sz) {
