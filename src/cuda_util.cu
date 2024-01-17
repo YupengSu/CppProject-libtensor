@@ -812,7 +812,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -854,7 +853,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -896,7 +894,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -938,7 +935,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -980,7 +976,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -1022,7 +1017,6 @@ namespace ts {
         data_t* dev_a = (data_t*)a.data.dp;
         data_t* dev_b = (data_t*)b.data.dp;
         data_t* dev_c = (data_t*)dst;
-        b = b.to_dt(a.dtype);
         size_t threadsPerBlock = THREAD_PER_BLOCK;
         size_t blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
