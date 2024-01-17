@@ -40,7 +40,7 @@ void CHECK_SAME_DEVICE(const Tensor& t1, const Tensor& t2) {
                 t2.device == dev::cpu ? "CPU" : "GPU");
 }
 
-void CHECK_INDEX_VALID(int x, const Tensor& t) {
+void CHECK_INDEX_VALID(size_t x, const Tensor& t) {
     CHECK_IN_RANGE(x, 0, t.size(), "Index %zu out of range [0, %zu)", x, t.size());
 }
 
