@@ -15,18 +15,18 @@ enum c_cudaMemcpyKind {
         4 /**< Direction of the transfer is inferred from the pointer values.
              Requires unified virtual addressing */
 };
-extern void c_cudaMalloc(void** ptr, size_t size);
-extern void c_cudaFree(void* src);
-extern void c_cudaMemcpy(void* dst, void* src, size_t count,
+void c_cudaMalloc(void** ptr, size_t size);
+void c_cudaFree(void* src);
+void c_cudaMemcpy(void* dst, void* src, size_t count,
                          c_cudaMemcpyKind kind);
-extern void c_cudaFreeHost(void* ptr);
-extern void* c_cudaMallocHost(size_t size);
+void c_cudaFreeHost(void* ptr);
+void* c_cudaMallocHost(size_t size);
 
-extern void addMM(void* c, void* a, void* b, int size);
-extern void addKernel(void* dst, Tensor a, Tensor b, size_t size);
-extern void addKernelNum(void* dst, Tensor a, data_t b, size_t size);
+void addMM(void* c, void* a, void* b, int size);
+void addKernel(void* dst, Tensor a, Tensor b, size_t size);
+void addKernelNum(void* dst, Tensor a, data_t b, size_t size);
 
-extern void get_serial_tensor_kernel(void* dst, const Tensor a);
+void get_serial_tensor_kernel(void* dst, const Tensor a);
 
 
 }  // namespace ts
