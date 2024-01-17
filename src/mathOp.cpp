@@ -751,7 +751,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         // data_t dot_product;
         for (size_t i = 0; i < shape.data_len(); ++i) {
             data[0] += t1.get(i) * t2.get(i);
-            cout << "data1 " << t1.get(i) << " data2 " << t2.get(i) << endl;
+            // cout << "data1 " << t1.get(i) << " data2 " << t2.get(i) << endl;
         }
         cout << data[0] << endl;
         return Tensor(data, {});  // scalar //todo test
