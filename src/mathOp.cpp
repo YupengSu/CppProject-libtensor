@@ -69,7 +69,7 @@ Tensor sub(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] - t2.data[i];
+        data[i] = t1.get(i) - t2.get(i);
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -78,7 +78,7 @@ Tensor sub(const Tensor t1, data_t t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] - t2;
+        data[i] = t1.get(i) - t2;
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -88,7 +88,7 @@ Tensor Tensor::sub(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] - other.data[i];
+        data[i] = this->get(i) - other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -98,7 +98,7 @@ Tensor Tensor::operator-(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] - other.data[i];
+        data[i] = this->get(i) - other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -107,7 +107,7 @@ Tensor Tensor::sub(data_t other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] - other;
+        data[i] = this->get(i) - other;
     }
     return Tensor(data, this->shape.shape);
 }
@@ -119,7 +119,7 @@ Tensor mul(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] * t2.data[i];
+        data[i] = t1.get(i) * t2.get(i);
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -128,7 +128,7 @@ Tensor mul(const Tensor t1, data_t t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] * t2;
+        data[i] = t1.get(i) * t2;
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -138,7 +138,7 @@ Tensor Tensor::operator*(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] * other.data[i];
+        data[i] = this->get(i) * other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -148,7 +148,7 @@ Tensor Tensor::mul(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] * other.data[i];
+        data[i] = this->get(i) * other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -157,7 +157,7 @@ Tensor Tensor::mul(data_t other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] * other;
+        data[i] = this->get(i) * other;
     }
     return Tensor(data, this->shape.shape);
 }
@@ -169,7 +169,7 @@ Tensor div(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] / t2.data[i];
+        data[i] = t1.get(i) / t2.get(i);
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -179,7 +179,7 @@ Tensor div(const Tensor t1, data_t t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = t1.data[i] / t2;
+        data[i] = t1.get(i) / t2;
     }
     return Tensor(data, t1.shape.shape);
 }
@@ -189,10 +189,10 @@ Tensor Tensor::div(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (other.data[i] == 0) {
+        if (other.get(i) == 0) {
             throw runtime_error("Division by zero");
         }
-        data[i] = this->data[i] / other.data[i];
+        data[i] = this->get(i) / other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -202,10 +202,10 @@ Tensor Tensor::operator/(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (other.data[i] == 0) {
+        if (other.get(i) == 0) {
             throw runtime_error("Division by zero");
         }
-        data[i] = this->data[i] / other.data[i];
+        data[i] = this->get(i) / other.get(i);
     }
     return Tensor(data, this->shape.shape);
 }
@@ -215,7 +215,7 @@ Tensor Tensor::div(data_t other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = this->data[i] / other;
+        data[i] = this->get(i) / other;
     }
     return Tensor(data, this->shape.shape);
 }
@@ -226,7 +226,7 @@ Tensor log(const Tensor t) {
     vector<data_t> data(t.shape.data_len());
     int size = t.shape.data_len();
     for (int i = 0; i < size; i++) {
-        data[i] = std::log((float)t.data[i]);
+        data[i] = std::log((float)t.get(i));
     }
     return Tensor(data, t.shape.shape);
 }
@@ -351,7 +351,7 @@ Tensor max(Tensor t, int dim) {
     } else if (dim == 1) {
         vector<data_t> data(t.shape[1]);
         for (int i = 0; i < t.shape[1]; i++) {
-            data[i] = t.data[i];
+            data[i] = t.get(i);
             for (int j = 0; j < t.shape[0]; j++) {
                 if (data[i] < t.data[j * t.shape[1] + i]) {
                     data[i] = t.data[j * t.shape[1] + i];
@@ -379,7 +379,7 @@ Tensor Tensor::max(int dim) {
     } else if (dim == 1) {
         vector<data_t> data(this->shape[1]);
         for (int i = 0; i < this->shape[1]; i++) {
-            data[i] = this->data[i];
+            data[i] = this->get(i);
             for (int j = 0; j < this->shape[0]; j++) {
                 if (data[i] < this->data[j * this->shape[1] + i]) {
                     data[i] = this->data[j * this->shape[1] + i];
@@ -408,7 +408,7 @@ Tensor min(Tensor t, int dim) {
     } else if (dim == 1) {
         vector<data_t> data(t.shape[1]);
         for (int i = 0; i < t.shape[1]; i++) {
-            data[i] = t.data[i];
+            data[i] = t.get(i);
             for (int j = 0; j < t.shape[0]; j++) {
                 if (data[i] > t.data[j * t.shape[1] + i]) {
                     data[i] = t.data[j * t.shape[1] + i];
@@ -436,7 +436,7 @@ Tensor Tensor::min(int dim) {
     } else if (dim == 1) {
         vector<data_t> data(this->shape[1]);
         for (int i = 0; i < this->shape[1]; i++) {
-            data[i] = this->data[i];
+            data[i] = this->get(i);
             for (int j = 0; j < this->shape[0]; j++) {
                 if (data[i] > this->data[j * this->shape[1] + i]) {
                     data[i] = this->data[j * this->shape[1] + i];
@@ -457,7 +457,7 @@ Tensor eq(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] == t2.data[i]) {
+        if (t1.get(i) == t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -472,7 +472,7 @@ Tensor Tensor::eq(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] == other.data[i]) {
+        if (this->get(i) == other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -487,7 +487,7 @@ Tensor Tensor::operator==(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] == other.data[i]) {
+        if (this->get(i) == other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -503,7 +503,7 @@ Tensor ne(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] != t2.data[i]) {
+        if (t1.get(i) != t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -518,7 +518,7 @@ Tensor Tensor::ne(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] != other.data[i]) {
+        if (this->get(i) != other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -533,7 +533,7 @@ Tensor Tensor::operator!=(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] != other.data[i]) {
+        if (this->get(i) != other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -549,7 +549,7 @@ Tensor gt(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] > t2.data[i]) {
+        if (t1.get(i) > t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -564,7 +564,7 @@ Tensor Tensor::gt(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] > other.data[i]) {
+        if (this->get(i) > other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -579,7 +579,7 @@ Tensor Tensor::operator>(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] > other.data[i]) {
+        if (this->get(i) > other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -595,7 +595,7 @@ Tensor ge(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] >= t2.data[i]) {
+        if (t1.get(i) >= t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -610,7 +610,7 @@ Tensor Tensor::ge(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] >= other.data[i]) {
+        if (this->get(i) >= other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -625,7 +625,7 @@ Tensor Tensor::operator>=(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] >= other.data[i]) {
+        if (this->get(i) >= other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -641,7 +641,7 @@ Tensor lt(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] < t2.data[i]) {
+        if (t1.get(i) < t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -656,7 +656,7 @@ Tensor Tensor::lt(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] < other.data[i]) {
+        if (this->get(i) < other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -671,7 +671,7 @@ Tensor Tensor::operator<(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] < other.data[i]) {
+        if (this->get(i) < other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -687,7 +687,7 @@ Tensor le(const Tensor t1, const Tensor t2) {
     vector<data_t> data(t1.shape.data_len());
     int size = t1.shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (t1.data[i] <= t2.data[i]) {
+        if (t1.get(i) <= t2.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -702,7 +702,7 @@ Tensor Tensor::le(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] <= other.data[i]) {
+        if (this->get(i) <= other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -717,7 +717,7 @@ Tensor Tensor::operator<=(const Tensor &other) {
     vector<data_t> data(this->shape.data_len());
     int size = this->shape.data_len();
     for (int i = 0; i < size; i++) {
-        if (this->data[i] <= other.data[i]) {
+        if (this->get(i) <= other.get(i)) {
             data[i] = true;
         } else {
             data[i] = false;
@@ -750,8 +750,8 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         vector<data_t> data(1);
         // data_t dot_product;
         for (size_t i = 0; i < shape.data_len(); ++i) {
-            data[0] += t1.data[i] * t2.data[i];
-            cout << "data1 " << t1.data[i] << " data2 " << t2.data[i] << endl;
+            data[0] += t1.get(i) * t2.get(i);
+            cout << "data1 " << t1.get(i) << " data2 " << t2.get(i) << endl;
         }
         cout << data[0] << endl;
         return Tensor(data, {});  // scalar //todo test
@@ -766,7 +766,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         CHECK_SAME_SHAPE(t1, t2);
         vector<data_t> data(t1.shape.data_len());
         for (size_t i = 0; i < t1.shape.data_len(); ++i) {
-            data[i] = t1.data[i] * t2.data[i];
+            data[i] = t1.get(i) * t2.get(i);
         }
         return Tensor(data, {t1.shape.shape});
     } else if (regex_match(eq, diag)) {
@@ -798,7 +798,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         vector<data_t> data(n * m);
         for (size_t i = 0; i < n; ++i) {
             for (size_t j = 0; j < m; ++j) {
-                data[i * m + j] = t1.data[i] * t2.data[j];
+                data[i * m + j] = t1.get(i) * t2.get(j);
             }
         }
         return Tensor(data, {t1.shape.shape[0], t2.shape.shape[1]});
