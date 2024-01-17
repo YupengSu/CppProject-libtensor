@@ -32,24 +32,12 @@ int main() {
     // t1 = t1.to(dev::cuda);
     // t2 = t2.to(dev::cuda);
 
-    Tensor t1 = rand({{5, 5}}, dt::int8);
-    Tensor t2 = rand({{5, 5}}, dt::int8);
+    Tensor t1 = tensor({1,2,3}, dt::int8);
+    Tensor t2 = tensor({4, 5,6}, dt::int8);
 
-    t1 = t1.to(dev::cuda);
-    t2 = t2.to(dev::cuda);
-    cout << "====================="<< "Testing on " << t1.device << "=====================" << endl;
 
-    start = clock();
-    
-    Tensor t3 = (t1 + t2);
-    cout << t3 << endl;
-
-    t3.info("t3");
-    save(t3, "./test.tsr");
-    t3 = load("./test.tsr");
-    t3.info("t3");
-    // cout << load("./test.tsr") << endl;
-    cout << t3 << endl;
+    Tensor t4 = einsum("i,i->i", {t1, t2});
+    cout << t4 << endl;
 
 
 
