@@ -22,9 +22,32 @@ void c_cudaMemcpy(void* dst, void* src, size_t count,
 void c_cudaFreeHost(void* ptr);
 void* c_cudaMallocHost(size_t size);
 
-void addMM(void* c, void* a, void* b, int size);
-void addKernel(void* dst, Tensor a, Tensor b, size_t size);
-void addKernelNum(void* dst, Tensor a, data_t b, size_t size);
+void addKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype);
+void addKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype);
+
+void subKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype);
+void subKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype);
+
+void mulKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype);
+void mulKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype);
+
+void divKernel(void* dst, Tensor a, Tensor b, size_t size);
+void divKernelNum(void* dst, Tensor a, data_t b, size_t size);
+
+
+void eqKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+void ltKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+void gtKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+void leKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+void geKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+void neKernel(void* dst, Tensor a, Tensor b, size_t size);
+
+
 
 void get_serial_tensor_kernel(void* dst, const Tensor a);
 

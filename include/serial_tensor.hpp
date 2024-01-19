@@ -28,13 +28,13 @@ class Tensor {
     dt dtype;
     dev device;
     Tensor();
-    Tensor(const Tensor &other) = default;
+    Tensor(const Tensor& other) = default;
     // Tensor(int i_dim);
     ~Tensor(){};
-    Tensor(const vector<data_t> &i_data, const vector<int> &i_shape = {},
+    Tensor(const vector<data_t>& i_data, const vector<int>& i_shape = {},
            dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
-    Tensor(const Storage &i_data, const Size &i_shape,
+    Tensor(const Storage& i_data, const Size& i_shape,
            const vector<int> i_stride, dt dtype = DEFAULT_DTYPE,
            dev device = DEFAULT_DEVICE);
 
@@ -42,23 +42,23 @@ class Tensor {
     Tensor cuda();
     Tensor cpu();
     Tensor clone();
-    data_t &get(size_t index);
+    data_t& get(size_t index);
     data_t get(size_t index) const;
 
-    friend ostream &operator<<(ostream &os, Tensor t);
+    friend ostream& operator<<(ostream& os, Tensor t);
     Tensor operator()(int index);
     Tensor operator()(int index, pair<int, int> range);
 
-    data_t &operator()(vector<size_t> inds);
+    data_t& operator()(vector<size_t> inds);
     data_t operator()(vector<size_t> inds) const;
 
-    data_t &operator[](vector<size_t> inds);
+    data_t& operator[](vector<size_t> inds);
     data_t operator[](vector<size_t> inds) const;
 
     Tensor operator[](size_t index);
-    Tensor &operator=(BaseTensor<> bt);
+    Tensor& operator=(BaseTensor<> bt);
     // Tensor &operator=(int val);
-    Tensor &operator=(double val);
+    Tensor& operator=(double val);
     // Tensor &operator=(bool val);
     // Tensor &operator=(Tensor bt);
 
@@ -66,50 +66,54 @@ class Tensor {
     size_t size(int i) const;
     vector<data_t> get_serial_data() const;
     Tensor slice(int idx, int dim = 0);
+    Tensor slice(int idx, int dim = 0) const;
     Tensor permute(vector<int> dims);
     Tensor transpose(int dim1, int dim2);
     Tensor view(vector<int> shape);
-    void *data_ptr();
+    void* data_ptr();
     size_t size() const;
     string type() const;
-    bool is_contiguous();
-    void info(string name);
+    bool is_contiguous() const;
+    void info(string name = "Tensor") const;
 
-    Tensor operator+(const Tensor &other);
-    Tensor operator+(const data_t other);
-    Tensor operator-(const Tensor &other);
-    Tensor operator*(const Tensor &other);
-    Tensor operator/(const Tensor &other);
+    Tensor operator+(const Tensor& other);
+    Tensor operator+(const data_t& other);
+    Tensor operator-(const Tensor& other);
+    Tensor operator-(const data_t& other);
+    Tensor operator*(const Tensor& other);
+    Tensor operator*(const data_t& other);
+    Tensor operator/(const Tensor& other);
+    Tensor operator/(const data_t& other);
 
-    Tensor add(const Tensor &other);
-    Tensor sub(const Tensor &other);
-    Tensor mul(const Tensor &other);
-    Tensor div(const Tensor &other);
+    Tensor add(const Tensor& other);
+    Tensor sub(const Tensor& other);
+    Tensor mul(const Tensor& other);
+    Tensor div(const Tensor& other);
 
-    Tensor add(data_t other);
-    Tensor sub(data_t other);
-    Tensor mul(data_t other);
-    Tensor div(data_t other);
+    Tensor add(const data_t& other);
+    Tensor sub(const data_t& other);
+    Tensor mul(const data_t& other);
+    Tensor div(const data_t& other);
 
     Tensor sum(int dim);
     Tensor mean(int dim);
     Tensor max(int dim);
     Tensor min(int dim);
 
-    Tensor eq(const Tensor &other);
-    Tensor ne(const Tensor &other);
-    Tensor gt(const Tensor &other);
-    Tensor ge(const Tensor &other);
-    Tensor lt(const Tensor &other);
-    Tensor le(const Tensor &other);
+    Tensor eq(const Tensor& other);
+    Tensor ne(const Tensor& other);
+    Tensor gt(const Tensor& other);
+    Tensor ge(const Tensor& other);
+    Tensor lt(const Tensor& other);
+    Tensor le(const Tensor& other);
 
-    Tensor operator==(const Tensor &other);
-    Tensor operator!=(const Tensor &other);
-    Tensor operator>(const Tensor &other);
-    Tensor operator>=(const Tensor &other);
-    Tensor operator<(const Tensor &other);
-    Tensor operator<=(const Tensor &other);
-    
+    Tensor operator==(const Tensor& other);
+    Tensor operator!=(const Tensor& other);
+    Tensor operator>(const Tensor& other);
+    Tensor operator>=(const Tensor& other);
+    Tensor operator<(const Tensor& other);
+    Tensor operator<=(const Tensor& other);
+
    private:
     int get_size(vector<int> shape);
 };
@@ -127,38 +131,37 @@ Tensor tile(Tensor t, vector<int> reps);
 Tensor permute(Tensor t, vector<int> dims);
 Tensor transpose(Tensor t, int dim1, int dim2);
 Tensor view(Tensor t, vector<int> shape);
-Tensor eq(Tensor t1, Tensor t2);
 
-Tensor add(const Tensor t1, data_t t2);
-Tensor sub(const Tensor t1, data_t t2);
-Tensor mul(const Tensor t1, data_t t2);
-Tensor div(const Tensor t1, data_t t2);
+Tensor add(const Tensor& t1, const data_t& t2);
+Tensor sub(const Tensor& t1, const data_t& t2);
+Tensor mul(const Tensor& t1, const data_t& t2);
+Tensor div(const Tensor& t1, const data_t& t2);
 
-Tensor add(const Tensor t1, const Tensor t2);
-Tensor sub(const Tensor t1, const Tensor t2);
-Tensor mul(const Tensor t1, const Tensor t2);
-Tensor div(const Tensor t1, const Tensor t2);
+Tensor add(const Tensor& t1, const Tensor& t2);
+Tensor sub(const Tensor& t1, const Tensor& t2);
+Tensor mul(const Tensor& t1, const Tensor& t2);
+Tensor div(const Tensor& t1, const Tensor& t2);
 
-Tensor log(const Tensor t);
+Tensor log(const Tensor& t);
 
-Tensor sum(const Tensor t, int dim);
-Tensor mean(const Tensor t, int dim);
-Tensor max(const Tensor t, int dim);
-Tensor min(const Tensor t, int dim);
+Tensor sum(const Tensor& t, int dim = -1);
+Tensor mean(const Tensor& t, int dim = -1);
+Tensor max(const Tensor& t, int dim = -1);
+Tensor min(const Tensor& t, int dim = -1);
 
 // comparison
-Tensor eq(const Tensor t1, const Tensor t2);
-Tensor ne(const Tensor t1, const Tensor t2);
-Tensor gt(const Tensor t1, const Tensor t2);
-Tensor ge(const Tensor t1, const Tensor t2);
-Tensor lt(const Tensor t1, const Tensor t2);
-Tensor le(const Tensor t1, const Tensor t2);
+Tensor eq(const Tensor& t1, const Tensor& t2);
+Tensor ne(const Tensor& t1, const Tensor& t2);
+Tensor gt(const Tensor& t1, const Tensor& t2);
+Tensor ge(const Tensor& t1, const Tensor& t2);
+Tensor lt(const Tensor& t1, const Tensor& t2);
+Tensor le(const Tensor& t1, const Tensor& t2);
 
 // other
 Tensor einsum(string eq, vector<Tensor> tensors);
 
 // save and load
-void save(Tensor t, string filename);
+void save(const Tensor& t, string filename);
 Tensor load(string filename);
 
 }  // namespace ts

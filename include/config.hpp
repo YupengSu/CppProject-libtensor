@@ -15,13 +15,18 @@ enum class dt {
     float64,
     int32,
     bool8
-
 };
+
+bool is_floating(dt dtype);
+
 enum class dev { cpu, cuda };
 
 ostream &operator<<(ostream &os, const dt dtype);
 
 ostream &operator<<(ostream &os, const dev device);
 
+string dtype_name(dt dtype);
+
+dt descision_dtype(dt dtype1, dt dtype2);
 
 }  // namespace ts

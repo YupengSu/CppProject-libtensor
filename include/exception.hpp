@@ -50,4 +50,5 @@ void CHECK_SAME_SHAPE(const Tensor& t1, const Tensor& t2);
 void CHECK_SAME_DEVICE(const Tensor& t1, const Tensor& t2);
 void CHECK_INDEX_VALID(size_t x, const Tensor& t);
 void CHECK_CONTIGUOUS(const Tensor& t);
+void CHECK_FLOATING(dt dtype);
 }  // namespace ts

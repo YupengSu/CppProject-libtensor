@@ -29,8 +29,8 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
         this->shape = Size(i_shape);
     }
     
-    this->data = Storage(i_data.data(), this->shape.data_len(), dtype, device);
     this->dtype = dtype;
+    this->data = Storage(i_data.data(), this->shape.data_len(), dtype, device);
     this->device = device;
     this->offset = 0;
     this->stride = init_stride(this->shape.shape);

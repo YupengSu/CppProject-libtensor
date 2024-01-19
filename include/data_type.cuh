@@ -1,6 +1,7 @@
 #pragma once
 #include <csignal>
 #include <cstdint>
+#include <ios>
 #include <iostream>
 #include <ostream>
 #include <ratio>
@@ -29,8 +30,12 @@ class data_t {
 
    public:
     data_t() = default;
-    data_t(data_tt data) : data(data) {}
+    data_t(data_tt data) : data(data) {
 
+    }
+    data_t(const data_t& other) : data(other.data), dtype(other.dtype){
+
+    }
     template <class T>
     data_t(T data, dt dtype) {
         this->dtype = dtype;
@@ -74,7 +79,6 @@ class data_t {
         this->data.tensor_bool = data;
         this->dtype = dt::bool8;
     }
-
 
     operator float() {
         switch (dtype) {
@@ -190,10 +194,10 @@ class data_t {
         return int8_t(data.tensor_int8);
     }
 
-
-
-
     data_t to_dt(dt target) {
+        if (target == this->dtype) {
+            return *this;
+        }
         data_t res;
         switch (target) {
             case dt::int8:
@@ -313,52 +317,10 @@ class data_t {
     }
 
     void set_dtype(dt dtype) {
-        data_t tmp = this->to_dt(dtype);
-        this->dtype = dtype;
-        switch (dtype) {
-            case dt::int8:
-                this->data.tensor_int8 = tmp.data.tensor_int8;
-                break;
-            case dt::float32:
-                this->data.tensor_float32 = tmp.data.tensor_float32;
-                break;
-            case dt::bool8:
-                this->data.tensor_bool = tmp.data.tensor_bool;
-                break;
-            case dt::int32:
-                this->data.tensor_int32 = tmp.data.tensor_int32;
-                break;
-            case dt::float64:
-                this->data.tensor_float64 = tmp.data.tensor_float64;
-                break;
-            default:
-                break;
-        }
+        *this = this->to_dt(dtype);
     }
 
-    template <typename T>
-    data_t &operator=(T i_data) {
-        switch (dtype) {
-            case dt::int8:
-                this->data.tensor_int8 = (uint8_t)i_data;
-                break;
-            case dt::float32:
-                this->data.tensor_float32 = (float)i_data;
-                break;
-            case dt::bool8:
-                this->data.tensor_bool = (bool)i_data;
-                break;
-            case dt::int32:
-                this->data.tensor_int32 = (int)i_data;
-                break;
-            case dt::float64:
-                this->data.tensor_float64 = (double)i_data;
-                break;
-            default:
-                break;
-        }
-        return *this;
-    }
+
 
     bool operator==(data_t data) {
         data = data.to_dt(dtype);
@@ -439,21 +401,15 @@ class data_t {
     }
 
     data_t operator/(data_t data) {
-        data = data.to_dt(dtype);
-        switch (dtype) {
-            case dt::int8:
-                return this->data.tensor_int8 / data.data.tensor_int8;
-            case dt::float32:
-                return this->data.tensor_float32 / data.data.tensor_float32;
-            case dt::bool8:
-                return this->data.tensor_bool / data.data.tensor_bool;
-            case dt::int32:
-                return data_t(this->data.tensor_int32 / data.data.tensor_int32,
-                              dt::int32);
-            case dt::float64:
-                return this->data.tensor_float64 / data.data.tensor_float64;
+        if (data.dtype == dt::float64) {
+            data = data.to_dt(dt::float64);
+            data_t me = this->to_dt(dt::float64);
+            return me.data.tensor_float64 / data.data.tensor_float64;
+        } else {
+            data = data.to_dt(dt::float32);
+            data_t me = this->to_dt(dt::float32);
+            return me.data.tensor_float32 / data.data.tensor_float32;
         }
-        return *this;
     }
 
     bool operator==(int32_t data) {
@@ -705,7 +661,7 @@ class data_t {
                 os << data.data.tensor_float32;
                 break;
             case dt::bool8:
-                os << data.data.tensor_bool;
+                os << boolalpha << data.data.tensor_bool;
                 break;
             case dt::int32:
                 os << data.data.tensor_int32;

@@ -44,6 +44,14 @@ void CHECK_INDEX_VALID(size_t x, const Tensor& t) {
     CHECK_IN_RANGE(x, 0, t.size(), "Index %zu out of range [0, %zu)", x, t.size());
 }
 
+void CHECK_CONTIGUOUS(const Tensor& t) {
+    CHECK_TRUE(t.is_contiguous(), "Expect contiguous tensor, but got non-contiguous tensor.");
+}
+
+void CHECK_FLOATING(dt dtype) {
+    CHECK_TRUE(is_floating(dtype), "Expect floating type, but got %s",
+               dtype_name(dtype).c_str());
+}
 
 
 

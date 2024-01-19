@@ -39,6 +39,32 @@ Tensor Tensor::slice(int idx, int dim) {
     return nt;
 }
 
+Tensor Tensor::slice(int idx, int dim) const {
+    CHECK_IN_RANGE(dim, 0, ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   ndim, dim);
+    CHECK_IN_RANGE(idx, 0, size(dim),
+                   "Index %d is out of bound for dimension %d with size %zu",
+                   idx, dim, size(dim));
+
+    Storage new_data(data, stride[dim] * idx);
+    if (ndim == 1) {
+        return Tensor(new_data, Size({1}), vector<int>({1}), dtype, device);
+    }
+    Size new_shape(shape, dim);
+    vector<int> new_stride = vector<int>(shape.ndim - 1);
+
+    int i = 0;
+    for (; i < dim; ++i) {
+        new_stride[i] = stride[i];
+    }
+    for (; i < new_stride.size(); ++i) {
+        new_stride[i] = stride[i + 1];
+    }
+    Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype, device);
+    return nt;
+}
 Tensor Tensor::permute(vector<int> dims) {
     CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu", ndim,
                 dims.size());
@@ -71,7 +97,7 @@ Tensor Tensor::transpose(int dim1, int dim2) {
 }
 
 Tensor Tensor::view(vector<int> shape) {
-    CHECK_TRUE(is_contiguous(), "View only support contiguous Tensor");
+    CHECK_CONTIGUOUS(*this);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
@@ -472,7 +498,7 @@ Tensor permute(Tensor t, vector<int> dims) {
 }
 
 Tensor view(Tensor t, vector<int> shape) {
-    CHECK_TRUE(t.is_contiguous(), "View only support contiguous Tensor");
+    CHECK_CONTIGUOUS(t);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
         size *= shape[i];
@@ -485,7 +511,7 @@ Tensor view(Tensor t, vector<int> shape) {
 }
 
 // save and load
-void save(Tensor t, string filename) {
+void save(const Tensor& t, string filename) {
     vector<data_t> tmp = t.get_serial_data();
     ofstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
@@ -570,7 +596,7 @@ size_t get_data_idx(size_t index, Tensor t) {
     return offset;
 }
 
-void Tensor::info(string name) {
+void Tensor::info(string name) const {
     int width = 18;
     cerr << "--------------------------" << endl;
     cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
@@ -580,7 +606,7 @@ void Tensor::info(string name) {
     cerr << "--------------------------" << endl;
 }
 
-bool Tensor::is_contiguous() {
+bool Tensor::is_contiguous() const {
     if (this->ndim == 1) {
         return true;
     }
