@@ -45,8 +45,6 @@ class TensorImpl {
     TensorImpl cuda() const;
     TensorImpl cpu() const;
     TensorImpl clone() const;
-    data_t& get(size_t index);
-    data_t get(size_t index) const;
 
     friend ostream& operator<<(ostream& os, TensorImpl t);
     TensorImpl operator()(int index) const;
@@ -54,7 +52,13 @@ class TensorImpl {
 
     data_t& locate(vector<size_t> inds);
     data_t locate(vector<size_t> inds) const;
+    data_t& get(size_t index);
+    data_t get(size_t index) const;
+    
+    data_t at(size_t index) const;
+    void set_at(size_t index, data_t val);
 
+    
     TensorImpl operator[](size_t index) const;
     TensorImpl& operator=(BaseTensor<> bt);
     TensorImpl& operator=(double val);

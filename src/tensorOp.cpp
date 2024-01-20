@@ -614,4 +614,31 @@ data_t TensorImpl::get(size_t index) const {
     size_t offset = get_data_idx(index, *this);
     return data[offset];
 }
+
+data_t TensorImpl::at(size_t index) const {
+    CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
+                   index, this->size());
+    size_t offset = get_data_idx(index, *this);
+    if (this->device == dev::cuda) {
+        data_t tmp;
+        c_cudaMemcpy(&tmp, this->data.dp + offset, sizeof(data_t),
+                     c_cudaMemcpyDeviceToHost);
+        return tmp;
+    } else {
+        return this->data[offset];
+    }
+    return data[offset];
+}
+void TensorImpl::set_at(size_t index, data_t val) {
+    CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
+                   index, this->size());
+    size_t offset = get_data_idx(index, *this);
+    if (this->device == dev::cuda) {
+        val.set_dtype(this->dtype);
+        c_cudaMemcpy(this->data.dp + offset, &val, sizeof(data_t),
+                     c_cudaMemcpyHostToDevice);
+    } else {
+        this->data[offset] = val;
+    }
+}
 }  // namespace ts
