@@ -18,7 +18,7 @@ namespace ts {
 
 //////////////add operators
 
-Tensor add(const Tensor& t1, const Tensor& t2)  {
+TensorImpl add(const TensorImpl& t1, const TensorImpl& t2)  {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -34,10 +34,10 @@ Tensor add(const Tensor& t1, const Tensor& t2)  {
     } else {
         addKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
                   t1.device);
 }
-Tensor add(const Tensor& t1, const data_t& t2) {
+TensorImpl add(const TensorImpl& t1, const data_t& t2) {
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
     int size = t1.shape.data_len();
     Storage new_data = Storage(size, t1.device);
@@ -51,16 +51,16 @@ Tensor add(const Tensor& t1, const data_t& t2) {
     } else {
         addKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   t1.dtype, t1.device);
 }
-Tensor Tensor::add(const Tensor& other) const  { return ts::add(*this, other); }
-Tensor Tensor::add(const data_t& other) const { return ts::add(*this, other); }
-Tensor Tensor::operator+(const Tensor& other) const { return ts::add(*this, other); }
-Tensor Tensor::operator+(const data_t& other) const { return ts::add(*this, other); }
+TensorImpl TensorImpl::add(const TensorImpl& other) const  { return ts::add(*this, other); }
+TensorImpl TensorImpl::add(const data_t& other) const { return ts::add(*this, other); }
+TensorImpl TensorImpl::operator+(const TensorImpl& other) const { return ts::add(*this, other); }
+TensorImpl TensorImpl::operator+(const data_t& other) const { return ts::add(*this, other); }
 
 //////////////////sub operators
-Tensor sub(const Tensor& t1, const Tensor& t2) {
+TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -77,10 +77,10 @@ Tensor sub(const Tensor& t1, const Tensor& t2) {
     } else {
         subKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
                   t1.device);
 }
-Tensor sub(const Tensor& t1, const data_t& t2) {
+TensorImpl sub(const TensorImpl& t1, const data_t& t2) {
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
     int size = t1.shape.data_len();
     Storage new_data = Storage(size, t1.device);
@@ -94,16 +94,16 @@ Tensor sub(const Tensor& t1, const data_t& t2) {
     } else {
         subKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   t1.dtype, t1.device);
 }
-Tensor Tensor::sub(const Tensor& other) const { return ts::sub(*this, other); }
-Tensor Tensor::sub(const data_t& other) const { return ts::sub(*this, other); }
-Tensor Tensor::operator-(const Tensor& other) const { return ts::sub(*this, other); }
-Tensor Tensor::operator-(const data_t& other) const { return ts::sub(*this, other); }
+TensorImpl TensorImpl::sub(const TensorImpl& other) const { return ts::sub(*this, other); }
+TensorImpl TensorImpl::sub(const data_t& other) const { return ts::sub(*this, other); }
+TensorImpl TensorImpl::operator-(const TensorImpl& other) const { return ts::sub(*this, other); }
+TensorImpl TensorImpl::operator-(const data_t& other) const { return ts::sub(*this, other); }
 
 ////////////////mul operators
-Tensor mul(const Tensor& t1, const Tensor& t2) {
+TensorImpl mul(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -119,10 +119,10 @@ Tensor mul(const Tensor& t1, const Tensor& t2) {
     } else {
         mulKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
                   t1.device);
 }
-Tensor mul(const Tensor& t1, const data_t& t2) {
+TensorImpl mul(const TensorImpl& t1, const data_t& t2) {
     int size = t1.shape.data_len();
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
     Storage new_data = Storage(size, t1.device);
@@ -136,16 +136,16 @@ Tensor mul(const Tensor& t1, const data_t& t2) {
     } else {
         mulKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   target_dtype, t1.device);
 }
-Tensor Tensor::mul(const Tensor& other) const { return ts::mul(*this, other); }
-Tensor Tensor::mul(const data_t& other) const { return ts::mul(*this, other); }
-Tensor Tensor::operator*(const Tensor& other) const { return ts::mul(*this, other); }
-Tensor Tensor::operator*(const data_t& other) const { return ts::mul(*this, other); }
+TensorImpl TensorImpl::mul(const TensorImpl& other) const { return ts::mul(*this, other); }
+TensorImpl TensorImpl::mul(const data_t& other) const { return ts::mul(*this, other); }
+TensorImpl TensorImpl::operator*(const TensorImpl& other) const { return ts::mul(*this, other); }
+TensorImpl TensorImpl::operator*(const data_t& other) const { return ts::mul(*this, other); }
 
 ////////////////////////div operators
-Tensor div(const Tensor& t1, const Tensor& t2) {
+TensorImpl div(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     int size = t1.size();
@@ -165,10 +165,10 @@ Tensor div(const Tensor& t1, const Tensor& t2) {
     } else {
         divKernel(new_data.dp, t1, t2, size);
     }
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
                   t1.device);
 }
-Tensor div(const Tensor& t1, const data_t& t2) {
+TensorImpl div(const TensorImpl& t1, const data_t& t2) {
     int size = t1.shape.data_len();
     Storage new_data = Storage(size, t1.device);
     dt target_dtype;
@@ -186,18 +186,18 @@ Tensor div(const Tensor& t1, const data_t& t2) {
     } else {
         divKernelNum(new_data.dp, t1, t2, size);
     }
-    return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   target_dtype, t1.device);
 }
-Tensor Tensor::div(const Tensor& other) const { return ts::div(*this, other); }
-Tensor Tensor::div(const data_t& other) const { return ts::div(*this, other); }
-Tensor Tensor::operator/(const Tensor& other) const { return ts::div(*this, other); }
-Tensor Tensor::operator/(const data_t& other) const { return ts::div(*this, other); }
+TensorImpl TensorImpl::div(const TensorImpl& other) const { return ts::div(*this, other); }
+TensorImpl TensorImpl::div(const data_t& other) const { return ts::div(*this, other); }
+TensorImpl TensorImpl::operator/(const TensorImpl& other) const { return ts::div(*this, other); }
+TensorImpl TensorImpl::operator/(const data_t& other) const { return ts::div(*this, other); }
 
 
 // Such operators are not support CUDA acceleration
 ///////////log operators
-Tensor log(const Tensor& t) {
+TensorImpl log(const TensorImpl& t) {
     dt target_dtype;
     if (is_floating(t.dtype)) {
         target_dtype = t.dtype;
@@ -210,11 +210,11 @@ Tensor log(const Tensor& t) {
         data[i] = std::log((double)t.get(i));
         data[i].set_dtype(target_dtype);
     }
-    return Tensor(data, t.shape.shape, target_dtype, t.device);
+    return TensorImpl(data, t.shape.shape, target_dtype, t.device);
 }
 
 // sum
-Tensor sum(const Tensor& t, int dim) {
+TensorImpl sum(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid sum dim. %d out of %zu-D Tensor", dim, t.get_dim());
 
@@ -233,7 +233,7 @@ Tensor sum(const Tensor& t, int dim) {
         }
         newdata[0] = sum;
         newdata[0].set_dtype(target_dtype);
-        return Tensor(newdata, {1}, target_dtype, t.device);
+        return TensorImpl(newdata, {1}, target_dtype, t.device);
     } else {
         vector<data_t> newdata(t.shape[dim]);
         for (int i = 0; i < t.shape[dim]; i++) {
@@ -246,16 +246,16 @@ Tensor sum(const Tensor& t, int dim) {
             newdata[i] = sum;
             newdata[i].set_dtype(target_dtype);
         }
-        return Tensor(newdata, {t.shape[dim]}, target_dtype, t.device);
+        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
     }
 }
 
-Tensor Tensor::sum(int dim) const {
+TensorImpl TensorImpl::sum(int dim) const {
     return ts::sum(*this, dim);
 }
 
 // mean
-Tensor mean(const Tensor& t, int dim) {
+TensorImpl mean(const TensorImpl& t, int dim) {
     dt target_dtype = t.dtype;
     if (t.get_dim() == 1) {
         vector<data_t> newdata(1);
@@ -266,7 +266,7 @@ Tensor mean(const Tensor& t, int dim) {
         }
         newdata[0] = sum / t.shape[dim];
         newdata[0].set_dtype(target_dtype);
-        return Tensor(newdata, {1}, target_dtype, t.device);
+        return TensorImpl(newdata, {1}, target_dtype, t.device);
     } else {
         vector<data_t> newdata(t.shape[dim]);
         for (int i = 0; i < t.shape[dim]; i++) {
@@ -279,16 +279,16 @@ Tensor mean(const Tensor& t, int dim) {
             newdata[i] = sum / t.shape[dim];
             newdata[i].set_dtype(target_dtype);
         }
-        return Tensor(newdata, {t.shape[dim]}, target_dtype, t.device);
+        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
     }
 }
 
-Tensor Tensor::mean(int dim) const {
+TensorImpl TensorImpl::mean(int dim) const {
     return ts::mean(*this, dim);
 }
 
 // max
-Tensor max(const Tensor& t, int dim) {
+TensorImpl max(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid max dim. %d out of %zu-D Tensor", dim, t.get_dim());
     dt target_dtype = t.dtype;
@@ -302,7 +302,7 @@ Tensor max(const Tensor& t, int dim) {
         }
         newdata[0] = max;
         newdata[0].set_dtype(target_dtype);
-        return Tensor(newdata, {1}, target_dtype, t.device);
+        return TensorImpl(newdata, {1}, target_dtype, t.device);
     } else {
         vector<data_t> newdata(t.shape[dim]);
         for (int i = 0; i < t.shape[dim]; i++) {
@@ -316,16 +316,16 @@ Tensor max(const Tensor& t, int dim) {
             newdata[i] = max;
             newdata[i].set_dtype(target_dtype);
         }
-        return Tensor(newdata, {t.shape[dim]}, target_dtype, t.device);
+        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
     }
 }
 
-Tensor Tensor::max(int dim) const {
+TensorImpl TensorImpl::max(int dim) const {
     return ts::max(*this, dim);
 }
 
 // min
-Tensor min(const Tensor& t, int dim) {
+TensorImpl min(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid min dim. %d out of %zu-D Tensor", dim, t.get_dim());
     dt target_dtype = t.dtype;
@@ -339,7 +339,7 @@ Tensor min(const Tensor& t, int dim) {
         }
         newdata[0] = min;
         newdata[0].set_dtype(target_dtype);
-        return Tensor(newdata, {1}, target_dtype, t.device);
+        return TensorImpl(newdata, {1}, target_dtype, t.device);
     } else {
         vector<data_t> newdata(t.shape[dim]);
         for (int i = 0; i < t.shape[dim]; i++) {
@@ -353,18 +353,18 @@ Tensor min(const Tensor& t, int dim) {
             newdata[i] = min;
             newdata[i].set_dtype(target_dtype);
         }
-        return Tensor(newdata, {t.shape[dim]}, target_dtype, t.device);
+        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
     }
 }
 
-Tensor Tensor::min(int dim) const {
+TensorImpl TensorImpl::min(int dim) const {
     return ts::min(*this, dim);
 }
 
 
 ///////////////comparison
 
-Tensor eq(const Tensor& t1, const Tensor& t2) {
+TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -383,20 +383,20 @@ Tensor eq(const Tensor& t1, const Tensor& t2) {
     } else {
         eqKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::eq(const Tensor& other) const {
+TensorImpl TensorImpl::eq(const TensorImpl& other) const {
     return ts::eq(*this, other);
 }
 
-Tensor Tensor::operator==(const Tensor& other) const {
+TensorImpl TensorImpl::operator==(const TensorImpl& other) const {
     return ts::eq(*this, other);
 }
 
 ///////////////comparison
 
-Tensor ne(const Tensor& t1, const Tensor& t2) {
+TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -415,18 +415,18 @@ Tensor ne(const Tensor& t1, const Tensor& t2) {
     } else {
         neKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::ne(const Tensor& other) const {
+TensorImpl TensorImpl::ne(const TensorImpl& other) const {
     return ts::ne(*this, other);
 }
 
-Tensor Tensor::operator!=(const Tensor& other) const {
+TensorImpl TensorImpl::operator!=(const TensorImpl& other) const {
     return ts::ne(*this, other);
 }
 
-Tensor gt(const Tensor& t1, const Tensor& t2) {
+TensorImpl gt(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -445,18 +445,18 @@ Tensor gt(const Tensor& t1, const Tensor& t2) {
     } else {
         gtKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::gt(const Tensor& other) const {
+TensorImpl TensorImpl::gt(const TensorImpl& other) const {
     return ts::gt(*this, other);
 }
 
-Tensor Tensor::operator>(const Tensor& other) const {
+TensorImpl TensorImpl::operator>(const TensorImpl& other) const {
     return ts::gt(*this, other);
 }
 
-Tensor lt(const Tensor& t1, const Tensor& t2) {
+TensorImpl lt(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -475,18 +475,18 @@ Tensor lt(const Tensor& t1, const Tensor& t2) {
     } else {
         ltKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::lt(const Tensor& other) const {
+TensorImpl TensorImpl::lt(const TensorImpl& other) const {
     return ts::lt(*this, other);
 }
 
-Tensor Tensor::operator<(const Tensor& other) const {
+TensorImpl TensorImpl::operator<(const TensorImpl& other) const {
     return ts::lt(*this, other);
 }
 
-Tensor le(const Tensor& t1, const Tensor& t2) {
+TensorImpl le(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -505,18 +505,18 @@ Tensor le(const Tensor& t1, const Tensor& t2) {
     } else {
         leKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::le(const Tensor& other) const {
+TensorImpl TensorImpl::le(const TensorImpl& other) const {
     return ts::le(*this, other);
 }
 
-Tensor Tensor::operator<=(const Tensor& other) const {
+TensorImpl TensorImpl::operator<=(const TensorImpl& other) const {
     return ts::le(*this, other);
 }
 
-Tensor ge(const Tensor& t1, const Tensor& t2) {
+TensorImpl ge(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = dt::bool8;
@@ -535,21 +535,21 @@ Tensor ge(const Tensor& t1, const Tensor& t2) {
     } else {
         geKernel(new_data.dp, t1, t2, size);
     }    
-    return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::ge(const Tensor& other) const {
+TensorImpl TensorImpl::ge(const TensorImpl& other) const {
     return ts::ge(*this, other);
 }
 
-Tensor Tensor::operator>=(const Tensor& other) const {
+TensorImpl TensorImpl::operator>=(const TensorImpl& other) const {
     return ts::ge(*this, other);
 }
 
 
 
 //////////////other
-Tensor einsum(string eq, vector<Tensor> tensors) {
+TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
     std::cout.setf(std::ios::fixed, std::ios::floatfield);
     std::regex dot("([a-zA-Z]),\\1->");
     std::regex outer("([a-zA-Z]),([a-zA-Z])->\\1\\2");
@@ -564,8 +564,8 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
             throw std::runtime_error(
                 "Insufficient number of tensors for dot product");
         }
-        const Tensor& t1 = tensors[0];
-        const Tensor& t2 = tensors[1];
+        const TensorImpl& t1 = tensors[0];
+        const TensorImpl& t2 = tensors[1];
 
         CHECK_SAME_SHAPE(t1, t2);
         const Size& shape = t1.shape;
@@ -576,28 +576,28 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
             // cout << "data1 " << t1.get(i) << " data2 " << t2.get(i) << endl;
         }
         cout << data[0] << endl;
-        return Tensor(data, {});  // scalar //todo test
+        return TensorImpl(data, {});  // scalar //todo test
     } else if (regex_match(eq, elewise)) {
         // element-wise production
         if (tensors.size() < 2) {
             throw std::runtime_error(
                 "Insufficient number of tensors for outer product");
         }
-        const Tensor& t1 = tensors[0];
-        const Tensor& t2 = tensors[1];
+        const TensorImpl& t1 = tensors[0];
+        const TensorImpl& t2 = tensors[1];
         CHECK_SAME_SHAPE(t1, t2);
         vector<data_t> data(t1.shape.data_len());
         for (size_t i = 0; i < t1.shape.data_len(); ++i) {
             data[i] = t1.get(i) * t2.get(i);
         }
-        return Tensor(data, {t1.shape.shape});
+        return TensorImpl(data, {t1.shape.shape});
     } else if (regex_match(eq, diag)) {
         // diagnoal of t1
         if (tensors.size() < 1) {
             throw std::runtime_error(
                 "Insufficient number of tensors for diagnoal");
         }
-        const Tensor& t1 = tensors[0];
+        const TensorImpl& t1 = tensors[0];
         const Size& shape = t1.shape;
         if (shape[0] != shape[1] || t1.ndim != 2) {
             throw std::runtime_error("Tensor is not a square matrix");
@@ -606,15 +606,15 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
         for (size_t i = 0; i < shape[0]; ++i) {
             data[i] = t1.get(i * shape[0] + i);
         }
-        return Tensor(data, {shape[0]});
+        return TensorImpl(data, {shape[0]});
     } else if (regex_match(eq, outer)) {
         // outer product
         if (tensors.size() < 2) {
             throw std::runtime_error(
                 "Insufficient number of tensors for matrix multiplication");
         }
-        const Tensor& t1 = tensors[0];
-        const Tensor& t2 = tensors[1];
+        const TensorImpl& t1 = tensors[0];
+        const TensorImpl& t2 = tensors[1];
         size_t n = t1.shape.shape[0];
         size_t m = t2.shape.shape[1];
         vector<data_t> data(n * m);
@@ -623,7 +623,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
                 data[i * m + j] = t1.get(i) * t2.get(j);
             }
         }
-        return Tensor(data, {t1.shape.shape[0], t2.shape.shape[1]});
+        return TensorImpl(data, {t1.shape.shape[0], t2.shape.shape[1]});
     } else if (regex_match(eq, batch)) {
         // batch matrix multiplication
         if (tensors.size() < 2) {
@@ -636,8 +636,8 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
                 "Insufficient number of tensors for batch matrix "
                 "multiplication");
         }
-        const Tensor& t1 = tensors[0];
-        const Tensor& t2 = tensors[1];
+        const TensorImpl& t1 = tensors[0];
+        const TensorImpl& t2 = tensors[1];
         if (t1.ndim != 3 || t2.ndim != 3) {
             throw std::runtime_error("Tensors are not matrices");
         }
@@ -661,7 +661,7 @@ Tensor einsum(string eq, vector<Tensor> tensors) {
                 }
             }
         }
-        return Tensor(data, {batches, rows1, cols2});
+        return TensorImpl(data, {batches, rows1, cols2});
     }
     throw std::runtime_error("Invalid equation for einsum");
 }

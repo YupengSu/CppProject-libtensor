@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace ts {
-Tensor::Tensor() {
+TensorImpl::TensorImpl() {
     this->ndim = 0;
     this->shape = Size(0);
     this->stride.reserve(0);
@@ -19,7 +19,7 @@ Tensor::Tensor() {
     this->offset = 0;
     this->dtype = DEFAULT_DTYPE;
 }   
-Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
+TensorImpl::TensorImpl(const vector<data_t> &i_data, const vector<int> &i_shape,
                dt dtype, dev device) {
     if (i_shape.size() == 0) {
         this->ndim = 1;
@@ -37,7 +37,7 @@ Tensor::Tensor(const vector<data_t> &i_data, const vector<int> &i_shape,
     this->origin_stride = vector<int>(this->stride);
 }
 
-Tensor::Tensor(const Storage &i_data, const Size &i_shape,
+TensorImpl::TensorImpl(const Storage &i_data, const Size &i_shape,
                const vector<int> i_stride, dt dtype, dev device)
     : data(i_data), stride(i_stride), shape(i_shape) {
         
@@ -48,7 +48,7 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
     this->offset = 0;
 }
 
-Tensor Tensor::to(dev device) const {
+TensorImpl TensorImpl::to(dev device) const {
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
             memcpy(new_data.dp, this->get_serial_data().data(),
@@ -65,11 +65,11 @@ Tensor Tensor::to(dev device) const {
                          c_cudaMemcpyHostToDevice);
         }
     }
-    return Tensor(new_data, this->shape, this->stride, this->dtype, device);
+    return TensorImpl(new_data, this->shape, this->stride, this->dtype, device);
 }
 
 
-Tensor Tensor::cuda() const{ return this->to(dev::cuda); }
-Tensor Tensor::cpu() const{ return this->to(dev::cpu); }
-Tensor Tensor::clone() const { return this->to(this->device); }
+TensorImpl TensorImpl::cuda() const{ return this->to(dev::cuda); }
+TensorImpl TensorImpl::cpu() const{ return this->to(dev::cpu); }
+TensorImpl TensorImpl::clone() const { return this->to(this->device); }
 }  // namespace ts

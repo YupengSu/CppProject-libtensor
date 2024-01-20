@@ -13,39 +13,44 @@
 
 using namespace std;
 namespace ts {
-class Tensor;
+class TensorImpl;
 // size_t get_data_idx(size_t index, vector<int> shape, vector<int> stride,
 // vector<int> origin_stride);
-size_t get_data_idx(size_t index, Tensor t);
-class Tensor {
+size_t get_data_idx(size_t index, TensorImpl t);
+class TensorImpl {
    public:
     Storage data;
     int ndim = 0;
     Size shape;
     vector<int> stride;
     vector<int> origin_stride;
+
+    // shared_ptr<int> cuda_stride;
+    // shared_ptr<int> cuda_shape;
+    // shared_ptr<int> cuda_origin_stride;
+
     size_t offset = 0;
     dt dtype;
     dev device;
-    Tensor();
-    Tensor(const Tensor& other) = default;
-    Tensor(const vector<data_t>& i_data, const vector<int>& i_shape = {},
+    TensorImpl();
+    TensorImpl(const TensorImpl& other) = default;
+    TensorImpl(const vector<data_t>& i_data, const vector<int>& i_shape = {},
            dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
-    Tensor(const Storage& i_data, const Size& i_shape,
+    TensorImpl(const Storage& i_data, const Size& i_shape,
            const vector<int> i_stride, dt dtype = DEFAULT_DTYPE,
            dev device = DEFAULT_DEVICE);
 
-    Tensor to(dev device) const;
-    Tensor cuda() const;
-    Tensor cpu() const;
-    Tensor clone() const;
+    TensorImpl to(dev device) const;
+    TensorImpl cuda() const;
+    TensorImpl cpu() const;
+    TensorImpl clone() const;
     data_t& get(size_t index);
     data_t get(size_t index) const;
 
-    friend ostream& operator<<(ostream& os, Tensor t);
-    Tensor operator()(int index) const;
-    Tensor operator()(int index, pair<int, int> range) const;
+    friend ostream& operator<<(ostream& os, TensorImpl t);
+    TensorImpl operator()(int index) const;
+    TensorImpl operator()(int index, pair<int, int> range) const;
 
     data_t& operator()(vector<size_t> inds);
     data_t operator()(vector<size_t> inds) const;
@@ -53,17 +58,17 @@ class Tensor {
     data_t& operator[](vector<size_t> inds);
     data_t operator[](vector<size_t> inds) const;
 
-    Tensor operator[](size_t index) const;
-    Tensor& operator=(BaseTensor<> bt);
-    Tensor& operator=(double val);
+    TensorImpl operator[](size_t index) const;
+    TensorImpl& operator=(BaseTensor<> bt);
+    TensorImpl& operator=(double val);
 
     size_t get_dim() const;
     size_t size(int i) const;
     vector<data_t> get_serial_data() const;
-    Tensor slice(int idx, int dim = 0) const;
-    Tensor permute(vector<int> dims) const;
-    Tensor transpose(int dim1, int dim2) const;
-    Tensor view(vector<int> shape) const;
+    TensorImpl slice(int idx, int dim = 0) const;
+    TensorImpl permute(vector<int> dims) const;
+    TensorImpl transpose(int dim1, int dim2) const;
+    TensorImpl view(vector<int> shape) const;
 
     void* data_ptr() const;
     size_t size() const;
@@ -71,92 +76,92 @@ class Tensor {
     bool is_contiguous() const;
     void info(string name = "Tensor") const;
 
-    Tensor operator+(const Tensor& other) const;
-    Tensor operator+(const data_t& other) const;
-    Tensor operator-(const Tensor& other) const;
-    Tensor operator-(const data_t& other) const;
-    Tensor operator*(const Tensor& other) const;
-    Tensor operator*(const data_t& other) const;
-    Tensor operator/(const Tensor& other) const;
-    Tensor operator/(const data_t& other) const;
+    TensorImpl operator+(const TensorImpl& other) const;
+    TensorImpl operator+(const data_t& other) const;
+    TensorImpl operator-(const TensorImpl& other) const;
+    TensorImpl operator-(const data_t& other) const;
+    TensorImpl operator*(const TensorImpl& other) const;
+    TensorImpl operator*(const data_t& other) const;
+    TensorImpl operator/(const TensorImpl& other) const;
+    TensorImpl operator/(const data_t& other) const;
 
-    Tensor add(const Tensor& other) const;
-    Tensor sub(const Tensor& other) const;
-    Tensor mul(const Tensor& other) const;
-    Tensor div(const Tensor& other) const;
+    TensorImpl add(const TensorImpl& other) const;
+    TensorImpl sub(const TensorImpl& other) const;
+    TensorImpl mul(const TensorImpl& other) const;
+    TensorImpl div(const TensorImpl& other) const;
 
-    Tensor add(const data_t& other) const;
-    Tensor sub(const data_t& other) const;
-    Tensor mul(const data_t& other) const;
-    Tensor div(const data_t& other) const;
+    TensorImpl add(const data_t& other) const;
+    TensorImpl sub(const data_t& other) const;
+    TensorImpl mul(const data_t& other) const;
+    TensorImpl div(const data_t& other) const;
 
-    Tensor sum(int dim) const;
-    Tensor mean(int dim) const;
-    Tensor max(int dim) const;
-    Tensor min(int dim) const;
+    TensorImpl sum(int dim) const;
+    TensorImpl mean(int dim) const;
+    TensorImpl max(int dim) const;
+    TensorImpl min(int dim) const;
 
-    Tensor eq(const Tensor& other) const;
-    Tensor ne(const Tensor& other) const;
-    Tensor gt(const Tensor& other) const;
-    Tensor ge(const Tensor& other) const;
-    Tensor lt(const Tensor& other) const;
-    Tensor le(const Tensor& other) const;
+    TensorImpl eq(const TensorImpl& other) const;
+    TensorImpl ne(const TensorImpl& other) const;
+    TensorImpl gt(const TensorImpl& other) const;
+    TensorImpl ge(const TensorImpl& other) const;
+    TensorImpl lt(const TensorImpl& other) const;
+    TensorImpl le(const TensorImpl& other) const;
 
-    Tensor operator==(const Tensor& other) const;
-    Tensor operator!=(const Tensor& other) const;
-    Tensor operator>(const Tensor& other) const;
-    Tensor operator>=(const Tensor& other) const;
-    Tensor operator<(const Tensor& other) const;
-    Tensor operator<=(const Tensor& other) const;
+    TensorImpl operator==(const TensorImpl& other) const;
+    TensorImpl operator!=(const TensorImpl& other) const;
+    TensorImpl operator>(const TensorImpl& other) const;
+    TensorImpl operator>=(const TensorImpl& other) const;
+    TensorImpl operator<(const TensorImpl& other) const;
+    TensorImpl operator<=(const TensorImpl& other) const;
 
    private:
     int get_size(vector<int> shape);
 };
 vector<int> init_stride(vector<int> shape);
-Tensor tensor(BaseTensor<> bt, dt dtype = DEFAULT_DTYPE);
+TensorImpl tensor(BaseTensor<> bt, dt dtype = DEFAULT_DTYPE);
 
-Tensor rand(Size sz, dt dtype = DEFAULT_DTYPE);
-Tensor zeros(Size sz, dt dtype = DEFAULT_DTYPE);
-Tensor ones(Size sz, dt dtype = DEFAULT_DTYPE);
-Tensor full(Size sz, data_t val, dt dtype = DEFAULT_DTYPE);
-Tensor eye(Size sz, dt dtype = DEFAULT_DTYPE);
+TensorImpl rand(Size sz, dt dtype = DEFAULT_DTYPE);
+TensorImpl zeros(Size sz, dt dtype = DEFAULT_DTYPE);
+TensorImpl ones(Size sz, dt dtype = DEFAULT_DTYPE);
+TensorImpl full(Size sz, data_t val, dt dtype = DEFAULT_DTYPE);
+TensorImpl eye(Size sz, dt dtype = DEFAULT_DTYPE);
 
-Tensor cat(vector<Tensor> tensors, int dim);
-Tensor tile(const Tensor & t, vector<int> reps);
-Tensor permute(const Tensor & t, vector<int> dims);
-Tensor transpose(const Tensor & t, int dim1, int dim2);
-Tensor view( const Tensor & t, vector<int> shape);
+TensorImpl cat(vector<TensorImpl> tensors, int dim);
+TensorImpl tile(const TensorImpl & t, vector<int> reps);
+TensorImpl permute(const TensorImpl & t, vector<int> dims);
+TensorImpl transpose(const TensorImpl & t, int dim1, int dim2);
+TensorImpl view( const TensorImpl & t, vector<int> shape);
 
-Tensor add(const Tensor& t1, const data_t& t2);
-Tensor sub(const Tensor& t1, const data_t& t2);
-Tensor mul(const Tensor& t1, const data_t& t2);
-Tensor div(const Tensor& t1, const data_t& t2);
+TensorImpl add(const TensorImpl& t1, const data_t& t2);
+TensorImpl sub(const TensorImpl& t1, const data_t& t2);
+TensorImpl mul(const TensorImpl& t1, const data_t& t2);
+TensorImpl div(const TensorImpl& t1, const data_t& t2);
 
-Tensor add(const Tensor& t1, const Tensor& t2);
-Tensor sub(const Tensor& t1, const Tensor& t2);
-Tensor mul(const Tensor& t1, const Tensor& t2);
-Tensor div(const Tensor& t1, const Tensor& t2);
+TensorImpl add(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl mul(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl div(const TensorImpl& t1, const TensorImpl& t2);
 
-Tensor log(const Tensor& t);
+TensorImpl log(const TensorImpl& t);
 
-Tensor sum(const Tensor& t, int dim = -1);
-Tensor mean(const Tensor& t, int dim = -1);
-Tensor max(const Tensor& t, int dim = -1);
-Tensor min(const Tensor& t, int dim = -1);
+TensorImpl sum(const TensorImpl& t, int dim = -1);
+TensorImpl mean(const TensorImpl& t, int dim = -1);
+TensorImpl max(const TensorImpl& t, int dim = -1);
+TensorImpl min(const TensorImpl& t, int dim = -1);
 
 // comparison
-Tensor eq(const Tensor& t1, const Tensor& t2);
-Tensor ne(const Tensor& t1, const Tensor& t2);
-Tensor gt(const Tensor& t1, const Tensor& t2);
-Tensor ge(const Tensor& t1, const Tensor& t2);
-Tensor lt(const Tensor& t1, const Tensor& t2);
-Tensor le(const Tensor& t1, const Tensor& t2);
+TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl gt(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl ge(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl lt(const TensorImpl& t1, const TensorImpl& t2);
+TensorImpl le(const TensorImpl& t1, const TensorImpl& t2);
 
 // other
-Tensor einsum(string eq, vector<Tensor> tensors);
+TensorImpl einsum(string eq, vector<TensorImpl> tensors);
 
 // save and load
-void save(const Tensor& t, string filename);
-Tensor load(string filename);
+void save(const TensorImpl& t, string filename);
+TensorImpl load(string filename);
 
 }  // namespace ts

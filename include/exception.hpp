@@ -46,9 +46,9 @@ struct Error : public std::exception {
     if (std::abs((x) - (y)) > 1e-4) THROW_ERROR((format), ##__VA_ARGS__)
 
 
-void CHECK_SAME_SHAPE(const Tensor& t1, const Tensor& t2);
-void CHECK_SAME_DEVICE(const Tensor& t1, const Tensor& t2);
-void CHECK_INDEX_VALID(size_t x, const Tensor& t);
-void CHECK_CONTIGUOUS(const Tensor& t);
+void CHECK_SAME_SHAPE(const TensorImpl& t1, const TensorImpl& t2);
+void CHECK_SAME_DEVICE(const TensorImpl& t1, const TensorImpl& t2);
+void CHECK_INDEX_VALID(size_t x, const TensorImpl& t);
+void CHECK_CONTIGUOUS(const TensorImpl& t);
 void CHECK_FLOATING(dt dtype);
 }  // namespace ts

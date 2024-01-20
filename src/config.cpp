@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include <cmath>
 
 namespace ts 
 {
@@ -79,5 +80,9 @@ namespace ts
         } else {
             return dt::bool8;
         }
+    }
+
+    bool EPS_EQUAL(double x, double y) {
+        return fabs(x - y) < EPS;
     }
 }

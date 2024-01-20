@@ -30,12 +30,8 @@ class data_t {
 
    public:
     data_t() = default;
-    data_t(data_tt data) : data(data) {
-
-    }
-    data_t(const data_t& other) : data(other.data), dtype(other.dtype){
-
-    }
+    data_t(data_tt data) : data(data) {}
+    data_t(const data_t &other) : data(other.data), dtype(other.dtype) {}
     template <class T>
     data_t(T data, dt dtype) {
         this->dtype = dtype;
@@ -314,27 +310,27 @@ class data_t {
         return res;
     }
 
-    void set_dtype(dt dtype) {
-        *this = this->to_dt(dtype);
-    }
+    void set_dtype(dt dtype) { *this = this->to_dt(dtype); }
 
     bool operator==(data_t data) {
         data = data.to_dt(dtype);
         switch (dtype) {
-            case dt::int8:
-                return this->data.tensor_int8 == data.data.tensor_int8;
-                break;
-            case dt::float32:
-                return this->data.tensor_float32 == data.data.tensor_float32;
-                break;
             case dt::bool8:
                 return this->data.tensor_bool == data.data.tensor_bool;
+                break;
+            case dt::int8:
+                return this->data.tensor_int8 == data.data.tensor_int8;
                 break;
             case dt::int32:
                 return this->data.tensor_int32 == data.data.tensor_int32;
                 break;
+            case dt::float32:
+                return EPS_EQUAL(this->data.tensor_float32,
+                                 data.data.tensor_float32);
+                break;
             case dt::float64:
-                return this->data.tensor_float64 == data.data.tensor_float64;
+                return EPS_EQUAL(this->data.tensor_float64,
+                                 data.data.tensor_float64);
                 break;
             default:
                 break;
@@ -414,7 +410,7 @@ class data_t {
                 return this->data.tensor_int8 == data;
                 break;
             case dt::float32:
-                return this->data.tensor_float32 == data;
+                return EPS_EQUAL(this->data.tensor_float32, data);
                 break;
             case dt::bool8:
                 return this->data.tensor_bool == data;
@@ -423,7 +419,7 @@ class data_t {
                 return this->data.tensor_int32 == data;
                 break;
             case dt::float64:
-                return this->data.tensor_float64 == data;
+                return EPS_EQUAL(this->data.tensor_float64, data);
                 break;
             default:
                 break;
@@ -582,7 +578,7 @@ class data_t {
                 return this->data.tensor_int8 != data.data.tensor_int8;
                 break;
             case dt::float32:
-                return this->data.tensor_float32 != data.data.tensor_float32;
+                return !EPS_EQUAL(this->data.tensor_float32, data.data.tensor_float32);
                 break;
             case dt::bool8:
                 return this->data.tensor_bool != data.data.tensor_bool;
@@ -591,7 +587,7 @@ class data_t {
                 return this->data.tensor_int32 != data.data.tensor_int32;
                 break;
             case dt::float64:
-                return this->data.tensor_float64 != data.data.tensor_float64;
+                return !EPS_EQUAL(this->data.tensor_float64, data.data.tensor_float64);
                 break;
             default:
                 break;
@@ -606,7 +602,7 @@ class data_t {
                 return this->data.tensor_int8 >= data.data.tensor_int8;
                 break;
             case dt::float32:
-                return this->data.tensor_float32 >= data.data.tensor_float32;
+                return (this->data.tensor_float32 >= data.data.tensor_float32) || EPS_EQUAL(this->data.tensor_float32, data.data.tensor_float32);
                 break;
             case dt::bool8:
                 return this->data.tensor_bool >= data.data.tensor_bool;
@@ -615,7 +611,7 @@ class data_t {
                 return this->data.tensor_int32 >= data.data.tensor_int32;
                 break;
             case dt::float64:
-                return this->data.tensor_float64 >= data.data.tensor_float64;
+                return (this->data.tensor_float64 >= data.data.tensor_float64) || EPS_EQUAL(this->data.tensor_float64, data.data.tensor_float64);
                 break;
             default:
                 break;
@@ -630,7 +626,7 @@ class data_t {
                 return this->data.tensor_int8 <= data.data.tensor_int8;
                 break;
             case dt::float32:
-                return this->data.tensor_float32 <= data.data.tensor_float32;
+                return (this->data.tensor_float32 <= data.data.tensor_float32) || EPS_EQUAL(this->data.tensor_float32, data.data.tensor_float32);
                 break;
             case dt::bool8:
                 return this->data.tensor_bool <= data.data.tensor_bool;
@@ -639,7 +635,7 @@ class data_t {
                 return this->data.tensor_int32 <= data.data.tensor_int32;
                 break;
             case dt::float64:
-                return this->data.tensor_float64 <= data.data.tensor_float64;
+                return (this->data.tensor_float64 <= data.data.tensor_float64) || EPS_EQUAL(this->data.tensor_float64, data.data.tensor_float64);
                 break;
             default:
                 break;

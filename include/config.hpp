@@ -5,7 +5,7 @@
 
 #define DEFAULT_DTYPE dt::float32
 #define DEFAULT_DEVICE dev::cpu
-
+const float EPS = 1e-10;
 using namespace std;
 const string save_path = "/home/mark455/WORKSPACE/CppProject-libtensor/save/";
 namespace ts {
@@ -29,4 +29,5 @@ string dtype_name(dt dtype);
 
 dt descision_dtype(dt dtype1, dt dtype2);
 
+bool EPS_EQUAL(double x, double y);
 }  // namespace ts

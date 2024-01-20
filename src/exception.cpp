@@ -22,7 +22,7 @@ const char* Error::what() const noexcept {
 
 }  // namespace err
 
-void CHECK_SAME_SHAPE(const Tensor& t1, const Tensor& t2) {
+void CHECK_SAME_SHAPE(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_EQUAL(t1.ndim, t2.ndim,
                 "Expect the same dimensions, but got %dD and %dD", t1.ndim,
                 t2.ndim);
@@ -33,18 +33,18 @@ void CHECK_SAME_SHAPE(const Tensor& t1, const Tensor& t2) {
                     i, t1.size(i), t2.size(i));
 }  // namespace ts
 
-void CHECK_SAME_DEVICE(const Tensor& t1, const Tensor& t2) {
+void CHECK_SAME_DEVICE(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_EQUAL(t1.device, t2.device,
                 "Expect the same device, but got %s and %s",
                 t1.device == dev::cpu ? "CPU" : "GPU",
                 t2.device == dev::cpu ? "CPU" : "GPU");
 }
 
-void CHECK_INDEX_VALID(size_t x, const Tensor& t) {
+void CHECK_INDEX_VALID(size_t x, const TensorImpl& t) {
     CHECK_IN_RANGE(x, 0, t.size(), "Index %zu out of range [0, %zu)", x, t.size());
 }
 
-void CHECK_CONTIGUOUS(const Tensor& t) {
+void CHECK_CONTIGUOUS(const TensorImpl& t) {
     CHECK_TRUE(t.is_contiguous(), "Expect contiguous tensor, but got non-contiguous tensor.");
 }
 

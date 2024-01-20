@@ -19,7 +19,6 @@ void checkCudaErrorFunc(cudaError_t err, const char* file, int line) {
         exit(1);
     }
 }
-
 #define checkCudaError(err) checkCudaErrorFunc(err, __FILE__, __LINE__)
 
 void c_cudaMalloc(void** ptr, size_t size) {
@@ -39,6 +38,10 @@ void c_cudaMemcpy(void* dst, void* src, size_t size, c_cudaMemcpyKind kind) {
 
 void c_cudaFree(void* src) { checkCudaError(cudaFree(src)); }
 
+
+__device__ bool CUDA_EPS_EQUAL(double a, double b) {
+    return (a - b) < EPS && (a - b) > -EPS;
+}
 __device__ size_t get_idx(size_t index, const int* shape_v, const int* stride,
                           const int* origin_stride, int dim) {
     size_t offset = 0;
@@ -63,7 +66,7 @@ __global__ void get_serial_tensorMM(void* dst, void* src, size_t size,
     }
 }
 
-void get_serial_tensor_kernel(void* dst, const Tensor a) {
+void get_serial_tensor_kernel(void* dst, const TensorImpl a) {
     data_t* dev_dst = (data_t*)dst;
     data_t* dev_src = (data_t*)a.data.dp;
     int* shape;
@@ -368,7 +371,7 @@ __device__ void eq_data_t(data_t& dst, data_t& a, data_t& b) {
             tmp_b = b.data.tensor_float64;
             break;
     }
-    dst.data.tensor_bool = (tmp_a == tmp_b);
+    dst.data.tensor_bool = CUDA_EPS_EQUAL(tmp_a, tmp_b);
     dst.dtype = dt::bool8;
 }
 
@@ -408,7 +411,7 @@ __device__ void ne_data_t(data_t& dst, data_t& a, data_t& b) {
             tmp_b = b.data.tensor_float64;
             break;
     }
-    dst.data.tensor_bool = (tmp_a != tmp_b);
+    dst.data.tensor_bool = !CUDA_EPS_EQUAL(tmp_a, tmp_b);
     dst.dtype = dt::bool8;
 }
 
@@ -488,7 +491,7 @@ __device__ void ge_data_t(data_t& dst, data_t& a, data_t& b) {
             tmp_b = b.data.tensor_float64;
             break;
     }
-    dst.data.tensor_bool = (tmp_a >= tmp_b);
+    dst.data.tensor_bool = (tmp_a >= tmp_b) || CUDA_EPS_EQUAL(tmp_a, tmp_b);
     dst.dtype = dt::bool8;
 }
 
@@ -568,7 +571,7 @@ __device__ void le_data_t(data_t& dst, data_t& a, data_t& b) {
             tmp_b = b.data.tensor_float64;
             break;
     }
-    dst.data.tensor_bool = (tmp_a <= tmp_b);
+    dst.data.tensor_bool = (tmp_a <= tmp_b) || CUDA_EPS_EQUAL(tmp_a, tmp_b);
     dst.dtype = dt::bool8;
 }
 
@@ -748,7 +751,7 @@ __global__ void matrixMultiplyKernel(data_t* c, data_t* a, data_t* b,
     }
 }
 
-void addKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
+void addKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -789,7 +792,7 @@ void addKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void addKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
+void addKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_c = (data_t*)dst;
     b = b.to_dt(a.dtype);
@@ -822,7 +825,7 @@ void addKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void subKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
+void subKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -863,7 +866,7 @@ void subKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void subKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
+void subKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_c = (data_t*)dst;
     b = b.to_dt(a.dtype);
@@ -896,7 +899,7 @@ void subKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void mulKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
+void mulKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -937,7 +940,7 @@ void mulKernel(void* dst, Tensor a, Tensor b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void mulKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
+void mulKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_c = (data_t*)dst;
     b = b.to_dt(a.dtype);
@@ -970,7 +973,7 @@ void mulKernelNum(void* dst, Tensor a, data_t b, size_t size, dt target_dtype) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void divKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void divKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1017,7 +1020,7 @@ void divKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void divKernelNum(void* dst, Tensor a, data_t b, size_t size) {
+void divKernelNum(void* dst, TensorImpl a, data_t b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_c = (data_t*)dst;
     size_t threadsPerBlock = THREAD_PER_BLOCK;
@@ -1061,7 +1064,7 @@ void divKernelNum(void* dst, Tensor a, data_t b, size_t size) {
 
 
 // NOT DONE
-void eqKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void eqKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1102,7 +1105,7 @@ void eqKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void neKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void neKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1143,7 +1146,7 @@ void neKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void gtKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void gtKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1184,7 +1187,7 @@ void gtKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void geKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void geKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1225,7 +1228,7 @@ void geKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void ltKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void ltKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;
@@ -1266,7 +1269,7 @@ void ltKernel(void* dst, Tensor a, Tensor b, size_t size) {
     checkCudaError(cudaFree(origin_stride));
 }
 
-void leKernel(void* dst, Tensor a, Tensor b, size_t size) {
+void leKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
     data_t* dev_c = (data_t*)dst;

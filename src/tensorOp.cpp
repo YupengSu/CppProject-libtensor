@@ -39,7 +39,7 @@ namespace ts {
 
 // }
 
-Tensor Tensor::slice(int idx, int dim) const {
+TensorImpl TensorImpl::slice(int idx, int dim) const {
     CHECK_IN_RANGE(dim, 0, ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -50,7 +50,7 @@ Tensor Tensor::slice(int idx, int dim) const {
 
     Storage new_data(data, stride[dim] * idx);
     if (ndim == 1) {
-        return Tensor(new_data, Size({1}), vector<int>({1}), dtype, device);
+        return TensorImpl(new_data, Size({1}), vector<int>({1}), dtype, device);
     }
     Size new_shape(shape, dim);
     vector<int> new_stride = vector<int>(shape.ndim - 1);
@@ -62,9 +62,9 @@ Tensor Tensor::slice(int idx, int dim) const {
     for (; i < new_stride.size(); ++i) {
         new_stride[i] = stride[i + 1];
     }
-    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, dtype, device);
 }
-Tensor Tensor::permute(vector<int> dims) const {
+TensorImpl TensorImpl::permute(vector<int> dims) const {
     CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu", ndim,
                 dims.size());
     vector<int> new_shape = vector<int>(ndim);
@@ -74,10 +74,10 @@ Tensor Tensor::permute(vector<int> dims) const {
         new_stride[i] = stride[dims[i]];
     }
     Storage new_data = Storage(data, 0);
-    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
-Tensor Tensor::transpose(int dim1, int dim2) const {
+TensorImpl TensorImpl::transpose(int dim1, int dim2) const {
     CHECK_IN_RANGE(dim1, 0, ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -92,10 +92,10 @@ Tensor Tensor::transpose(int dim1, int dim2) const {
     swap(new_stride[dim1], new_stride[dim2]);
 
     Storage new_data = Storage(data, 0);
-    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
-Tensor Tensor::view(vector<int> shape) const {
+TensorImpl TensorImpl::view(vector<int> shape) const {
     CHECK_CONTIGUOUS(*this);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
@@ -105,10 +105,10 @@ Tensor Tensor::view(vector<int> shape) const {
                 size, this->shape.data_len());
     Storage new_data = Storage(data, 0);
     vector<int> new_stride = init_stride(shape);
-    return Tensor(new_data, Size(shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(shape), new_stride, dtype, device);
 }
 
-ostream &operator<<(ostream &os, Tensor t) {
+ostream &operator<<(ostream &os, TensorImpl t) {
     if (t.device == dev::cuda) {
         t = t.to(dev::cpu);
     }
@@ -138,14 +138,14 @@ ostream &operator<<(ostream &os, Tensor t) {
 
     return os;
 }
-Tensor Tensor::operator()(int index) const { return slice(index); }
-Tensor Tensor::operator()(int index, pair<int, int> range) const {
-    Tensor new_data = slice(index);
+TensorImpl TensorImpl::operator()(int index) const { return slice(index); }
+TensorImpl TensorImpl::operator()(int index, pair<int, int> range) const {
+    TensorImpl new_data = slice(index);
     new_data.shape[0] = range.second - range.first;
     new_data.data.dp += range.first * new_data.stride[0];
     return new_data;
 }
-data_t &Tensor::operator[](vector<size_t> inds) {
+data_t &TensorImpl::operator[](vector<size_t> inds) {
     CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
@@ -158,7 +158,7 @@ data_t &Tensor::operator[](vector<size_t> inds) {
     }
     return data[offset];
 }
-data_t Tensor::operator[](vector<size_t> inds) const {
+data_t TensorImpl::operator[](vector<size_t> inds) const {
     CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
@@ -192,15 +192,15 @@ data_t Tensor::operator[](vector<size_t> inds) const {
 //     return data[offset];
 // }
 
-Tensor Tensor::operator[](size_t index) const { return slice(index); }
+TensorImpl TensorImpl::operator[](size_t index) const { return slice(index); }
 
-Tensor &Tensor::operator=(BaseTensor<> bt) {
+TensorImpl &TensorImpl::operator=(BaseTensor<> bt) {
     vector<data_t> nt(bt.shape.data_len());
     int i = 0;
     for (auto a : bt.get_data()) {
         nt[i++] = a;
     }
-    Tensor t = Tensor(nt, bt.shape.shape, this->dtype);
+    TensorImpl t = TensorImpl(nt, bt.shape.shape, this->dtype);
     CHECK_SAME_SHAPE(*this, t);
     if (this->device == dev::cpu) {
         for (int i = 0; i < shape.data_len(); i++) {
@@ -218,7 +218,7 @@ Tensor &Tensor::operator=(BaseTensor<> bt) {
     return *this;
 }
 
-Tensor &Tensor::operator=(double val) {
+TensorImpl &TensorImpl::operator=(double val) {
     for (int i = 0; i < this->size(); i++) {
         size_t idx = get_data_idx(i, *this);
         if (this->device == dev::cpu) {
@@ -234,12 +234,12 @@ Tensor &Tensor::operator=(double val) {
     return *this;
 }
 
-size_t Tensor::get_dim() const { return this->ndim; }
-size_t Tensor::size(int i) const { return this->shape.size(i); }
-size_t Tensor::size() const { return this->shape.data_len(); }
+size_t TensorImpl::get_dim() const { return this->ndim; }
+size_t TensorImpl::size(int i) const { return this->shape.size(i); }
+size_t TensorImpl::size() const { return this->shape.data_len(); }
 
-void *Tensor::data_ptr() const { return (void *)data.bp.get(); }
-string Tensor::type() const {
+void *TensorImpl::data_ptr() const { return (void *)data.bp.get(); }
+string TensorImpl::type() const {
     switch (this->dtype) {
         case dt::int8:
             return "int8";
@@ -255,7 +255,7 @@ string Tensor::type() const {
     return "unknown";
 }
 
-int Tensor::get_size(vector<int> shape) {
+int TensorImpl::get_size(vector<int> shape) {
     int size = 1;
     for (int i = 0; i < ndim; i++) {
         size *= shape[i];
@@ -263,7 +263,7 @@ int Tensor::get_size(vector<int> shape) {
     return size;
 }
 
-vector<data_t> Tensor::get_serial_data() const {
+vector<data_t> TensorImpl::get_serial_data() const {
     vector<data_t> new_data(this->shape.data_len());
     if (this->device == dev::cuda) {
         void *tmp;
@@ -294,16 +294,16 @@ vector<int> init_stride(vector<int> shape) {
     return stride;
 }
 
-Tensor tensor(BaseTensor<> bt, dt dtype) {
+TensorImpl tensor(BaseTensor<> bt, dt dtype) {
     vector<data_t> nt(bt.shape.data_len());
     int i = 0;
     for (auto a : bt.get_data()) {
         nt[i].set_dtype(dtype);
         nt[i++] = a;
     }
-    return Tensor(nt, bt.shape.shape, dtype);
+    return TensorImpl(nt, bt.shape.shape, dtype);
 }
-Tensor rand(Size sz, dt dtype) {
+TensorImpl rand(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
@@ -329,36 +329,36 @@ Tensor rand(Size sz, dt dtype) {
         }
     }
     Storage st(data.data(), sz.data_len(), dtype);
-    return Tensor(data, sz.shape, dtype);
+    return TensorImpl(data, sz.shape, dtype);
 }
-Tensor zeros(Size sz, dt dtype) {
+TensorImpl zeros(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = 0;
     }
     Storage st(data.data(), sz.data_len(), dtype);
-    return Tensor(data, sz.shape, dtype);
+    return TensorImpl(data, sz.shape, dtype);
 }
-Tensor ones(Size sz, dt dtype) {
+TensorImpl ones(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = 1;
     }
     Storage st(data.data(), sz.data_len(), dtype);
-    return Tensor(data, sz.shape, dtype);
+    return TensorImpl(data, sz.shape, dtype);
 }
-Tensor full(Size sz, data_t val, dt dtype) {
+TensorImpl full(Size sz, data_t val, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
         data[i].set_dtype(dtype);
         data[i] = val;
     }
     Storage st(data.data(), sz.data_len(), dtype);
-    return Tensor(data, sz.shape, dtype);
+    return TensorImpl(data, sz.shape, dtype);
 }
-Tensor eye(Size sz, dt dtype) {
+TensorImpl eye(Size sz, dt dtype) {
     CHECK_IN_RANGE(sz.ndim, 0, 3,
                    "Eye dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -379,7 +379,7 @@ Tensor eye(Size sz, dt dtype) {
         data[i] = 1;
     }
     Storage st(data.data(), sz.data_len(), dtype);
-    return Tensor(data, sz.shape, dtype);
+    return TensorImpl(data, sz.shape, dtype);
 }
 size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
     // Validate input: indices size and shape dimensions should match
@@ -402,11 +402,11 @@ size_t compute_offset(const vector<size_t> &indices, const Size &shape) {
 
     return offset;
 }
-Tensor cat(vector<Tensor> tensors, int dim) {
+TensorImpl cat(vector<TensorImpl> tensors, int dim) {
     if (tensors.size() == 0) {
-        return Tensor();
+        return TensorImpl();
     }
-    Tensor first = tensors[0];
+    TensorImpl first = tensors[0];
     size_t total_size = 0;
     vector<int> step_sizes(tensors.size());
     int sum_step_sizes = 0;
@@ -442,7 +442,7 @@ Tensor cat(vector<Tensor> tensors, int dim) {
     }
     vector<int> new_shape = first.shape.shape;
     new_shape[dim] = sum_step_sizes / first.stride[dim];
-    return Tensor(data, new_shape);
+    return TensorImpl(data, new_shape);
 }
 // TODO: below
 vector<int> vec_mul(vector<int> v1, vector<int> v2) {
@@ -454,12 +454,12 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     }
     return ret;
 }
-Tensor tile(const Tensor & t, vector<int> reps) {
+TensorImpl tile(const TensorImpl & t, vector<int> reps) {
     CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, reps.size());
-    Tensor new_t = Tensor(t);
+    TensorImpl new_t = TensorImpl(t);
     for (int i = t.ndim; i >= 0; i--) {
-        Tensor tmp = Tensor(new_t);
+        TensorImpl tmp = TensorImpl(new_t);
         for (int j = 0; j < reps[i] - 1; j++) {
             tmp = cat({tmp, new_t}, i);
         }
@@ -467,7 +467,7 @@ Tensor tile(const Tensor & t, vector<int> reps) {
     }
     return new_t;
 }
-Tensor transpose(const Tensor & t, int dim1, int dim2) {
+TensorImpl transpose(const TensorImpl & t, int dim1, int dim2) {
     CHECK_IN_RANGE(dim1, 0, t.ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -481,9 +481,9 @@ Tensor transpose(const Tensor & t, int dim1, int dim2) {
     swap(new_shape[dim1], new_shape[dim2]);
     swap(new_stride[dim1], new_stride[dim2]);
     Storage new_data = Storage(t.data, 0);
-    return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
-Tensor permute(const Tensor & t, vector<int> dims) {
+TensorImpl permute(const TensorImpl & t, vector<int> dims) {
     CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, dims.size());
     vector<int> new_shape = vector<int>(t.ndim);
@@ -493,10 +493,10 @@ Tensor permute(const Tensor & t, vector<int> dims) {
         new_stride[i] = t.stride[dims[i]];
     }
     Storage new_data = Storage(t.data, 0);
-    return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 
-Tensor view(const Tensor & t, vector<int> shape) {
+TensorImpl view(const TensorImpl & t, vector<int> shape) {
     CHECK_CONTIGUOUS(t);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
@@ -506,11 +506,11 @@ Tensor view(const Tensor & t, vector<int> shape) {
                 size, t.shape.data_len());
     Storage new_data = Storage(t.data, 0);
     vector<int> new_stride = init_stride(shape);
-    return Tensor(new_data, shape, new_stride, t.dtype, t.device);
+    return TensorImpl(new_data, shape, new_stride, t.dtype, t.device);
 }
 
 // save and load
-void save(const Tensor &t, string filename) {
+void save(const TensorImpl &t, string filename) {
     vector<data_t> tmp = t.get_serial_data();
     ofstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
@@ -532,7 +532,7 @@ void save(const Tensor &t, string filename) {
     cout << "Saved Successfully! [" << filename << "]" << endl;
 }
 
-Tensor load(string filename) {
+TensorImpl load(string filename) {
     ifstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
         int ndim;
@@ -554,7 +554,7 @@ Tensor load(string filename) {
 
         file.close();
         cout << "Load Successfully! [" << filename << "]" << endl;
-        return Tensor(data, shape, dtype, device);
+        return TensorImpl(data, shape, dtype, device);
     } else {
         throw runtime_error("Unable to open file");
     }
@@ -583,7 +583,7 @@ vector<int> get_dim_idx(size_t index, vector<int> shape,
 //     return offset;
 // }
 
-size_t get_data_idx(size_t index, Tensor t) {
+size_t get_data_idx(size_t index, TensorImpl t) {
     size_t offset = 0;
     size_t tmp = 0;
     for (int i = 0; i < t.shape.shape.size(); i++) {
@@ -595,7 +595,7 @@ size_t get_data_idx(size_t index, Tensor t) {
     return offset;
 }
 
-void Tensor::info(string name) const {
+void TensorImpl::info(string name) const {
     int width = 18;
     cerr << "--------------------------" << endl;
     cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
@@ -605,7 +605,7 @@ void Tensor::info(string name) const {
     cerr << "--------------------------" << endl;
 }
 
-bool Tensor::is_contiguous() const {
+bool TensorImpl::is_contiguous() const {
     if (this->ndim == 1) {
         return true;
     }
@@ -617,14 +617,14 @@ bool Tensor::is_contiguous() const {
     return true;
 }
 
-data_t &Tensor::get(size_t index) {
+data_t &TensorImpl::get(size_t index) {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
     size_t offset = get_data_idx(index, *this);
     return data[offset];
 }
 
-data_t Tensor::get(size_t index) const {
+data_t TensorImpl::get(size_t index) const {
     CHECK_IN_RANGE(index, 0, this->size(), "Invalid index %zu for Size %zu",
                    index, this->size());
     size_t offset = get_data_idx(index, *this);
