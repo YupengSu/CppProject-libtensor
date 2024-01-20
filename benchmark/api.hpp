@@ -27,7 +27,7 @@ namespace ts {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-redundant-declaration"
-
+const ts::dev TARGET_PLATFORM = ts::dev::cuda;
 namespace bm {
 
     /**

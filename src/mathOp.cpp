@@ -34,7 +34,7 @@ TensorImpl add(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         addKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
+    return TensorImpl(new_data, t1.shape, t1.origin_stride, t1.dtype,
                       t1.device);
 }
 TensorImpl add(const TensorImpl& t1, const data_t& t2) {
@@ -51,7 +51,7 @@ TensorImpl add(const TensorImpl& t1, const data_t& t2) {
     } else {
         addKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, t1.origin_stride,
                       t1.dtype, t1.device);
 }
 TensorImpl TensorImpl::add(const TensorImpl& other) const {
@@ -85,7 +85,7 @@ TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         subKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
+    return TensorImpl(new_data, t1.shape, t1.origin_stride, t1.dtype,
                       t1.device);
 }
 TensorImpl sub(const TensorImpl& t1, const data_t& t2) {
@@ -102,7 +102,7 @@ TensorImpl sub(const TensorImpl& t1, const data_t& t2) {
     } else {
         subKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, t1.origin_stride,
                       t1.dtype, t1.device);
 }
 TensorImpl TensorImpl::sub(const TensorImpl& other) const {
@@ -135,7 +135,7 @@ TensorImpl mul(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         mulKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       target_dtype, t1.device);
 }
 TensorImpl mul(const TensorImpl& t1, const data_t& t2) {
@@ -152,7 +152,7 @@ TensorImpl mul(const TensorImpl& t1, const data_t& t2) {
     } else {
         mulKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, t1.origin_stride,
                       target_dtype, t1.device);
 }
 TensorImpl TensorImpl::mul(const TensorImpl& other) const {
@@ -189,7 +189,7 @@ TensorImpl div(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         divKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       target_dtype, t1.device);
 }
 TensorImpl div(const TensorImpl& t1, const data_t& t2) {
@@ -210,7 +210,7 @@ TensorImpl div(const TensorImpl& t1, const data_t& t2) {
     } else {
         divKernelNum(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape.shape, t1.origin_stride,
                       target_dtype, t1.device);
 }
 TensorImpl TensorImpl::div(const TensorImpl& other) const {
@@ -235,13 +235,20 @@ TensorImpl log(const TensorImpl& t) {
     } else {
         target_dtype = dt::float32;
     }
-    vector<data_t> data(t.shape.data_len());
+
     int size = t.shape.data_len();
-    for (int i = 0; i < size; i++) {
-        data[i] = std::log((double)t.get(i));
-        data[i].set_dtype(target_dtype);
+    Storage new_data = Storage(size, t.device);
+    if (t.device == dev::cpu) {
+        int size = t.shape.data_len();
+        for (int i = 0; i < size; i++) {
+            new_data[i] = std::log((double)t.get(i));
+            new_data[i].set_dtype(target_dtype);
+        }
+    } else {
+        logKernel(new_data.dp, t, size, target_dtype);
     }
-    return TensorImpl(data, t.shape.shape, target_dtype, t.device);
+
+    return TensorImpl(new_data, t.shape, t.origin_stride, target_dtype, t.device);
 }
 
 // sum
@@ -255,7 +262,7 @@ TensorImpl sum(const TensorImpl& t, int dim) {
     } else {
         target_dtype = dt::int32;
     }
-        target_dtype = dt::float32;
+    target_dtype = dt::float32;
 
     int size = t.shape.data_len();
     int outer_size = t.shape.outer_size(dim);
@@ -269,8 +276,7 @@ TensorImpl sum(const TensorImpl& t, int dim) {
                 size_t index_old = i * inner_size * t.shape[dim] + j;
                 data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] += t.get(
-                        index_old + k * inner_size );
+                    data[index_new] += t.get(index_old + k * inner_size);
                 }
                 data[index_new].set_dtype(target_dtype);
             }
@@ -300,7 +306,7 @@ TensorImpl mean(const TensorImpl& t, int dim) {
     } else {
         target_dtype = dt::float32;
     }
-        target_dtype = dt::float32;
+    target_dtype = dt::float32;
 
     int size = t.shape.data_len();
     int outer_size = t.shape.outer_size(dim);
@@ -314,8 +320,7 @@ TensorImpl mean(const TensorImpl& t, int dim) {
                 size_t index_old = i * inner_size * t.shape[dim] + j;
                 data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] += t.get(
-                        index_old + k * inner_size );
+                    data[index_new] += t.get(index_old + k * inner_size);
                 }
                 data[index_new] /= t.shape[dim];
                 data[index_new].set_dtype(target_dtype);
@@ -359,9 +364,10 @@ TensorImpl max(const TensorImpl& t, int dim) {
 
                 data[index_new] = t.get(index_old);
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] = data[index_new] >= t.get(index_old  + k * inner_size)
-                                          ? data[index_new]
-                                          : t.get(index_old + k * inner_size);
+                    data[index_new] =
+                        data[index_new] >= t.get(index_old + k * inner_size)
+                            ? data[index_new]
+                            : t.get(index_old + k * inner_size);
                 }
                 data[index_new].set_dtype(target_dtype);
             }
@@ -404,9 +410,10 @@ TensorImpl min(const TensorImpl& t, int dim) {
 
                 data[index_new] = t.get(index_old);
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] = data[index_new] <= t.get(index_old + k * inner_size)
-                                          ? data[i * inner_size + j]
-                                          : t.get(index_old + k * inner_size);
+                    data[index_new] =
+                        data[index_new] <= t.get(index_old + k * inner_size)
+                            ? data[i * inner_size + j]
+                            : t.get(index_old + k * inner_size);
                 }
                 data[index_new].set_dtype(target_dtype);
             }
@@ -445,7 +452,7 @@ TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         eqKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 
@@ -478,7 +485,7 @@ TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         neKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 
@@ -509,7 +516,7 @@ TensorImpl gt(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         gtKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 
@@ -540,7 +547,7 @@ TensorImpl lt(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         ltKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 
@@ -571,7 +578,7 @@ TensorImpl le(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         leKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 
@@ -602,7 +609,7 @@ TensorImpl ge(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         geKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+    return TensorImpl(new_data, t1.shape, t1.origin_stride,
                       dt::bool8, t1.device);
 }
 

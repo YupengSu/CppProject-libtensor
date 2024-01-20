@@ -14,6 +14,7 @@ int main() {
     TensorImpl t3 = t1;
     cout << t3 << endl;
     cout << tile(t3, {5}) << endl;
+    cout << log(t3) << endl;
 
     return 0;
 }

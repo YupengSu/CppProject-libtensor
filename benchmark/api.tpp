@@ -245,7 +245,7 @@ ts::Tensor<T> pointwise_add(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     // TODO
     ts::Tensor<T> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) + b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) + b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -254,7 +254,7 @@ ts::Tensor<T> pointwise_sub(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     // TODO
     ts::Tensor<T> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) - b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) - b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -263,7 +263,7 @@ ts::Tensor<T> pointwise_mul(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     // TODO
     ts::Tensor<T> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) * b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) * b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -272,7 +272,7 @@ ts::Tensor<T> pointwise_div(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     // TODO
     ts::Tensor<T> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) / b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) / b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -280,7 +280,7 @@ template <typename T>
 ts::Tensor<T> pointwise_log(const ts::Tensor<T> &tensor) {
     // TODO
     ts::Tensor<T> res;
-    res.my_tensor = ts::log(tensor.my_tensor).to(ts::dev::cuda);
+    res.my_tensor = ts::log(tensor.my_tensor).to(TARGET_PLATFORM);
     return res;
 }
 
@@ -322,7 +322,7 @@ template <typename T>
 ts::Tensor<bool> eq(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) == b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) == b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -330,7 +330,7 @@ template <typename T>
 ts::Tensor<bool> ne(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) != b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) != b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -338,7 +338,7 @@ template <typename T>
 ts::Tensor<bool> gt(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) > b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) > b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -346,7 +346,7 @@ template <typename T>
 ts::Tensor<bool> ge(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) >= b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) >= b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -354,7 +354,7 @@ template <typename T>
 ts::Tensor<bool> lt(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) < b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) < b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 
@@ -362,7 +362,7 @@ template <typename T>
 ts::Tensor<bool> le(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
     ts::Tensor<bool> res;
     res.my_tensor =
-        a.my_tensor.to(ts::dev::cuda) <= b.my_tensor.to(ts::dev::cuda);
+        a.my_tensor.to(TARGET_PLATFORM) <= b.my_tensor.to(TARGET_PLATFORM);
     return res;
 }
 }  // namespace bm
