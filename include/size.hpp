@@ -18,7 +18,9 @@ class Size {
 
     bool operator!=(Size sz);
 
-    void operator=(Size sz);
+    // void operator=(Size sz);
+    Size& operator=(const Size& sz);
+
     int &operator[](int index);
     int operator[](int index) const;
 

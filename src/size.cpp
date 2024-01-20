@@ -61,9 +61,10 @@ bool Size::operator!=(Size sz) {
     return false;
 }
 
-void Size::operator=(Size sz) {
+Size& Size::operator=(const Size& sz){
     ndim = sz.ndim;
-    shape = sz.shape;
+    shape = vector<int> (sz.shape);
+    return *this;
 }
 
 int &Size::operator[](int index) {

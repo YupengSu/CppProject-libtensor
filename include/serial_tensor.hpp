@@ -58,6 +58,7 @@ class TensorImpl {
     TensorImpl operator[](size_t index) const;
     TensorImpl& operator=(BaseTensor<> bt);
     TensorImpl& operator=(double val);
+    TensorImpl& operator=(const TensorImpl& other);
 
     size_t get_dim() const;
     size_t size(int i) const;

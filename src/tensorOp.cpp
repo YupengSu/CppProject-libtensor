@@ -14,30 +14,6 @@
 using namespace std;
 
 namespace ts {
-// Tensor Tensor::slice(int idx, int dim) {
-//     CHECK_IN_RANGE(dim, 0, ndim,
-//                    "Dimension out of range (expected to be in range of [0, "
-//                    "%d), but got %d)",
-//                    ndim, dim);
-//     CHECK_IN_RANGE(idx, 0, size(dim),
-//                    "Index %d is out of bound for dimension %d with size %zu",
-//                    idx, dim, size(dim));
-
-//     Storage new_data(data, stride[dim] * idx);
-
-//     Size new_shape(shape, dim);
-//     vector<int> new_stride = vector<int>(shape.ndim - 1);
-
-//     int i = 0;
-//     for (; i < dim; ++i) {
-//         new_stride[i] = stride[i];
-//     }
-//     for (; i < new_stride.size(); ++i) {
-//         new_stride[i] = stride[i + 1];
-//     }
-//     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
-
-// }
 
 TensorImpl TensorImpl::slice(int index, pair<int, int> range) const {
     TensorImpl new_data = slice(index);
@@ -227,6 +203,19 @@ TensorImpl &TensorImpl::operator=(double val) {
     }
     return *this;
 }
+
+
+TensorImpl& TensorImpl::operator=(const TensorImpl& other) {
+    this->data = other.data;
+    this->ndim = other.ndim;
+    this->shape = Size(other.shape);
+    this->stride = vector<int> (other.stride);
+    this->origin_stride = vector<int> (other.origin_stride);
+    this->offset = other.offset;
+    this->dtype = other.dtype;
+    this->device = other.device;
+    return *this;
+} 
 
 size_t TensorImpl::get_dim() const { return this->ndim; }
 size_t TensorImpl::size(int i) const { return this->shape.size(i); }
@@ -452,7 +441,7 @@ TensorImpl tile(const TensorImpl & t, vector<int> reps) {
     CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, reps.size());
     TensorImpl new_t = TensorImpl(t);
-    for (int i = t.ndim; i >= 0; i--) {
+    for (int i = t.ndim-1; i >= 0; i--) {
         TensorImpl tmp = TensorImpl(new_t);
         for (int j = 0; j < reps[i] - 1; j++) {
             tmp = cat({tmp, new_t}, i);
@@ -460,6 +449,7 @@ TensorImpl tile(const TensorImpl & t, vector<int> reps) {
         new_t = tmp;
     }
     return new_t;
+    
 }
 TensorImpl transpose(const TensorImpl & t, int dim1, int dim2) {
     CHECK_IN_RANGE(dim1, 0, t.ndim,
