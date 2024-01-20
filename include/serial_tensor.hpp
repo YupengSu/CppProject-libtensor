@@ -52,11 +52,8 @@ class TensorImpl {
     TensorImpl operator()(int index) const;
     TensorImpl operator()(int index, pair<int, int> range) const;
 
-    data_t& operator()(vector<size_t> inds);
-    data_t operator()(vector<size_t> inds) const;
-
-    data_t& operator[](vector<size_t> inds);
-    data_t operator[](vector<size_t> inds) const;
+    data_t& locate(vector<size_t> inds);
+    data_t locate(vector<size_t> inds) const;
 
     TensorImpl operator[](size_t index) const;
     TensorImpl& operator=(BaseTensor<> bt);

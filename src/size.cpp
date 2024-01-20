@@ -103,6 +103,19 @@ size_t Size::data_len() const {
     return sz;
 }
 
-
+size_t Size::inner_size(int dim) const {
+    size_t sz = 1;
+    for (int i = dim + 1; i < ndim; i++) {
+        sz *= shape[i];
+    }
+    return sz;
 }
 
+size_t Size::outer_size(int dim) const {
+    size_t sz = 1;
+    for (int i = 0; i < dim; i++) {
+        sz *= shape[i];
+    }
+    return sz;
+}
+}  // namespace ts

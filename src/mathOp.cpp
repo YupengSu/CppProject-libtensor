@@ -18,7 +18,7 @@ namespace ts {
 
 //////////////add operators
 
-TensorImpl add(const TensorImpl& t1, const TensorImpl& t2)  {
+TensorImpl add(const TensorImpl& t1, const TensorImpl& t2) {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -35,7 +35,7 @@ TensorImpl add(const TensorImpl& t1, const TensorImpl& t2)  {
         addKernel(new_data.dp, t1, t2, size, target_dtype);
     }
     return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
-                  t1.device);
+                      t1.device);
 }
 TensorImpl add(const TensorImpl& t1, const data_t& t2) {
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -52,12 +52,20 @@ TensorImpl add(const TensorImpl& t1, const data_t& t2) {
         addKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
     return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
-                  t1.dtype, t1.device);
+                      t1.dtype, t1.device);
 }
-TensorImpl TensorImpl::add(const TensorImpl& other) const  { return ts::add(*this, other); }
-TensorImpl TensorImpl::add(const data_t& other) const { return ts::add(*this, other); }
-TensorImpl TensorImpl::operator+(const TensorImpl& other) const { return ts::add(*this, other); }
-TensorImpl TensorImpl::operator+(const data_t& other) const { return ts::add(*this, other); }
+TensorImpl TensorImpl::add(const TensorImpl& other) const {
+    return ts::add(*this, other);
+}
+TensorImpl TensorImpl::add(const data_t& other) const {
+    return ts::add(*this, other);
+}
+TensorImpl TensorImpl::operator+(const TensorImpl& other) const {
+    return ts::add(*this, other);
+}
+TensorImpl TensorImpl::operator+(const data_t& other) const {
+    return ts::add(*this, other);
+}
 
 //////////////////sub operators
 TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2) {
@@ -66,7 +74,7 @@ TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     new_data.dtype = target_dtype;
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
@@ -78,7 +86,7 @@ TensorImpl sub(const TensorImpl& t1, const TensorImpl& t2) {
         subKernel(new_data.dp, t1, t2, size, target_dtype);
     }
     return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), t1.dtype,
-                  t1.device);
+                      t1.device);
 }
 TensorImpl sub(const TensorImpl& t1, const data_t& t2) {
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -95,12 +103,20 @@ TensorImpl sub(const TensorImpl& t1, const data_t& t2) {
         subKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
     return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
-                  t1.dtype, t1.device);
+                      t1.dtype, t1.device);
 }
-TensorImpl TensorImpl::sub(const TensorImpl& other) const { return ts::sub(*this, other); }
-TensorImpl TensorImpl::sub(const data_t& other) const { return ts::sub(*this, other); }
-TensorImpl TensorImpl::operator-(const TensorImpl& other) const { return ts::sub(*this, other); }
-TensorImpl TensorImpl::operator-(const data_t& other) const { return ts::sub(*this, other); }
+TensorImpl TensorImpl::sub(const TensorImpl& other) const {
+    return ts::sub(*this, other);
+}
+TensorImpl TensorImpl::sub(const data_t& other) const {
+    return ts::sub(*this, other);
+}
+TensorImpl TensorImpl::operator-(const TensorImpl& other) const {
+    return ts::sub(*this, other);
+}
+TensorImpl TensorImpl::operator-(const data_t& other) const {
+    return ts::sub(*this, other);
+}
 
 ////////////////mul operators
 TensorImpl mul(const TensorImpl& t1, const TensorImpl& t2) {
@@ -119,8 +135,8 @@ TensorImpl mul(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         mulKernel(new_data.dp, t1, t2, size, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
-                  t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      target_dtype, t1.device);
 }
 TensorImpl mul(const TensorImpl& t1, const data_t& t2) {
     int size = t1.shape.data_len();
@@ -137,12 +153,20 @@ TensorImpl mul(const TensorImpl& t1, const data_t& t2) {
         mulKernelNum(new_data.dp, t1, t2, size, target_dtype);
     }
     return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
-                  target_dtype, t1.device);
+                      target_dtype, t1.device);
 }
-TensorImpl TensorImpl::mul(const TensorImpl& other) const { return ts::mul(*this, other); }
-TensorImpl TensorImpl::mul(const data_t& other) const { return ts::mul(*this, other); }
-TensorImpl TensorImpl::operator*(const TensorImpl& other) const { return ts::mul(*this, other); }
-TensorImpl TensorImpl::operator*(const data_t& other) const { return ts::mul(*this, other); }
+TensorImpl TensorImpl::mul(const TensorImpl& other) const {
+    return ts::mul(*this, other);
+}
+TensorImpl TensorImpl::mul(const data_t& other) const {
+    return ts::mul(*this, other);
+}
+TensorImpl TensorImpl::operator*(const TensorImpl& other) const {
+    return ts::mul(*this, other);
+}
+TensorImpl TensorImpl::operator*(const data_t& other) const {
+    return ts::mul(*this, other);
+}
 
 ////////////////////////div operators
 TensorImpl div(const TensorImpl& t1, const TensorImpl& t2) {
@@ -165,8 +189,8 @@ TensorImpl div(const TensorImpl& t1, const TensorImpl& t2) {
     } else {
         divKernel(new_data.dp, t1, t2, size);
     }
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), target_dtype,
-                  t1.device);
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      target_dtype, t1.device);
 }
 TensorImpl div(const TensorImpl& t1, const data_t& t2) {
     int size = t1.shape.data_len();
@@ -187,13 +211,20 @@ TensorImpl div(const TensorImpl& t1, const data_t& t2) {
         divKernelNum(new_data.dp, t1, t2, size);
     }
     return TensorImpl(new_data, t1.shape.shape, init_stride(t1.shape.shape),
-                  target_dtype, t1.device);
+                      target_dtype, t1.device);
 }
-TensorImpl TensorImpl::div(const TensorImpl& other) const { return ts::div(*this, other); }
-TensorImpl TensorImpl::div(const data_t& other) const { return ts::div(*this, other); }
-TensorImpl TensorImpl::operator/(const TensorImpl& other) const { return ts::div(*this, other); }
-TensorImpl TensorImpl::operator/(const data_t& other) const { return ts::div(*this, other); }
-
+TensorImpl TensorImpl::div(const TensorImpl& other) const {
+    return ts::div(*this, other);
+}
+TensorImpl TensorImpl::div(const data_t& other) const {
+    return ts::div(*this, other);
+}
+TensorImpl TensorImpl::operator/(const TensorImpl& other) const {
+    return ts::div(*this, other);
+}
+TensorImpl TensorImpl::operator/(const data_t& other) const {
+    return ts::div(*this, other);
+}
 
 // Such operators are not support CUDA acceleration
 ///////////log operators
@@ -224,143 +255,174 @@ TensorImpl sum(const TensorImpl& t, int dim) {
     } else {
         target_dtype = dt::int32;
     }
-    if (t.get_dim() == 1) {
-        vector<data_t> newdata(1);
-        vector<data_t> data(t.get_serial_data());
-        double sum = 0.0;
-        for (int i = 0; i < t.shape[dim]; i++) {
-            sum += data[i].to_dt(dt::float64).data.tensor_float64;
-        }
-        newdata[0] = sum;
-        newdata[0].set_dtype(target_dtype);
-        return TensorImpl(newdata, {1}, target_dtype, t.device);
-    } else {
-        vector<data_t> newdata(t.shape[dim]);
-        for (int i = 0; i < t.shape[dim]; i++) {
-            vector<data_t> data(t.slice(i, dim).get_serial_data());
-            double sum = 0.0;
-            for (int j = 0; j < data.size(); j++) {
-                sum += data[j].to_dt(dt::float64).data.tensor_float64;
+        target_dtype = dt::float32;
+
+    int size = t.shape.data_len();
+    int outer_size = t.shape.outer_size(dim);
+    int inner_size = t.shape.inner_size(dim);
+    int new_size = outer_size * inner_size;
+    vector<data_t> data(new_size);
+    if (t.device == dev::cpu) {
+        for (int i = 0; i < outer_size; i++) {
+            for (int j = 0; j < inner_size; j++) {
+                size_t index_new = i * inner_size + j;
+                size_t index_old = i * inner_size * t.shape[dim] + j;
+                data[index_new] = 0.0;
+                for (int k = 0; k < t.shape[dim]; k++) {
+                    data[index_new] += t.get(
+                        index_old + k * inner_size );
+                }
+                data[index_new].set_dtype(target_dtype);
             }
-
-            newdata[i] = sum;
-            newdata[i].set_dtype(target_dtype);
         }
-        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
     }
+    // else {
+    //     sumKernel(data, t, dim, outer_size, inner_size);
+    // }
+    vector<int> new_shape = t.shape.shape;
+    new_shape.erase(new_shape.begin() + dim);
+    return TensorImpl(data, new_shape, target_dtype, t.device);
+
+    // Reduce dim
 }
 
-TensorImpl TensorImpl::sum(int dim) const {
-    return ts::sum(*this, dim);
-}
+TensorImpl TensorImpl::sum(int dim) const { return ts::sum(*this, dim); }
 
 // mean
 TensorImpl mean(const TensorImpl& t, int dim) {
-    dt target_dtype = t.dtype;
-    if (t.get_dim() == 1) {
-        vector<data_t> newdata(1);
-        vector<data_t> data(t.get_serial_data());
-        double sum = 0.0;
-        for (int i = 0; i < t.shape[dim]; i++) {
-            sum += data[i].to_dt(dt::float64).data.tensor_float64;
-        }
-        newdata[0] = sum / t.shape[dim];
-        newdata[0].set_dtype(target_dtype);
-        return TensorImpl(newdata, {1}, target_dtype, t.device);
+    CHECK_IN_RANGE(dim, 0, t.get_dim(),
+                   "Invalid mean dim. %d out of %zu-D Tensor", dim,
+                   t.get_dim());
+
+    dt target_dtype;
+    if (is_floating(t.dtype)) {
+        target_dtype = t.dtype;
     } else {
-        vector<data_t> newdata(t.shape[dim]);
-        for (int i = 0; i < t.shape[dim]; i++) {
-            vector<data_t> data(t.slice(i, dim).get_serial_data());
-            double sum = 0.0;
-            for (int j = 0; j < data.size(); j++) {
-                sum += data[j].to_dt(dt::float64).data.tensor_float64;
-            }
-
-            newdata[i] = sum / t.shape[dim];
-            newdata[i].set_dtype(target_dtype);
-        }
-        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
+        target_dtype = dt::float32;
     }
+        target_dtype = dt::float32;
+
+    int size = t.shape.data_len();
+    int outer_size = t.shape.outer_size(dim);
+    int inner_size = t.shape.inner_size(dim);
+    int new_size = outer_size * inner_size;
+    vector<data_t> data(new_size);
+    if (t.device == dev::cpu) {
+        for (int i = 0; i < outer_size; i++) {
+            for (int j = 0; j < inner_size; j++) {
+                size_t index_new = i * inner_size + j;
+                size_t index_old = i * inner_size * t.shape[dim] + j;
+                data[index_new] = 0.0;
+                for (int k = 0; k < t.shape[dim]; k++) {
+                    data[index_new] += t.get(
+                        index_old + k * inner_size );
+                }
+                data[index_new] /= t.shape[dim];
+                data[index_new].set_dtype(target_dtype);
+            }
+        }
+    }
+    // else {
+    //     sumKernel(data, t, dim, outer_size, inner_size);
+    // }
+    vector<int> new_shape = t.shape.shape;
+    new_shape.erase(new_shape.begin() + dim);
+    return TensorImpl(data, new_shape, target_dtype, t.device);
+
+    // Reduce dim
 }
 
-TensorImpl TensorImpl::mean(int dim) const {
-    return ts::mean(*this, dim);
-}
+TensorImpl TensorImpl::mean(int dim) const { return ts::mean(*this, dim); }
 
 // max
 TensorImpl max(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid max dim. %d out of %zu-D Tensor", dim, t.get_dim());
-    dt target_dtype = t.dtype;
-    if (t.get_dim() == 1) {
-        vector<data_t> newdata(1);
-        vector<data_t> data(t.get_serial_data());
-        double max = data[0].to_dt(dt::float64).data.tensor_float64;
-        for (int i = 1; i < t.shape[dim]; i++) {
-            double tmp = data[i].to_dt(dt::float64).data.tensor_float64;
-            max = tmp > max ? tmp : max;
-        }
-        newdata[0] = max;
-        newdata[0].set_dtype(target_dtype);
-        return TensorImpl(newdata, {1}, target_dtype, t.device);
+
+    dt target_dtype;
+    if (is_floating(t.dtype)) {
+        target_dtype = t.dtype;
     } else {
-        vector<data_t> newdata(t.shape[dim]);
-        for (int i = 0; i < t.shape[dim]; i++) {
-            vector<data_t> data(t.slice(i, dim).get_serial_data());
-            double max = data[0].to_dt(dt::float64).data.tensor_float64;
-            for (int j = 1; j < data.size(); j++) {
-                double tmp = data[i].to_dt(dt::float64).data.tensor_float64;
-                max = tmp > max ? tmp : max;
-            }
-
-            newdata[i] = max;
-            newdata[i].set_dtype(target_dtype);
-        }
-        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
+        target_dtype = dt::float32;
     }
+
+    int size = t.shape.data_len();
+    int outer_size = t.shape.outer_size(dim);
+    int inner_size = t.shape.inner_size(dim);
+    int new_size = outer_size * inner_size;
+    vector<data_t> data(new_size);
+    if (t.device == dev::cpu) {
+        for (int i = 0; i < outer_size; i++) {
+            for (int j = 0; j < inner_size; j++) {
+                size_t index_new = i * inner_size + j;
+                size_t index_old = i * inner_size * t.shape[dim] + j;
+
+                data[index_new] = t.get(index_old);
+                for (int k = 0; k < t.shape[dim]; k++) {
+                    data[index_new] = data[index_new] >= t.get(index_old  + k * inner_size)
+                                          ? data[index_new]
+                                          : t.get(index_old + k * inner_size);
+                }
+                data[index_new].set_dtype(target_dtype);
+            }
+        }
+    }
+    // else {
+    //     sumKernel(data, t, dim, outer_size, inner_size);
+    // }
+    vector<int> new_shape = t.shape.shape;
+    new_shape.erase(new_shape.begin() + dim);
+    return TensorImpl(data, new_shape, target_dtype, t.device);
+
+    // Reduce dim
 }
 
-TensorImpl TensorImpl::max(int dim) const {
-    return ts::max(*this, dim);
-}
+TensorImpl TensorImpl::max(int dim) const { return ts::max(*this, dim); }
 
 // min
 TensorImpl min(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid min dim. %d out of %zu-D Tensor", dim, t.get_dim());
-    dt target_dtype = t.dtype;
-    if (t.get_dim() == 1) {
-        vector<data_t> newdata(1);
-        vector<data_t> data(t.get_serial_data());
-        double min = data[0].to_dt(dt::float64).data.tensor_float64;
-        for (int i = 1; i < t.shape[dim]; i++) {
-            double tmp = data[i].to_dt(dt::float64).data.tensor_float64;
-            min = tmp < min ? tmp : min;
-        }
-        newdata[0] = min;
-        newdata[0].set_dtype(target_dtype);
-        return TensorImpl(newdata, {1}, target_dtype, t.device);
+
+    dt target_dtype;
+    if (is_floating(t.dtype)) {
+        target_dtype = t.dtype;
     } else {
-        vector<data_t> newdata(t.shape[dim]);
-        for (int i = 0; i < t.shape[dim]; i++) {
-            vector<data_t> data(t.slice(i, dim).get_serial_data());
-            double min = data[0].to_dt(dt::float64).data.tensor_float64;
-            for (int j = 1; j < data.size(); j++) {
-                double tmp = data[i].to_dt(dt::float64).data.tensor_float64;
-                min = tmp < min ? tmp : min;
-            }
-
-            newdata[i] = min;
-            newdata[i].set_dtype(target_dtype);
-        }
-        return TensorImpl(newdata, {t.shape[dim]}, target_dtype, t.device);
+        target_dtype = dt::float32;
     }
+
+    int size = t.shape.data_len();
+    int outer_size = t.shape.outer_size(dim);
+    int inner_size = t.shape.inner_size(dim);
+    int new_size = outer_size * inner_size;
+    vector<data_t> data(new_size);
+    if (t.device == dev::cpu) {
+        for (int i = 0; i < outer_size; i++) {
+            for (int j = 0; j < inner_size; j++) {
+                size_t index_new = i * inner_size + j;
+                size_t index_old = i * inner_size * t.shape[dim] + j;
+
+                data[index_new] = t.get(index_old);
+                for (int k = 0; k < t.shape[dim]; k++) {
+                    data[index_new] = data[index_new] <= t.get(index_old + k * inner_size)
+                                          ? data[i * inner_size + j]
+                                          : t.get(index_old + k * inner_size);
+                }
+                data[index_new].set_dtype(target_dtype);
+            }
+        }
+    }
+    // else {
+    //     sumKernel(data, t, dim, outer_size, inner_size);
+    // }
+    vector<int> new_shape = t.shape.shape;
+    new_shape.erase(new_shape.begin() + dim);
+    return TensorImpl(data, new_shape, target_dtype, t.device);
+
+    // Reduce dim
 }
 
-TensorImpl TensorImpl::min(int dim) const {
-    return ts::min(*this, dim);
-}
-
+TensorImpl TensorImpl::min(int dim) const { return ts::min(*this, dim); }
 
 ///////////////comparison
 
@@ -370,7 +432,7 @@ TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) == t2.get(i)) {
@@ -382,8 +444,9 @@ TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         eqKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::eq(const TensorImpl& other) const {
@@ -402,7 +465,7 @@ TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) != t2.get(i)) {
@@ -414,8 +477,9 @@ TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         neKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::ne(const TensorImpl& other) const {
@@ -432,7 +496,7 @@ TensorImpl gt(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) > t2.get(i)) {
@@ -444,8 +508,9 @@ TensorImpl gt(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         gtKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::gt(const TensorImpl& other) const {
@@ -462,7 +527,7 @@ TensorImpl lt(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) < t2.get(i)) {
@@ -474,8 +539,9 @@ TensorImpl lt(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         ltKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::lt(const TensorImpl& other) const {
@@ -492,7 +558,7 @@ TensorImpl le(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) <= t2.get(i)) {
@@ -504,8 +570,9 @@ TensorImpl le(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         leKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::le(const TensorImpl& other) const {
@@ -522,7 +589,7 @@ TensorImpl ge(const TensorImpl& t1, const TensorImpl& t2) {
     dt target_dtype = dt::bool8;
     int size = t1.size();
     Storage new_data = Storage(size, t1.device);
-    
+
     if (t1.device == dev::cpu) {
         for (int i = 0; i < size; i++) {
             if (t1.get(i) >= t2.get(i)) {
@@ -534,8 +601,9 @@ TensorImpl ge(const TensorImpl& t1, const TensorImpl& t2) {
         }
     } else {
         geKernel(new_data.dp, t1, t2, size);
-    }    
-    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
+    }
+    return TensorImpl(new_data, t1.shape, init_stride(t1.shape.shape),
+                      dt::bool8, t1.device);
 }
 
 TensorImpl TensorImpl::ge(const TensorImpl& other) const {
@@ -545,8 +613,6 @@ TensorImpl TensorImpl::ge(const TensorImpl& other) const {
 TensorImpl TensorImpl::operator>=(const TensorImpl& other) const {
     return ts::ge(*this, other);
 }
-
-
 
 //////////////other
 TensorImpl einsum(string eq, vector<TensorImpl> tensors) {

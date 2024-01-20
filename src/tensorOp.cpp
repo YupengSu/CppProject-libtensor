@@ -152,7 +152,10 @@ TensorImpl TensorImpl::operator()(int index, pair<int, int> range) const {
     new_data.data.dp += range.first * new_data.stride[0];
     return new_data;
 }
-data_t &TensorImpl::operator[](vector<size_t> inds) {
+data_t &TensorImpl::locate(vector<size_t> inds) {
+    if (inds.size() == 0) {
+        return data[0];
+    }
     CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
@@ -165,7 +168,10 @@ data_t &TensorImpl::operator[](vector<size_t> inds) {
     }
     return data[offset];
 }
-data_t TensorImpl::operator[](vector<size_t> inds) const {
+data_t TensorImpl::locate(vector<size_t> inds) const {
+    if (inds.size() == 0) {
+        return data[0];
+    }
     CHECK_EQUAL(ndim, inds.size(), "Invalid %zuD indices for %dD tensor",
                 inds.size(), ndim);
     size_t offset = 0, i = 0;
@@ -179,25 +185,6 @@ data_t TensorImpl::operator[](vector<size_t> inds) const {
     return data[offset];
 }
 
-// Tensor &Tensor::operator[](size_t idx) {
-//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
-//     idx,
-//                    this->size());
-//     size_t offset =
-//         get_data_idx(idx, this->shape.shape, this->stride,
-//         this->origin_stride);
-//     return data[offset];
-// }
-
-// data_t Tensor::operator[](size_t idx) const {
-//     CHECK_IN_RANGE(idx, 0, this->size(), "Invalid index %zu for Size %zu",
-//     idx,
-//                    this->size());
-//     size_t offset =
-//         get_data_idx(idx, this->shape.shape, this->stride,
-//         this->origin_stride);
-//     return data[offset];
-// }
 
 TensorImpl TensorImpl::operator[](size_t index) const { return slice(index); }
 

@@ -33,5 +33,7 @@ class Size {
     size_t size(int i) const;
 
     size_t data_len() const;
+    size_t inner_size(int dim) const;
+    size_t outer_size(int dim) const;
 };
 }  // namespace ts
