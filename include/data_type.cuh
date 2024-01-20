@@ -147,7 +147,6 @@ class data_t {
         }
         return bool(data.tensor_bool);
     }
-
     operator int() {
         switch (dtype) {
             case dt::int8:
@@ -170,7 +169,6 @@ class data_t {
         }
         return int(data.tensor_int32);
     }
-
     operator int8_t() {
         switch (dtype) {
             case dt::int8:
@@ -319,8 +317,6 @@ class data_t {
     void set_dtype(dt dtype) {
         *this = this->to_dt(dtype);
     }
-
-
 
     bool operator==(data_t data) {
         data = data.to_dt(dtype);

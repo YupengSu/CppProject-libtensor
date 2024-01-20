@@ -1,8 +1,6 @@
 #include <ctime>
 
-#include "data_type.cuh"
 #include "serial_tensor.hpp"
-#include "test_cases.hpp"
 
 using namespace ts;
 using namespace std;
@@ -29,6 +27,5 @@ int main() {
     cout << ts::min(t5, 1) << endl;
     cout << t2.min(0) << endl;
     cout << (t1 >= t2);
-    // cout << t3.get(0).dtype << endl;
     return 0;
 }

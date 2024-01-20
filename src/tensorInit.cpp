@@ -48,7 +48,7 @@ Tensor::Tensor(const Storage &i_data, const Size &i_shape,
     this->offset = 0;
 }
 
-Tensor Tensor::to(dev device) {
+Tensor Tensor::to(dev device) const {
     Storage new_data = Storage(this->size(), device);
     if (device == dev::cpu) {
             memcpy(new_data.dp, this->get_serial_data().data(),
@@ -69,7 +69,7 @@ Tensor Tensor::to(dev device) {
 }
 
 
-Tensor Tensor::cuda() { return this->to(dev::cuda); }
-Tensor Tensor::cpu() { return this->to(dev::cpu); }
-Tensor Tensor::clone() { return this->to(this->device); }
+Tensor Tensor::cuda() const{ return this->to(dev::cuda); }
+Tensor Tensor::cpu() const{ return this->to(dev::cpu); }
+Tensor Tensor::clone() const { return this->to(this->device); }
 }  // namespace ts

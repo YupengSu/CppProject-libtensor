@@ -14,30 +14,30 @@
 using namespace std;
 
 namespace ts {
-Tensor Tensor::slice(int idx, int dim) {
-    CHECK_IN_RANGE(dim, 0, ndim,
-                   "Dimension out of range (expected to be in range of [0, "
-                   "%d), but got %d)",
-                   ndim, dim);
-    CHECK_IN_RANGE(idx, 0, size(dim),
-                   "Index %d is out of bound for dimension %d with size %zu",
-                   idx, dim, size(dim));
+// Tensor Tensor::slice(int idx, int dim) {
+//     CHECK_IN_RANGE(dim, 0, ndim,
+//                    "Dimension out of range (expected to be in range of [0, "
+//                    "%d), but got %d)",
+//                    ndim, dim);
+//     CHECK_IN_RANGE(idx, 0, size(dim),
+//                    "Index %d is out of bound for dimension %d with size %zu",
+//                    idx, dim, size(dim));
 
-    Storage new_data(data, stride[dim] * idx);
+//     Storage new_data(data, stride[dim] * idx);
 
-    Size new_shape(shape, dim);
-    vector<int> new_stride = vector<int>(shape.ndim - 1);
+//     Size new_shape(shape, dim);
+//     vector<int> new_stride = vector<int>(shape.ndim - 1);
 
-    int i = 0;
-    for (; i < dim; ++i) {
-        new_stride[i] = stride[i];
-    }
-    for (; i < new_stride.size(); ++i) {
-        new_stride[i] = stride[i + 1];
-    }
-    Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype, device);
-    return nt;
-}
+//     int i = 0;
+//     for (; i < dim; ++i) {
+//         new_stride[i] = stride[i];
+//     }
+//     for (; i < new_stride.size(); ++i) {
+//         new_stride[i] = stride[i + 1];
+//     }
+//     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
+
+// }
 
 Tensor Tensor::slice(int idx, int dim) const {
     CHECK_IN_RANGE(dim, 0, ndim,
@@ -62,10 +62,9 @@ Tensor Tensor::slice(int idx, int dim) const {
     for (; i < new_stride.size(); ++i) {
         new_stride[i] = stride[i + 1];
     }
-    Tensor nt = Tensor(new_data, Size(new_shape), new_stride, dtype, device);
-    return nt;
+    return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
-Tensor Tensor::permute(vector<int> dims) {
+Tensor Tensor::permute(vector<int> dims) const {
     CHECK_EQUAL(ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu", ndim,
                 dims.size());
     vector<int> new_shape = vector<int>(ndim);
@@ -78,7 +77,7 @@ Tensor Tensor::permute(vector<int> dims) {
     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
-Tensor Tensor::transpose(int dim1, int dim2) {
+Tensor Tensor::transpose(int dim1, int dim2) const {
     CHECK_IN_RANGE(dim1, 0, ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -96,7 +95,7 @@ Tensor Tensor::transpose(int dim1, int dim2) {
     return Tensor(new_data, Size(new_shape), new_stride, dtype, device);
 }
 
-Tensor Tensor::view(vector<int> shape) {
+Tensor Tensor::view(vector<int> shape) const {
     CHECK_CONTIGUOUS(*this);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
@@ -139,8 +138,8 @@ ostream &operator<<(ostream &os, Tensor t) {
 
     return os;
 }
-Tensor Tensor::operator()(int index) { return slice(index); }
-Tensor Tensor::operator()(int index, pair<int, int> range) {
+Tensor Tensor::operator()(int index) const { return slice(index); }
+Tensor Tensor::operator()(int index, pair<int, int> range) const {
     Tensor new_data = slice(index);
     new_data.shape[0] = range.second - range.first;
     new_data.data.dp += range.first * new_data.stride[0];
@@ -193,7 +192,7 @@ data_t Tensor::operator[](vector<size_t> inds) const {
 //     return data[offset];
 // }
 
-Tensor Tensor::operator[](size_t index) { return slice(index); }
+Tensor Tensor::operator[](size_t index) const { return slice(index); }
 
 Tensor &Tensor::operator=(BaseTensor<> bt) {
     vector<data_t> nt(bt.shape.data_len());
@@ -239,7 +238,7 @@ size_t Tensor::get_dim() const { return this->ndim; }
 size_t Tensor::size(int i) const { return this->shape.size(i); }
 size_t Tensor::size() const { return this->shape.data_len(); }
 
-void *Tensor::data_ptr() { return (void *)data.bp.get(); }
+void *Tensor::data_ptr() const { return (void *)data.bp.get(); }
 string Tensor::type() const {
     switch (this->dtype) {
         case dt::int8:
@@ -455,7 +454,7 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     }
     return ret;
 }
-Tensor tile(Tensor t, vector<int> reps) {
+Tensor tile(const Tensor & t, vector<int> reps) {
     CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, reps.size());
     Tensor new_t = Tensor(t);
@@ -468,7 +467,7 @@ Tensor tile(Tensor t, vector<int> reps) {
     }
     return new_t;
 }
-Tensor transpose(Tensor t, int dim1, int dim2) {
+Tensor transpose(const Tensor & t, int dim1, int dim2) {
     CHECK_IN_RANGE(dim1, 0, t.ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -484,7 +483,7 @@ Tensor transpose(Tensor t, int dim1, int dim2) {
     Storage new_data = Storage(t.data, 0);
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
-Tensor permute(Tensor t, vector<int> dims) {
+Tensor permute(const Tensor & t, vector<int> dims) {
     CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, dims.size());
     vector<int> new_shape = vector<int>(t.ndim);
@@ -497,7 +496,7 @@ Tensor permute(Tensor t, vector<int> dims) {
     return Tensor(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 
-Tensor view(Tensor t, vector<int> shape) {
+Tensor view(const Tensor & t, vector<int> shape) {
     CHECK_CONTIGUOUS(t);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
@@ -511,7 +510,7 @@ Tensor view(Tensor t, vector<int> shape) {
 }
 
 // save and load
-void save(const Tensor& t, string filename) {
+void save(const Tensor &t, string filename) {
     vector<data_t> tmp = t.get_serial_data();
     ofstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
@@ -602,7 +601,7 @@ void Tensor::info(string name) const {
     cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
     cerr << "Dim:    " << setw(width) << left << ndim << "|" << endl;
     cerr << "Shape:  " << setw(width) << left << shape << "|" << endl;
-    cerr << "Device: " <<  setw(width) << left << device << "|" << endl;
+    cerr << "Device: " << setw(width) << left << device << "|" << endl;
     cerr << "--------------------------" << endl;
 }
 

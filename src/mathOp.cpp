@@ -18,7 +18,7 @@ namespace ts {
 
 //////////////add operators
 
-Tensor add(const Tensor& t1, const Tensor& t2) {
+Tensor add(const Tensor& t1, const Tensor& t2)  {
     CHECK_SAME_SHAPE(t1, t2);
     CHECK_SAME_DEVICE(t1, t2);
     dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
@@ -54,10 +54,10 @@ Tensor add(const Tensor& t1, const data_t& t2) {
     return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   t1.dtype, t1.device);
 }
-Tensor Tensor::add(const Tensor& other) { return ts::add(*this, other); }
-Tensor Tensor::add(const data_t& other) { return ts::add(*this, other); }
-Tensor Tensor::operator+(const Tensor& other) { return ts::add(*this, other); }
-Tensor Tensor::operator+(const data_t& other) { return ts::add(*this, other); }
+Tensor Tensor::add(const Tensor& other) const  { return ts::add(*this, other); }
+Tensor Tensor::add(const data_t& other) const { return ts::add(*this, other); }
+Tensor Tensor::operator+(const Tensor& other) const { return ts::add(*this, other); }
+Tensor Tensor::operator+(const data_t& other) const { return ts::add(*this, other); }
 
 //////////////////sub operators
 Tensor sub(const Tensor& t1, const Tensor& t2) {
@@ -97,10 +97,10 @@ Tensor sub(const Tensor& t1, const data_t& t2) {
     return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   t1.dtype, t1.device);
 }
-Tensor Tensor::sub(const Tensor& other) { return ts::sub(*this, other); }
-Tensor Tensor::sub(const data_t& other) { return ts::sub(*this, other); }
-Tensor Tensor::operator-(const Tensor& other) { return ts::sub(*this, other); }
-Tensor Tensor::operator-(const data_t& other) { return ts::sub(*this, other); }
+Tensor Tensor::sub(const Tensor& other) const { return ts::sub(*this, other); }
+Tensor Tensor::sub(const data_t& other) const { return ts::sub(*this, other); }
+Tensor Tensor::operator-(const Tensor& other) const { return ts::sub(*this, other); }
+Tensor Tensor::operator-(const data_t& other) const { return ts::sub(*this, other); }
 
 ////////////////mul operators
 Tensor mul(const Tensor& t1, const Tensor& t2) {
@@ -139,10 +139,10 @@ Tensor mul(const Tensor& t1, const data_t& t2) {
     return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   target_dtype, t1.device);
 }
-Tensor Tensor::mul(const Tensor& other) { return ts::mul(*this, other); }
-Tensor Tensor::mul(const data_t& other) { return ts::mul(*this, other); }
-Tensor Tensor::operator*(const Tensor& other) { return ts::mul(*this, other); }
-Tensor Tensor::operator*(const data_t& other) { return ts::mul(*this, other); }
+Tensor Tensor::mul(const Tensor& other) const { return ts::mul(*this, other); }
+Tensor Tensor::mul(const data_t& other) const { return ts::mul(*this, other); }
+Tensor Tensor::operator*(const Tensor& other) const { return ts::mul(*this, other); }
+Tensor Tensor::operator*(const data_t& other) const { return ts::mul(*this, other); }
 
 ////////////////////////div operators
 Tensor div(const Tensor& t1, const Tensor& t2) {
@@ -189,10 +189,10 @@ Tensor div(const Tensor& t1, const data_t& t2) {
     return Tensor(new_data, t1.shape.shape, init_stride(t1.shape.shape),
                   target_dtype, t1.device);
 }
-Tensor Tensor::div(const Tensor& other) { return ts::div(*this, other); }
-Tensor Tensor::div(const data_t& other) { return ts::div(*this, other); }
-Tensor Tensor::operator/(const Tensor& other) { return ts::div(*this, other); }
-Tensor Tensor::operator/(const data_t& other) { return ts::div(*this, other); }
+Tensor Tensor::div(const Tensor& other) const { return ts::div(*this, other); }
+Tensor Tensor::div(const data_t& other) const { return ts::div(*this, other); }
+Tensor Tensor::operator/(const Tensor& other) const { return ts::div(*this, other); }
+Tensor Tensor::operator/(const data_t& other) const { return ts::div(*this, other); }
 
 
 // Such operators are not support CUDA acceleration
@@ -250,7 +250,7 @@ Tensor sum(const Tensor& t, int dim) {
     }
 }
 
-Tensor Tensor::sum(int dim) {
+Tensor Tensor::sum(int dim) const {
     return ts::sum(*this, dim);
 }
 
@@ -283,7 +283,7 @@ Tensor mean(const Tensor& t, int dim) {
     }
 }
 
-Tensor Tensor::mean(int dim) {
+Tensor Tensor::mean(int dim) const {
     return ts::mean(*this, dim);
 }
 
@@ -320,7 +320,7 @@ Tensor max(const Tensor& t, int dim) {
     }
 }
 
-Tensor Tensor::max(int dim) {
+Tensor Tensor::max(int dim) const {
     return ts::max(*this, dim);
 }
 
@@ -357,7 +357,7 @@ Tensor min(const Tensor& t, int dim) {
     }
 }
 
-Tensor Tensor::min(int dim) {
+Tensor Tensor::min(int dim) const {
     return ts::min(*this, dim);
 }
 
@@ -386,11 +386,11 @@ Tensor eq(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::eq(const Tensor& other) {
+Tensor Tensor::eq(const Tensor& other) const {
     return ts::eq(*this, other);
 }
 
-Tensor Tensor::operator==(const Tensor& other) {
+Tensor Tensor::operator==(const Tensor& other) const {
     return ts::eq(*this, other);
 }
 
@@ -418,11 +418,11 @@ Tensor ne(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::ne(const Tensor& other) {
+Tensor Tensor::ne(const Tensor& other) const {
     return ts::ne(*this, other);
 }
 
-Tensor Tensor::operator!=(const Tensor& other) {
+Tensor Tensor::operator!=(const Tensor& other) const {
     return ts::ne(*this, other);
 }
 
@@ -448,11 +448,11 @@ Tensor gt(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::gt(const Tensor& other) {
+Tensor Tensor::gt(const Tensor& other) const {
     return ts::gt(*this, other);
 }
 
-Tensor Tensor::operator>(const Tensor& other) {
+Tensor Tensor::operator>(const Tensor& other) const {
     return ts::gt(*this, other);
 }
 
@@ -478,11 +478,11 @@ Tensor lt(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::lt(const Tensor& other) {
+Tensor Tensor::lt(const Tensor& other) const {
     return ts::lt(*this, other);
 }
 
-Tensor Tensor::operator<(const Tensor& other) {
+Tensor Tensor::operator<(const Tensor& other) const {
     return ts::lt(*this, other);
 }
 
@@ -508,11 +508,11 @@ Tensor le(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::le(const Tensor& other) {
+Tensor Tensor::le(const Tensor& other) const {
     return ts::le(*this, other);
 }
 
-Tensor Tensor::operator<=(const Tensor& other) {
+Tensor Tensor::operator<=(const Tensor& other) const {
     return ts::le(*this, other);
 }
 
@@ -538,11 +538,11 @@ Tensor ge(const Tensor& t1, const Tensor& t2) {
     return Tensor(new_data, t1.shape, init_stride(t1.shape.shape), dt::bool8, t1.device);
 }
 
-Tensor Tensor::ge(const Tensor& other) {
+Tensor Tensor::ge(const Tensor& other) const {
     return ts::ge(*this, other);
 }
 
-Tensor Tensor::operator>=(const Tensor& other) {
+Tensor Tensor::operator>=(const Tensor& other) const {
     return ts::ge(*this, other);
 }
 
