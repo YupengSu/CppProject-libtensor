@@ -39,6 +39,13 @@ namespace ts {
 
 // }
 
+TensorImpl TensorImpl::slice(int index, pair<int, int> range) const {
+    TensorImpl new_data = slice(index);
+    new_data.shape[0] = range.second - range.first;
+    new_data.data.dp += range.first * new_data.stride[0];
+    return new_data;
+}
+
 TensorImpl TensorImpl::slice(int idx, int dim) const {
     CHECK_IN_RANGE(dim, 0, ndim,
                    "Dimension out of range (expected to be in range of [0, "

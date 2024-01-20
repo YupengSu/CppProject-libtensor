@@ -66,6 +66,7 @@ class TensorImpl {
     size_t size(int i) const;
     vector<data_t> get_serial_data() const;
     TensorImpl slice(int idx, int dim = 0) const;
+    TensorImpl slice(int index, pair<int, int> range) const;
     TensorImpl permute(vector<int> dims) const;
     TensorImpl transpose(int dim1, int dim2) const;
     TensorImpl view(vector<int> shape) const;
