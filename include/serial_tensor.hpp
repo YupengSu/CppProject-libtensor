@@ -80,6 +80,8 @@ class TensorImpl {
     string type() const;
     bool is_contiguous() const;
     void info(string name = "Tensor") const;
+    void save(string filename) const;
+    static TensorImpl load(string filename);
 
     TensorImpl operator+(const TensorImpl& other) const;
     TensorImpl operator+(const data_t& other) const;
