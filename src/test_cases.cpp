@@ -8,6 +8,42 @@ using namespace ts;
 namespace test_case {
 const dev target_device = dev::cuda;
 
+void multitype() {
+    TensorImpl t1 = rand({2, 3, 4}, dt::int8).to(target_device);
+    TensorImpl t2 = rand({2, 3, 4}, dt::int32).to(target_device);
+    TensorImpl t3 = rand({2, 3, 4}, dt::bool8).to(target_device);
+    TensorImpl t4 = rand({2, 3, 4}, dt::float32).to(target_device);
+    TensorImpl t5 = rand({2, 3, 4}, dt::float64).to(target_device);
+
+    t1.info("Tensor 1");
+    cout << t1 << endl;
+
+    t2.info("Tensor 2");
+    cout << t2 << endl;
+
+    t3.info("Tensor 3");
+    cout << t3 << endl;
+
+    t4.info("Tensor 4");
+    cout << t4 << endl;
+
+    t5.info("Tensor 5");
+    cout << t5 << endl;
+
+    (t1 + t2).info("t1 + t2");
+    cout << t1 + t2 << endl;
+
+    (t1 + t3).info("t1 + t3");
+    cout << t1 + t3 << endl;
+
+    (t3*t1).info("t3 * t1");
+    cout << t3 * t1 << endl;
+
+    (t3 / t1).info("t3 / t1");
+    cout << t3 / t1 << endl;
+
+
+}
 void specify_init() {
     TensorImpl t1 = tensor({2, 3, 4}).to(target_device);
     TensorImpl t2 =
