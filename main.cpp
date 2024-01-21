@@ -10,7 +10,7 @@ clock_t start, end_time;
 int main() {
     // test_case::specify_init();
     TensorImpl t1 = rand({2,3,4});
-    TensorImpl t2 = t1.unsqueeze(1);
+    TensorImpl t2 = t1.unsqueeze(0);
     cout << t1 << endl;
     cout << t2 << endl;
     t2.info();

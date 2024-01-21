@@ -725,15 +725,9 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         }
         const TensorImpl& t1 = tensors[0];
         const TensorImpl& t2 = tensors[1];
-        size_t n = t1.shape.shape[0];
-        size_t m = t2.shape.shape[1];
-        vector<data_t> data(n * m);
-        for (size_t i = 0; i < n; ++i) {
-            for (size_t j = 0; j < m; ++j) {
-                data[i * m + j] = t1.get(i) * t2.get(j);
-            }
-        }
-        return TensorImpl(data, {t1.shape.shape[0], t2.shape.shape[1]});
+        t1.unsqueeze(1);
+        t2.unsqueeze(0);
+        return ts::matrix_multiply(t1, t2);
     } else if (regex_match(eq, batch)) {
         // batch matrix multiplication
         if (tensors.size() < 2) {
@@ -754,20 +748,13 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         const Size& shape1 = t1.shape;
         const Size& shape2 = t2.shape;
         int batches = shape1[0];
-
-        vector<data_t> data(batches * rows1 * cols2);
+        int rows1 = shape1[1];
+        int cols2 = shape2[2];
+        TensorImpl result = ts::zeros({batches, rows1, cols2});
         for (size_t b = 0; b < batches; ++b) {
-            for (size_t i = 0; i < rows1; ++i) {
-                for (size_t j = 0; j < cols2; ++j) {
-                    for (size_t k = 0; k < cols1; ++k) {
-                        data[(b * rows1 + i) * cols2 + j] +=
-                            t1.get((b * rows1 + i) * cols1 + k) *
-                            t2.get((b * rows2 + k) * cols2 + j);
-                    }
-                }
-            }
+            result[b] = ts::matrix_multiply(t1[b], t2[b]);
         }
-        return TensorImpl(data, {batches, rows1, cols2});
+        return result;
     } else if(regex_match(eq,transposed)){
         // transpose
         if (tensors.size() < 1) {
