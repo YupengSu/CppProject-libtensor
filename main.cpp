@@ -8,5 +8,10 @@ using namespace std;
 
 clock_t start, end_time;
 int main() {
-    test_case::serialization();
+    TensorImpl t1 = rand({3}, dt::int8);
+    cout << t1 << endl;
+    TensorImpl t2 = t1.unsqueeze(1);
+    cout << t2 << endl;
+
+
 }

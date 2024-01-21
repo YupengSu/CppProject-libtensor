@@ -552,7 +552,7 @@ TensorImpl TensorImpl::squeeze() const {
 }
 
 TensorImpl TensorImpl::unsqueeze(int dim) const {
-    CHECK_IN_RANGE(dim, 0, this->ndim,
+    CHECK_IN_RANGE(dim, 0, this->ndim+1,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
                    this->ndim, dim);
@@ -561,6 +561,7 @@ TensorImpl TensorImpl::unsqueeze(int dim) const {
     vector<data_t> new_data = this->get_serial_data();
     return TensorImpl(new_data, new_shape, this->dtype, this->device);
 }
+
 size_t get_data_idx(size_t index, TensorImpl t) {
     size_t offset = 0;
     size_t tmp = 0;

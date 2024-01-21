@@ -28,5 +28,4 @@ void serialization();
 
 void cuda_acc();
 
-
 }
