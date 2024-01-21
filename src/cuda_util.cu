@@ -214,9 +214,6 @@ __device__ void sub_data_t(data_t& dst, const data_t& a_origin, const data_t& b_
     dst.dtype = target_dtype;
 }
 
-
-
-
  // TODO
 __device__ void mul_data_t(data_t& dst, const data_t& a_origin, const data_t& b_origin, dt target_dtype) {
     double tmp_a, tmp_b;
@@ -332,8 +329,6 @@ __device__ void div_data_t(data_t& dst, const data_t& a, const data_t& b, dt tar
     }
     dst.dtype = target_dtype;
 }
-
-
 
 __device__ void eq_data_t(data_t& dst, const data_t& a, const data_t& b) {
     double tmp_a, tmp_b;
@@ -779,6 +774,21 @@ __global__ void logTensorKernel(data_t* c, data_t* a, size_t size, int* shape,
         log_data_t(c[i], a[offset]);
     }
 }
+__global__ void sumTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t outer_size, size_t inner_size, int* shape,
+                                int* stride, int* origin_stride, int dim, dt target_dtype) {
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+    if (i < outer_size && j < inner_size) {
+        size_t index_new = i * inner_size + j;
+        size_t index_old = i * inner_size * dim_size + j;
+        // offset = i;
+        for (int k = 0; k < dim_size; k++) {
+            size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
+            add_data_t(c[index_new], c[index_new], a[offset], target_dtype);
+        }
+    }
+}
+
 void addKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype) {
     data_t* dev_a = (data_t*)a.data.dp;
     data_t* dev_b = (data_t*)b.data.dp;
@@ -1088,9 +1098,6 @@ void divKernelNum(void* dst, TensorImpl a, data_t b, size_t size) {
 }
 
 
-
-
-
 // NOT DONE
 void eqKernel(void* dst, TensorImpl a, TensorImpl b, size_t size) {
     data_t* dev_a = (data_t*)a.data.dp;
@@ -1355,6 +1362,42 @@ void logKernel(void *dst, TensorImpl a, size_t size, dt target_dtype) {
     checkCudaError(cudaMemcpy(origin_stride, a.origin_stride.data(), a.origin_stride.size() * sizeof(int), cudaMemcpyHostToDevice));
 
     logTensorKernel<<<blocksPerGrid, threadsPerBlock>>>(dev_c, dev_a, size, shape, stride, origin_stride, a.get_dim());
+
+    checkCudaError(cudaGetLastError());
+    checkCudaError(cudaDeviceSynchronize());
+
+    checkCudaError(cudaFree(shape));
+    checkCudaError(cudaFree(stride));
+    checkCudaError(cudaFree(origin_stride));
+}
+
+void sumKernel(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype) {
+    data_t* dev_a = (data_t*)a.data.dp;
+    data_t* dev_c = (data_t*)dst;
+    dim3 threadsPerBlock (16, 16); // 256 threads per block
+    dim3 blocksPerGrid ((outer_size + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                        (inner_size + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    int* shape;
+    int* stride;
+    int* origin_stride;
+    checkCudaError(cudaMalloc(&shape, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMalloc(&stride, a.stride.size() * sizeof(int)));
+    checkCudaError(
+        cudaMalloc(&origin_stride, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMemcpy(shape, a.shape.shape.data(),
+                              a.shape.shape.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(stride, a.stride.data(),
+                              a.stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(origin_stride, a.origin_stride.data(),
+                              a.origin_stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+
+    sumTensorKernel<<<blocksPerGrid, threadsPerBlock>>>(
+        dev_c, dev_a, a.shape[dim], outer_size, inner_size,
+        shape, stride, origin_stride, a.get_dim(), target_dtype);
 
     checkCudaError(cudaGetLastError());
     checkCudaError(cudaDeviceSynchronize());

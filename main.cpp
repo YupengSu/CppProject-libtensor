@@ -13,8 +13,13 @@ int main() {
     // TensorImpl t3 = cat({t1, t2}, 1);
     TensorImpl t3 = t1;
     cout << t3 << endl;
-    cout << tile(t3, {5}) << endl;
-    cout << log(t3) << endl;
+    
+    cout << t2.device << endl;
+    cout << t2.sum(1) << endl;
+
+    t2 = t2.cuda();
+    cout << t2.device << endl;;
+    cout << t2.sum(1) << endl;
 
     return 0;
 }

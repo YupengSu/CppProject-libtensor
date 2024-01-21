@@ -26,8 +26,8 @@ struct Error : public std::exception {
 
 #define THROW_ERROR(format, ...)                                       \
     do {                                                               \
-        std::sprintf(::ts::err::Error::msg_, (format), ##__VA_ARGS__); \
-        throw ::ts::err::Error(ERROR_LOCATION);                        \
+        std::sprintf(ts::err::Error::msg_, (format), ##__VA_ARGS__); \
+        throw ts::err::Error(ERROR_LOCATION);                        \
     } while (0)
 
 #define CHECK_TRUE(expr, format, ...) \

@@ -47,10 +47,10 @@ void geKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
 
 void neKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
 
-
-
 void get_serial_tensor_kernel(void* dst, const TensorImpl a);
 
 void logKernel(void* dst, TensorImpl a, size_t size, dt target_dtype);
+
+void sumKernel(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype);
 
 }  // namespace ts

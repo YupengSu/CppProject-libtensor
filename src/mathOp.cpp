@@ -268,26 +268,32 @@ TensorImpl sum(const TensorImpl& t, int dim) {
     int outer_size = t.shape.outer_size(dim);
     int inner_size = t.shape.inner_size(dim);
     int new_size = outer_size * inner_size;
-    vector<data_t> data(new_size);
+    Storage new_data = Storage(new_size, t.device);
     if (t.device == dev::cpu) {
         for (int i = 0; i < outer_size; i++) {
             for (int j = 0; j < inner_size; j++) {
                 size_t index_new = i * inner_size + j;
                 size_t index_old = i * inner_size * t.shape[dim] + j;
-                data[index_new] = 0.0;
+                new_data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] += t.get(index_old + k * inner_size);
+                    new_data[index_new] += t.get(index_old + k * inner_size);
                 }
-                data[index_new].set_dtype(target_dtype);
+                new_data[index_new].set_dtype(target_dtype);
             }
         }
     }
-    // else {
-    //     sumKernel(data, t, dim, outer_size, inner_size);
-    // }
+    else {
+        sumKernel(new_data.dp, t, dim, outer_size, inner_size, target_dtype);
+    }
     vector<int> new_shape = t.shape.shape;
     new_shape.erase(new_shape.begin() + dim);
-    return TensorImpl(data, new_shape, target_dtype, t.device);
+    vector<int> new_stride(new_shape.size());
+    int stride = 1;
+    for (int i = new_shape.size() - 1; i >= 0; --i) {
+        new_stride[i] = stride;
+        stride *= new_shape[i];
+    }
+    return TensorImpl(new_data, new_shape, new_stride, target_dtype, t.device);
 
     // Reduce dim
 }
@@ -902,7 +908,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
                 for (size_t k = 0; k < cols2; ++k) {
                     for (size_t l = 0; l < cols1; ++l) {
                         data[(i * rows3 + j) * cols2 + k] +=
-                            t1.get(i * cols1 + l) * t2.get(l * rows2 + k, j) *
+                            t1.get(i * cols1 + l) * t2.get(l * rows2 + k) *
                             t3.get(j * cols3 + l);
                     }
                 }
