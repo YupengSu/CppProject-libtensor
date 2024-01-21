@@ -332,7 +332,7 @@ void einsum() {
     t9.info("Tensor 9");
     start = clock();
     tensors = {t8, t9};
-    t8 = ts::einsum("ij,jk->ik", tensors);
+    t8 = ts::einsum("ik,kj->ij", tensors);
     end = clock();
     cout << "einsum(\"ij,jk->ik\", tensors):" << endl;
     cout << t8 << endl;

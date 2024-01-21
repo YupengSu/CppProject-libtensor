@@ -391,7 +391,6 @@ TensorImpl min(const TensorImpl& t, int dim) {
             for (int j = 0; j < inner_size; j++) {
                 size_t index_new = i * inner_size + j;
                 size_t index_old = i * inner_size * t.shape[dim] + j;
-                new_data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
                     if (k == 0) {
                         new_data[index_new] = t.get(index_old + k * inner_size);
@@ -645,7 +644,10 @@ TensorImpl matrix_multiply(const TensorImpl& t1, const TensorImpl t2) {
     } else {
         matrixMultiplyKernel(new_data.dp, t1, t2, M, N, K, target_dtype);
     }
-    return TensorImpl(new_data, t1.shape, t1.origin_stride, t1.dtype,
+    vector<int> new_shape = {(int)M, (int)N};
+    vector<int> new_stride = {(int)N, 1};
+
+    return TensorImpl(new_data, new_shape, new_stride, t1.dtype,
                       t1.device);
 }
 
@@ -667,7 +669,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
     std::regex transposed("([a-zA-Z]),([a-zA-Z])->\\2\\1");                      // 2) Transpose, ‘ij->ji’, 
     std::regex permute(".*([a-zA-Z])([a-zA-Z])->.*\\2\\1");                          //3) Permuate, ‘…ij->…ji’ , 
     std::regex sum_along_dimension("([a-zA-Z])([a-zA-Z])->\\2");                  // 5) Sum along dimension, ‘ij->j’ , 
-    std::regex matrix_multiply("([a-zA-Z])([a-zA-Z]),([a-zA-Z])([a-zA-Z])->\\1\\3");  //7) Matrix mul, ‘ik, kj->ij’ ,
+    std::regex matrix_mul("([a-zA-Z])([a-zA-Z]),([a-zA-Z])([a-zA-Z])->\\1\\3");  //7) Matrix mul, ‘ik, kj->ij’ ,
     std::regex reduce_sum("([a-zA-Z])([a-zA-Z])->");                                         // 4) Reduce sum, ‘ij->’,
     std::regex matrix_vector_multiply("([a-zA-Z])([a-zA-Z]),\\2->\\1");           //6) Matrix and vector mul, ‘ik, k->i’, 7) 
     std::regex point_wise("([a-zA-Z])([a-zA-Z]),\\1\\2->");                           // 9) Pointwise mul and reduce sum, ‘ij,ij->’ ,
@@ -779,7 +781,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         const TensorImpl& t1 = tensors[0];
         return ts::sum(t1, 0);
     } 
-    else if(regex_match(eq,matrix_multiply)){
+    else if(regex_match(eq,matrix_mul)){
         // matrix multiply
         if (tensors.size() < 2) {
             throw std::runtime_error(
@@ -823,8 +825,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         if (t1.ndim != 2 || t2.ndim != 1) {
             throw std::runtime_error("Tensors are not matrices");
         }
-        t2.unsqueeze(1);
-        return ts::matrix_multiply(t1, t2);
+        TensorImpl t3 = t2.unsqueeze(1);
+        return ts::matrix_multiply(t1, t3).squeeze();
     } 
     throw std::runtime_error("Invalid equation for einsum");
 }
