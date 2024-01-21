@@ -34,7 +34,7 @@ class TensorImpl {
     dev device;
     TensorImpl();
     TensorImpl(const TensorImpl& other) = default;
-    TensorImpl(const vector<data_t>& i_data, const vector<int>& i_shape = {},
+    TensorImpl(const vector<data_t>& v_data, const vector<int>& v_shape = {},
            dt dtype = DEFAULT_DTYPE, dev device = DEFAULT_DEVICE);
 
     TensorImpl(const Storage& i_data, const Size& i_shape,
@@ -72,6 +72,8 @@ class TensorImpl {
     TensorImpl permute(vector<int> dims) const;
     TensorImpl transpose(int dim1, int dim2) const;
     TensorImpl view(vector<int> shape) const;
+    TensorImpl squeeze() const;
+    TensorImpl unsqueeze(int dim) const;
 
     void* data_ptr() const;
     size_t size() const;
