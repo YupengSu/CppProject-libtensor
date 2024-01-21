@@ -296,7 +296,7 @@ template <typename T>
 ts::Tensor<T> reduce_mean(const ts::Tensor<T> &tensor, size_t axis) {
     
     ts::Tensor<T> res;
-    res.my_tensor = tensor.my_tensor.mean(axis);
+    res.my_tensor = tensor.my_tensor.to(TARGET_PLATFORM).mean(axis);
     return res;
 }
 
@@ -304,7 +304,7 @@ template <typename T>
 ts::Tensor<T> reduce_max(const ts::Tensor<T> &tensor, size_t axis) {
     
     ts::Tensor<T> res;
-    res.my_tensor = tensor.my_tensor.max(axis);
+    res.my_tensor = tensor.my_tensor.to(TARGET_PLATFORM).max(axis);
     return res;
 }
 
@@ -312,7 +312,7 @@ template <typename T>
 ts::Tensor<T> reduce_min(const ts::Tensor<T> &tensor, size_t axis) {
     
     ts::Tensor<T> res;
-    res.my_tensor = tensor.my_tensor.min(axis);
+    res.my_tensor = tensor.my_tensor.to(TARGET_PLATFORM).min(axis);
     return res;
 }
 
