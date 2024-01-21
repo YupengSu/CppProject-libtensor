@@ -302,45 +302,7 @@ TensorImpl TensorImpl::sum(int dim) const { return ts::sum(*this, dim); }
 
 // mean
 TensorImpl mean(const TensorImpl& t, int dim) {
-    CHECK_IN_RANGE(dim, 0, t.get_dim(),
-                   "Invalid mean dim. %d out of %zu-D Tensor", dim,
-                   t.get_dim());
-
-    dt target_dtype;
-    if (is_floating(t.dtype)) {
-        target_dtype = t.dtype;
-    } else {
-        target_dtype = dt::float32;
-    }
-    target_dtype = dt::float32;
-
-    int size = t.shape.data_len();
-    int outer_size = t.shape.outer_size(dim);
-    int inner_size = t.shape.inner_size(dim);
-    int new_size = outer_size * inner_size;
-    vector<data_t> data(new_size);
-    if (t.device == dev::cpu) {
-        for (int i = 0; i < outer_size; i++) {
-            for (int j = 0; j < inner_size; j++) {
-                size_t index_new = i * inner_size + j;
-                size_t index_old = i * inner_size * t.shape[dim] + j;
-                data[index_new] = 0.0;
-                for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] += t.get(index_old + k * inner_size);
-                }
-                data[index_new] /= t.shape[dim];
-                data[index_new].set_dtype(target_dtype);
-            }
-        }
-    }
-    // else {
-    //     sumKernel(data, t, dim, outer_size, inner_size);
-    // }
-    vector<int> new_shape = t.shape.shape;
-    new_shape.erase(new_shape.begin() + dim);
-    return TensorImpl(data, new_shape, target_dtype, t.device);
-
-    // Reduce dim
+    return ts::div(ts::sum(t, dim), t.shape[dim]);
 }
 
 TensorImpl TensorImpl::mean(int dim) const { return ts::mean(*this, dim); }
@@ -348,43 +310,49 @@ TensorImpl TensorImpl::mean(int dim) const { return ts::mean(*this, dim); }
 // max
 TensorImpl max(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
-                   "Invalid max dim. %d out of %zu-D Tensor", dim, t.get_dim());
+                   "Invalid sum dim. %d out of %zu-D Tensor", dim, t.get_dim());
 
     dt target_dtype;
     if (is_floating(t.dtype)) {
         target_dtype = t.dtype;
     } else {
-        target_dtype = dt::float32;
+        target_dtype = dt::int32;
     }
+    target_dtype = dt::float32;
 
     int size = t.shape.data_len();
     int outer_size = t.shape.outer_size(dim);
     int inner_size = t.shape.inner_size(dim);
     int new_size = outer_size * inner_size;
-    vector<data_t> data(new_size);
+    Storage new_data = Storage(new_size, t.device);
     if (t.device == dev::cpu) {
         for (int i = 0; i < outer_size; i++) {
             for (int j = 0; j < inner_size; j++) {
                 size_t index_new = i * inner_size + j;
                 size_t index_old = i * inner_size * t.shape[dim] + j;
-
-                data[index_new] = t.get(index_old);
+                new_data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] =
-                        data[index_new] >= t.get(index_old + k * inner_size)
-                            ? data[index_new]
+                    new_data[index_new] =
+                        new_data[index_new] >= t.get(index_old + k * inner_size)
+                            ? new_data[index_new]
                             : t.get(index_old + k * inner_size);
                 }
-                data[index_new].set_dtype(target_dtype);
+                new_data[index_new].set_dtype(target_dtype);
             }
         }
     }
-    // else {
-    //     sumKernel(data, t, dim, outer_size, inner_size);
-    // }
+    else {
+        maxKernal(new_data.dp, t, dim, outer_size, inner_size, target_dtype);
+    }
     vector<int> new_shape = t.shape.shape;
     new_shape.erase(new_shape.begin() + dim);
-    return TensorImpl(data, new_shape, target_dtype, t.device);
+    vector<int> new_stride(new_shape.size());
+    int stride = 1;
+    for (int i = new_shape.size() - 1; i >= 0; --i) {
+        new_stride[i] = stride;
+        stride *= new_shape[i];
+    }
+    return TensorImpl(new_data, new_shape, new_stride, target_dtype, t.device);
 
     // Reduce dim
 }

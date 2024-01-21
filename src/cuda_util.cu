@@ -590,6 +590,63 @@ __device__ void log_data_t(data_t& dst, const data_t& a) {
     }
     dst.dtype = dt::float64;
 }
+
+__device__ void cmp_data_t(data_t& dst, const data_t& a, const data_t& b, dt target_dtype) {
+    double tmp_a, tmp_b;
+    switch (a.dtype) {
+        case dt::int8:
+            tmp_a = (double)a.data.tensor_int8;
+            break;
+        case dt::float32:
+            tmp_a = (double)a.data.tensor_float32;
+            break;
+        case dt::bool8:
+            tmp_a = (double)a.data.tensor_bool;
+            break;
+        case dt::int32:
+            tmp_a = (double)a.data.tensor_int32;
+            break;
+        case dt::float64:
+            tmp_a = a.data.tensor_float64;
+            break;
+    }
+    switch (b.dtype) {
+        case dt::int8:
+            tmp_b = (double)b.data.tensor_int8;
+            break;
+        case dt::float32:
+            tmp_b = (double)b.data.tensor_float32;
+            break;
+        case dt::bool8:
+            tmp_b = (double)b.data.tensor_bool;
+            break;
+        case dt::int32:
+            tmp_b = (double)b.data.tensor_int32;
+            break;
+        case dt::float64:
+            tmp_b = b.data.tensor_float64;
+            break;
+    }
+    switch (target_dtype) {
+        case dt::int8:
+            dst.data.tensor_int8 = tmp_a > tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::float32:
+            dst.data.tensor_float32 = tmp_a > tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::bool8:
+            dst.data.tensor_bool = tmp_a > tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::int32:
+            dst.data.tensor_int32 = tmp_a > tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::float64:
+            dst.data.tensor_float64 = tmp_a > tmp_b? tmp_a: tmp_b;
+            break;
+    }
+    dst.dtype = target_dtype;
+}
+
 __global__ void addTensorKernel(data_t* c, data_t* a, data_t* b, size_t size,
                                 int* shape, int* stride_a, int* stride_b,
                                 int* origin_stride, int dim, dt target_dtype) {
@@ -785,6 +842,36 @@ __global__ void sumTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
         for (int k = 0; k < dim_size; k++) {
             size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
             add_data_t(c[index_new], c[index_new], a[offset], target_dtype);
+        }
+    }
+}
+
+__global__ void maxTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t outer_size, size_t inner_size, int* shape,
+                                int* stride, int* origin_stride, int dim, dt target_dtype) {
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+    if (i < outer_size && j < inner_size) {
+        size_t index_new = i * inner_size + j;
+        size_t index_old = i * inner_size * dim_size + j;
+        // offset = i;
+        for (int k = 0; k < dim_size; k++) {
+            size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
+            cmp_data_t(c[index_new], c[index_new], a[offset], target_dtype);
+        }
+    }
+}
+
+__global__ void minTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t outer_size, size_t inner_size, int* shape,
+                                int* stride, int* origin_stride, int dim, dt target_dtype) {
+    size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t j = blockIdx.y * blockDim.y + threadIdx.y;
+    if (i < outer_size && j < inner_size) {
+        size_t index_new = i * inner_size + j;
+        size_t index_old = i * inner_size * dim_size + j;
+        // offset = i;
+        for (int k = 0; k < dim_size; k++) {
+            size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
+            cmp_data_t(c[index_new], a[offset], c[index_new], target_dtype);
         }
     }
 }
@@ -1407,4 +1494,77 @@ void sumKernel(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inn
     checkCudaError(cudaFree(origin_stride));
 }
 
-}  // namespace ts
+void maxKernal(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype) {
+    data_t* dev_a = (data_t*)a.data.dp;
+    data_t* dev_c = (data_t*)dst;
+    dim3 threadsPerBlock (16, 16); // 256 threads per block
+    dim3 blocksPerGrid ((outer_size + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                        (inner_size + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    int* shape;
+    int* stride;
+    int* origin_stride;
+    checkCudaError(cudaMalloc(&shape, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMalloc(&stride, a.stride.size() * sizeof(int)));
+    checkCudaError(
+        cudaMalloc(&origin_stride, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMemcpy(shape, a.shape.shape.data(),
+                              a.shape.shape.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(stride, a.stride.data(),
+                              a.stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(origin_stride, a.origin_stride.data(),
+                              a.origin_stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+
+    maxTensorKernel<<<blocksPerGrid, threadsPerBlock>>>(
+        dev_c, dev_a, a.shape[dim], outer_size, inner_size,
+        shape, stride, origin_stride, a.get_dim(), target_dtype);
+
+    checkCudaError(cudaGetLastError());
+    checkCudaError(cudaDeviceSynchronize());
+
+    checkCudaError(cudaFree(shape));
+    checkCudaError(cudaFree(stride));
+    checkCudaError(cudaFree(origin_stride));
+
+} 
+
+void minKernal(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype) {
+    data_t* dev_a = (data_t*)a.data.dp;
+    data_t* dev_c = (data_t*)dst;
+    dim3 threadsPerBlock (16, 16); // 256 threads per block
+    dim3 blocksPerGrid ((outer_size + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                        (inner_size + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    int* shape;
+    int* stride;
+    int* origin_stride;
+    checkCudaError(cudaMalloc(&shape, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMalloc(&stride, a.stride.size() * sizeof(int)));
+    checkCudaError(
+        cudaMalloc(&origin_stride, a.shape.shape.size() * sizeof(int)));
+    checkCudaError(cudaMemcpy(shape, a.shape.shape.data(),
+                              a.shape.shape.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(stride, a.stride.data(),
+                              a.stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+    checkCudaError(cudaMemcpy(origin_stride, a.origin_stride.data(),
+                              a.origin_stride.size() * sizeof(int),
+                              cudaMemcpyHostToDevice));
+
+    minTensorKernel<<<blocksPerGrid, threadsPerBlock>>>(
+        dev_c, dev_a, a.shape[dim], outer_size, inner_size,
+        shape, stride, origin_stride, a.get_dim(), target_dtype);
+
+    checkCudaError(cudaGetLastError());
+    checkCudaError(cudaDeviceSynchronize());
+
+    checkCudaError(cudaFree(shape));
+    checkCudaError(cudaFree(stride));
+    checkCudaError(cudaFree(origin_stride));
+}
+
+}// namespace ts

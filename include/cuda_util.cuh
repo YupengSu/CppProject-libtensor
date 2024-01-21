@@ -53,4 +53,8 @@ void logKernel(void* dst, TensorImpl a, size_t size, dt target_dtype);
 
 void sumKernel(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype);
 
+void maxKernal(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype);
+
+void minKernal(void* dst, TensorImpl a, size_t dim, size_t outer_size,size_t inner_size, dt target_dtype);
+
 }  // namespace ts
