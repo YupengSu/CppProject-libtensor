@@ -170,6 +170,8 @@ void einsum() {
     // 6) Matrix vector multiplication
     TensorImpl t6 = rand({16, 16});
     TensorImpl t7 = rand({16});
+
+    
     
 
 

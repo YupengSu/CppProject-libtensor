@@ -8,9 +8,9 @@ using namespace std;
 
 clock_t start, end_time;
 int main() {
-    test_case::einsum();
-    // TensorImpl t1 = ones({64,64});
-    // t1 = t1.cuda();
-    // t1 = sum(t1, 0);
-    // cout << t1 << endl;
+    TensorImpl t1 = rand({3, 4}, dt::int8);
+    TensorImpl t2 = einsum("ij->ji", {t1});
+
+    cout << t1 << endl;
+    cout << t2 << endl;
 }
