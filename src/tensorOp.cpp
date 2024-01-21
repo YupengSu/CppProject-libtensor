@@ -281,15 +281,16 @@ TensorImpl tensor(BaseTensor<> bt, dt dtype) {
     vector<data_t> nt(bt.shape.data_len());
     int i = 0;
     for (auto a : bt.get_data()) {
-        nt[i].set_dtype(dtype);
-        nt[i++] = a;
+        nt[i] = a;
+        nt[i++].set_dtype(dtype);
     }
+    cerr << dtype << endl;
     return TensorImpl(nt, bt.shape.shape, dtype);
 }
+
 TensorImpl rand(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
-        data[i].set_dtype(dtype);
         switch (dtype) {
             case dt::float32:
                 data[i] = (float)random() / (float)RAND_MAX;
@@ -310,6 +311,7 @@ TensorImpl rand(Size sz, dt dtype) {
             default:
                 throw std::invalid_argument("Invalid dtype");
         }
+        data[i].set_dtype(dtype);
     }
     Storage st(data.data(), sz.data_len(), dtype);
     return TensorImpl(data, sz.shape, dtype);
@@ -317,8 +319,8 @@ TensorImpl rand(Size sz, dt dtype) {
 TensorImpl zeros(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
-        data[i].set_dtype(dtype);
         data[i] = 0;
+        data[i].set_dtype(dtype);
     }
     Storage st(data.data(), sz.data_len(), dtype);
     return TensorImpl(data, sz.shape, dtype);
@@ -326,8 +328,8 @@ TensorImpl zeros(Size sz, dt dtype) {
 TensorImpl ones(Size sz, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
-        data[i].set_dtype(dtype);
         data[i] = 1;
+        data[i].set_dtype(dtype);
     }
     Storage st(data.data(), sz.data_len(), dtype);
     return TensorImpl(data, sz.shape, dtype);
@@ -335,8 +337,8 @@ TensorImpl ones(Size sz, dt dtype) {
 TensorImpl full(Size sz, data_t val, dt dtype) {
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
-        data[i].set_dtype(dtype);
         data[i] = val;
+        data[i].set_dtype(dtype);
     }
     Storage st(data.data(), sz.data_len(), dtype);
     return TensorImpl(data, sz.shape, dtype);
@@ -354,12 +356,12 @@ TensorImpl eye(Size sz, dt dtype) {
     }
     vector<data_t> data(sz.data_len());
     for (int i = 0; i < sz.data_len(); i++) {
-        data[i].set_dtype(dtype);
         data[i] = 0;
+        data[i].set_dtype(dtype);
     }
     for (int i = 0; i < sz.data_len(); i += sz.shape[1] + 1) {
-        data[i].set_dtype(dtype);
         data[i] = 1;
+        data[i].set_dtype(dtype);
     }
     Storage st(data.data(), sz.data_len(), dtype);
     return TensorImpl(data, sz.shape, dtype);
@@ -584,8 +586,10 @@ void TensorImpl::info(string name) const {
     cerr << "--------------------------" << endl;
     cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
     cerr << "Dim:    " << setw(width) << left << ndim << "|" << endl;
+    cerr << "Dtype:  " << setw(width) << left << dtype << "|" << endl;
     cerr << "Shape:  " << setw(width) << left << shape << "|" << endl;
     cerr << "Device: " << setw(width) << left << device << "|" << endl;
+    cerr << "PTR:    " << setw(width) << left << data_ptr() << "|" << endl;
     cerr << "--------------------------" << endl;
 }
 
