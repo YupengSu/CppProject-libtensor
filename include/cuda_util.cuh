@@ -22,32 +22,32 @@ void c_cudaMemcpy(void* dst, void* src, size_t count,
 void c_cudaFreeHost(void* ptr);
 void* c_cudaMallocHost(size_t size);
 
-void addKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype);
+void addKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size, dt target_dtype);
 void addKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype);
 
-void subKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype);
+void subKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size, dt target_dtype);
 void subKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype);
 
-void mulKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dtype);
+void mulKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size, dt target_dtype);
 void mulKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype);
 
-void divKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void divKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 void divKernelNum(void* dst, TensorImpl a, data_t b, size_t size);
 
 
-void eqKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void eqKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void ltKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void ltKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void gtKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void gtKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void leKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void leKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void geKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void geKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void neKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+void neKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
-void get_serial_tensor_kernel(void* dst, const TensorImpl a);
+void get_serial_tensor_kernel(void* dst, const TensorImpl& a);
 
 void logKernel(void* dst, TensorImpl a, size_t size, dt target_dtype);
 
