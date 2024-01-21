@@ -40,7 +40,7 @@ ts::Tensor<T> create_with_data(const std::vector<size_t> &shape,
 
     res.my_tensor = ts::TensorImpl(tmp, shape_);
     return res;
-    // TODO
+    
 }
 
 template <typename T>
@@ -160,13 +160,13 @@ ts::Tensor<T> slice(const ts::Tensor<T> &tensor,
     for (pair<size_t, size_t> i : slices) {
         res.my_tensor = res.my_tensor.slice(i.first, i.second);
     }
-    // TODO
+    
     return res;
 }
 
 template <typename T>
 ts::Tensor<T> concat(const std::vector<ts::Tensor<T>> &tensors, size_t axis) {
-    // TODO
+    
     ts::TensorImpl res;
     vector<ts::TensorImpl> tmp;
     for (int i = 0; i < tensors.size(); i++) {
@@ -181,7 +181,7 @@ ts::Tensor<T> concat(const std::vector<ts::Tensor<T>> &tensors, size_t axis) {
 template <typename T>
 ts::Tensor<T> tile(const ts::Tensor<T> &tensor,
                    const std::vector<size_t> &shape) {
-    // TODO
+    
     ts::Tensor<T> res;
     vector<int> shape_;
     for (int i = 0; i < shape.size(); i++) {
@@ -193,7 +193,7 @@ ts::Tensor<T> tile(const ts::Tensor<T> &tensor,
 
 template <typename T>
 ts::Tensor<T> transpose(const ts::Tensor<T> &tensor, size_t dim1, size_t dim2) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = tensor.my_tensor.transpose(dim1, dim2);
     return res;
@@ -242,7 +242,7 @@ void set_at(ts::Tensor<T> &tensor, const std::vector<size_t> &indices,
 
 template <typename T>
 ts::Tensor<T> pointwise_add(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor =
         a.my_tensor.to(TARGET_PLATFORM) + b.my_tensor.to(TARGET_PLATFORM);
@@ -251,7 +251,7 @@ ts::Tensor<T> pointwise_add(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
 
 template <typename T>
 ts::Tensor<T> pointwise_sub(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor =
         a.my_tensor.to(TARGET_PLATFORM) - b.my_tensor.to(TARGET_PLATFORM);
@@ -260,7 +260,7 @@ ts::Tensor<T> pointwise_sub(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
 
 template <typename T>
 ts::Tensor<T> pointwise_mul(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor =
         a.my_tensor.to(TARGET_PLATFORM) * b.my_tensor.to(TARGET_PLATFORM);
@@ -269,7 +269,7 @@ ts::Tensor<T> pointwise_mul(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
 
 template <typename T>
 ts::Tensor<T> pointwise_div(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor =
         a.my_tensor.to(TARGET_PLATFORM) / b.my_tensor.to(TARGET_PLATFORM);
@@ -278,7 +278,7 @@ ts::Tensor<T> pointwise_div(const ts::Tensor<T> &a, const ts::Tensor<T> &b) {
 
 template <typename T>
 ts::Tensor<T> pointwise_log(const ts::Tensor<T> &tensor) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = ts::log(tensor.my_tensor).to(TARGET_PLATFORM);
     return res;
@@ -286,7 +286,7 @@ ts::Tensor<T> pointwise_log(const ts::Tensor<T> &tensor) {
 
 template <typename T>
 ts::Tensor<T> reduce_sum(const ts::Tensor<T> &tensor, size_t axis) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = tensor.my_tensor.sum(axis);
     return res;
@@ -294,7 +294,7 @@ ts::Tensor<T> reduce_sum(const ts::Tensor<T> &tensor, size_t axis) {
 
 template <typename T>
 ts::Tensor<T> reduce_mean(const ts::Tensor<T> &tensor, size_t axis) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = tensor.my_tensor.mean(axis);
     return res;
@@ -302,7 +302,7 @@ ts::Tensor<T> reduce_mean(const ts::Tensor<T> &tensor, size_t axis) {
 
 template <typename T>
 ts::Tensor<T> reduce_max(const ts::Tensor<T> &tensor, size_t axis) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = tensor.my_tensor.max(axis);
     return res;
@@ -310,7 +310,7 @@ ts::Tensor<T> reduce_max(const ts::Tensor<T> &tensor, size_t axis) {
 
 template <typename T>
 ts::Tensor<T> reduce_min(const ts::Tensor<T> &tensor, size_t axis) {
-    // TODO
+    
     ts::Tensor<T> res;
     res.my_tensor = tensor.my_tensor.min(axis);
     return res;

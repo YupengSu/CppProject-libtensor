@@ -399,6 +399,7 @@ TensorImpl cat(vector<TensorImpl> tensors, int dim) {
         CHECK_EQUAL(first.ndim, tensors[i].ndim,
                     "Tensor dimension mismatch: %d vs %d", first.ndim,
                     tensors[i].ndim);
+        CHECK_SAME_DEVICE(first, tensors[i]);
         for (int j = 0; j < first.ndim; j++) {
             if (j == dim) continue;
             CHECK_EQUAL(first.shape[j], tensors[i].shape[j],
@@ -425,7 +426,7 @@ TensorImpl cat(vector<TensorImpl> tensors, int dim) {
     }
     vector<int> new_shape = first.shape.shape;
     new_shape[dim] = sum_step_sizes / first.stride[dim];
-    return TensorImpl(data, new_shape);
+    return TensorImpl(data, new_shape, first.dtype, first.device);
 }
 // TODO: below
 vector<int> vec_mul(vector<int> v1, vector<int> v2) {
