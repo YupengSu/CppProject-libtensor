@@ -8,17 +8,9 @@ using namespace std;
 
 clock_t start, end_time;
 int main() {
-<<<<<<< HEAD
-    // test_case::specify_init();
-    TensorImpl t1 = rand({2,3,4});
-    TensorImpl t2 = t1.unsqueeze(0);
-    cout << t1 << endl;
-    cout << t2 << endl;
-    t2.info();
-    cout <<(t1 == t2[0]) << endl;
-    return 0;
-=======
-    test_case::mutating();
-
->>>>>>> 83e16ccc2250742f9eca23f3c3a39f952ed9d0fd
+    test_case::einsum();
+    // TensorImpl t1 = ones({64,64});
+    // t1 = t1.cuda();
+    // t1 = sum(t1, 0);
+    // cout << t1 << endl;
 }

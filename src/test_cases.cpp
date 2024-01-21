@@ -93,6 +93,85 @@ void mutating() {
 
 
 void einsum() {
-    //TODO: implement einsum test
+    clock_t start, end;
+    // 1) Extracting elements along a diagonal
+    TensorImpl t1 = rand({4,4});
+    t1.info("Tensor 1");
+    cout << t1 << endl << endl;
+
+    vector<TensorImpl> tensors = {t1};
+    t1 = ts::einsum("ii->i", tensors);
+    cout << "einsum(\"ii->i\", tensors):" << endl;
+    cout << t1 << endl << endl;
+
+    // 2) Computing a matrix transpose
+    TensorImpl t2 = rand({4,4});
+    t2.info("Tensor 2");
+    cout << t2 << endl << endl;
+
+    tensors = {t2};
+    t2 = ts::einsum("ij->ji", tensors);
+    cout << "einsum(\"ij->ji\", tensors):" << endl;
+    cout << t2 << endl << endl;
+
+    // 3) Permuting array elements 
+    // FIXME: not working
+    TensorImpl t3 = rand({2,2,2});
+    t3.info("Tensor 3");
+    cout << t3 << endl << endl;
+
+    tensors = {t3};
+    t3 = ts::einsum("kij->kji", tensors);
+    cout << "einsum(\"kij->kji\", tensors):" << endl;
+    cout << t3 << endl << endl;
+
+    // 4) Reduce sum
+    TensorImpl t4 = ones({256, 256});
+    t4.info("Tensor 4");
+    start = clock();
+    tensors = {t4};
+    t4 = ts::einsum("ij->", tensors);
+    end = clock();
+    cout << "einsum(\"ij->\", tensors):" << endl;
+    cout << t4 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t4 = ones({256, 256}).cuda();
+    t4.info("Tensor 4");
+    start = clock();
+    tensors = {t4};
+    t4 = ts::einsum("ij->", tensors);
+    end = clock();
+    cout << "einsum(\"ij->\", tensors):" << endl;
+    cout << t4 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 5) Sum along dimension
+    TensorImpl t5 = ones({64, 64});
+    t5.info("Tensor 5");
+    start = clock();
+    tensors = {t5};
+    t5 = ts::einsum("ij->j", tensors);
+    end = clock();
+    cout << "einsum(\"ij->j\", tensors):" << endl;
+    cout << t5 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t5 = ones({64, 64}).cuda();
+    t5.info("Tensor 5");
+    start = clock();
+    tensors = {t5};
+    t5 = ts::einsum("ij->j", tensors);
+    end = clock();
+    cout << "einsum(\"ij->j\", tensors):" << endl;
+    cout << t5 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 6) Matrix vector multiplication
+    TensorImpl t6 = rand({16, 16});
+    TensorImpl t7 = rand({16});
+    
+
+
 }
 }  // namespace test_case

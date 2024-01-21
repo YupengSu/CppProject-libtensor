@@ -665,7 +665,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
     std::regex elewise("([a-zA-Z]),\\1->\\1");
 
     std::regex transposed("([a-zA-Z]),([a-zA-Z])->\\2\\1");                      // 2) Transpose, ‘ij->ji’, 
-    std::regex permute("(.*[a-zA-Z])([a-zA-Z])->.*\\2\\1");                          //3) Permuate, ‘…ij->…ji’ , 
+    std::regex permute(".*([a-zA-Z])([a-zA-Z])->.*\\2\\1");                          //3) Permuate, ‘…ij->…ji’ , 
     std::regex sum_along_dimension("([a-zA-Z])([a-zA-Z])->\\2");                  // 5) Sum along dimension, ‘ij->j’ , 
     std::regex matrix_multiply("([a-zA-Z])([a-zA-Z]),([a-zA-Z])([a-zA-Z])->\\1\\3");  //7) Matrix mul, ‘ik, kj->ij’ ,
     std::regex reduce_sum("([a-zA-Z])([a-zA-Z])->");                                         // 4) Reduce sum, ‘ij->’,
