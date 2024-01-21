@@ -39,7 +39,7 @@ class TensorImpl {
 
     TensorImpl(const Storage& i_data, const Size& i_shape,
            const vector<int> i_stride, dt dtype = DEFAULT_DTYPE,
-           dev device = DEFAULT_DEVICE);
+           dev device = DEFAULT_DEVICE, bool another_view = false);
 
     TensorImpl to(dev device) const;
     TensorImpl cuda() const;

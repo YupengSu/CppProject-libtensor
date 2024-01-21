@@ -75,7 +75,7 @@ TensorImpl TensorImpl::transpose(int dim1, int dim2) const {
     swap(new_stride[dim1], new_stride[dim2]);
 
     Storage new_data = Storage(data, 0);
-    return TensorImpl(new_data, Size(new_shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(new_shape), new_stride, dtype, device, true);
 }
 
 TensorImpl TensorImpl::view(vector<int> shape) const {
@@ -88,7 +88,7 @@ TensorImpl TensorImpl::view(vector<int> shape) const {
                 size, this->shape.data_len());
     Storage new_data = Storage(data, 0);
     vector<int> new_stride = init_stride(shape);
-    return TensorImpl(new_data, Size(shape), new_stride, dtype, device);
+    return TensorImpl(new_data, Size(shape), new_stride, dtype, device, true);
 }
 
 ostream &operator<<(ostream &os, TensorImpl t) {
@@ -451,32 +451,10 @@ TensorImpl tile(const TensorImpl &t, vector<int> reps) {
     return new_t;
 }
 TensorImpl transpose(const TensorImpl &t, int dim1, int dim2) {
-    CHECK_IN_RANGE(dim1, 0, t.ndim,
-                   "Dimension out of range (expected to be in range of [0, "
-                   "%d), but got %d)",
-                   t.ndim, dim1);
-    CHECK_IN_RANGE(dim2, 0, t.ndim,
-                   "Dimension out of range (expected to be in range of [0, "
-                   "%d), but got %d)",
-                   t.ndim, dim2);
-    vector<int> new_shape = t.shape.shape;
-    vector<int> new_stride = t.stride;
-    swap(new_shape[dim1], new_shape[dim2]);
-    swap(new_stride[dim1], new_stride[dim2]);
-    Storage new_data = Storage(t.data, 0);
-    return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
+    return t.transpose(dim1, dim2);
 }
 TensorImpl permute(const TensorImpl &t, vector<int> dims) {
-    CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
-                t.ndim, dims.size());
-    vector<int> new_shape = vector<int>(t.ndim);
-    vector<int> new_stride = vector<int>(t.ndim);
-    for (int i = 0; i < t.ndim; i++) {
-        new_shape[i] = t.shape[dims[i]];
-        new_stride[i] = t.stride[dims[i]];
-    }
-    Storage new_data = Storage(t.data, 0);
-    return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
+    return t.permute(dims);
 }
 
 TensorImpl view(const TensorImpl &t, vector<int> shape) {
@@ -588,14 +566,14 @@ size_t get_data_idx(size_t index, TensorImpl t) {
 
 void TensorImpl::info(string name) const {
     int width = 18;
-    cerr << "--------------------------" << endl;
-    cerr << "Tensor: " << setw(width) << left << name << "|" << endl;
-    cerr << "Dim:    " << setw(width) << left << ndim << "|" << endl;
-    cerr << "Dtype:  " << setw(width) << left << dtype << "|" << endl;
-    cerr << "Shape:  " << setw(width) << left << shape << "|" << endl;
-    cerr << "Device: " << setw(width) << left << device << "|" << endl;
-    cerr << "PTR:    " << setw(width) << left << data_ptr() << "|" << endl;
-    cerr << "--------------------------" << endl;
+    cout << "--------------------------" << endl;
+    cout << "Tensor: " << setw(width) << left << name << "|" << endl;
+    cout << "Dim:    " << setw(width) << left << ndim << "|" << endl;
+    cout << "Dtype:  " << setw(width) << left << dtype << "|" << endl;
+    cout << "Shape:  " << setw(width) << left << shape << "|" << endl;
+    cout << "Device: " << setw(width) << left << device << "|" << endl;
+    cout << "PTR:    " << setw(width) << left << data_ptr() << "|" << endl;
+    cout << "--------------------------" << endl;
 }
 
 bool TensorImpl::is_contiguous() const {
