@@ -875,7 +875,10 @@ __global__ void matrixMultiplyTensorKernel(data_t* c, data_t* a, data_t* b,
         for (int i = 0; i < K; i++) {
             size_t offset_a = get_idx(tx * K + i, shape_a, stride_a, origin_stride_a, dim_a);
             size_t offset_b = get_idx(i * N + ty, shape_b, stride_b, origin_stride_b, dim_b);
-            muladd_data_t(c[tx * N + ty], a[offset_a], b[offset_b], target_dtype);
+            if (i == 0)
+                mul_data_t(c[tx * N + ty], a[offset_a], b[offset_b], target_dtype);
+            else
+                muladd_data_t(c[tx * N + ty], a[offset_a], b[offset_b], target_dtype);
         }
     }
 }
@@ -937,7 +940,7 @@ __global__ void minTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
             if (k == 0)
                 c[index_new] = a[offset];
             else
-                cmp_data_t(c[index_new], c[index_new], a[offset], target_dtype);
+                cmp_data_t(c[index_new], a[offset, c[index_new]], target_dtype);
         }
     }
 }
