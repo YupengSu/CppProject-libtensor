@@ -823,21 +823,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         if (t1.ndim != 2 || t2.ndim != 1) {
             throw std::runtime_error("Tensors are not matrices");
         }
-        const Size& shape1 = t1.shape;
-        const Size& shape2 = t2.shape;
-        int rows1 = shape1[0];
-        int cols1 = shape1[1];
-        int rows2 = shape2[0];
-        if (cols1 != rows2) {
-            throw std::runtime_error("Matrices cannot be multiplied");
-        }
-        vector<data_t> data(rows1);
-        for (size_t i = 0; i < rows1; ++i) {
-            for (size_t j = 0; j < cols1; ++j) {
-                data[i] += t1.get(i * cols1 + j) * t2.get(j);
-            }
-        }
-        return TensorImpl(data, {rows1});
+        t2.unsqueeze(1);
+        return ts::matrix_multiply(t1, t2);
     } 
     throw std::runtime_error("Invalid equation for einsum");
 }
