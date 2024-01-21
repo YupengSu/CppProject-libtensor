@@ -360,6 +360,56 @@ void einsum() {
     cout << "einsum(\"ij,j->i\", tensors):" << endl;
     cout << t6 << endl;
     cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 7) Matrix multiplication
+    TensorImpl t8 = ones({16, 16});
+    TensorImpl t9 = ones({16, 16});
+    t8.info("Tensor 8");
+    t9.info("Tensor 9");
+    start = clock();
+    tensors = {t8, t9};
+    t8 = ts::einsum("ij,jk->ik", tensors);
+    end = clock();
+    cout << "einsum(\"ij,jk->ik\", tensors):" << endl;
+    cout << t8 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t8 = ones({16, 16}).cuda();
+    t9 = ones({16, 16}).cuda();
+    t8.info("Tensor 8");
+    t9.info("Tensor 9");
+    start = clock();
+    tensors = {t8, t9};
+    t8 = ts::einsum("ij,jk->ik", tensors);
+    end = clock();
+    cout << "einsum(\"ij,jk->ik\", tensors):" << endl;
+    cout << t8 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 8) Dot product
+    TensorImpl t10 = ones({16});
+    TensorImpl t11 = ones({16});
+    t10.info("Tensor 10");
+    t11.info("Tensor 11");
+    start = clock();
+    tensors = {t10, t11};
+    t10 = ts::einsum("i,i->", tensors);
+    end = clock();
+    cout << "einsum(\"i,i->\", tensors):" << endl;
+    cout << t10 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+    
+    t10 = ones({16}).cuda();
+    t11 = ones({16}).cuda();
+    t10.info("Tensor 10");
+    t11.info("Tensor 11");
+    start = clock();
+    tensors = {t10, t11};
+    t10 = ts::einsum("i,i->", tensors);
+    end = clock();
+    cout << "einsum(\"i,i->\", tensors):" << endl;
+    cout << t10 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
     
 }
 
