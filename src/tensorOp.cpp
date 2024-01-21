@@ -471,19 +471,20 @@ TensorImpl view(const TensorImpl &t, vector<int> shape) {
 }
 
 // save and load
-void save(const TensorImpl &t, string filename) {
-    vector<data_t> tmp = t.get_serial_data();
+
+void TensorImpl::save( string filename) const {
+    vector<data_t> tmp = this->get_serial_data();
     ofstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
         char *offset = 0;
         // Dtype
-        file.write((char *)&t.dtype, sizeof(t.dtype));
+        file.write((char *)&this->dtype, sizeof(this->dtype));
         // Device
-        file.write((char *)&t.device, sizeof(t.device));
+        file.write((char *)&this->device, sizeof(this->device));
         // Ndim
-        file.write((char *)&t.ndim, sizeof(int));
+        file.write((char *)&this->ndim, sizeof(int));
         // Then shape data
-        file.write((char *)t.shape.shape.data(), t.ndim * sizeof(int));
+        file.write((char *)this->shape.shape.data(), this->ndim * sizeof(int));
         // Then data
         file.write((char *)tmp.data(), tmp.size() * sizeof(data_t));
         file.close();
@@ -493,7 +494,11 @@ void save(const TensorImpl &t, string filename) {
     cout << "Saved Successfully! [" << filename << "]" << endl;
 }
 
-TensorImpl load(string filename) {
+void save(const TensorImpl &t, string filename) {
+    t.save(filename);
+}
+
+TensorImpl TensorImpl::load(string filename) {
     ifstream file(save_path + filename, ios::binary);
     if (file.is_open()) {
         int ndim;
@@ -520,6 +525,10 @@ TensorImpl load(string filename) {
         throw runtime_error("Unable to open file");
     }
 }
+
+TensorImpl load(string filename) { return TensorImpl::load(filename); }
+
+
 vector<int> get_dim_idx(size_t index, vector<int> shape,
                         vector<int> origin_stride) {
     vector<int> indices(shape.size());
@@ -543,7 +552,7 @@ TensorImpl TensorImpl::squeeze() const {
 }
 
 TensorImpl TensorImpl::unsqueeze(int dim) const {
-    CHECK_IN_RANGE(dim, 0, this->ndim,
+    CHECK_IN_RANGE(dim, 0, this->ndim+1,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
                    this->ndim, dim);
@@ -552,6 +561,7 @@ TensorImpl TensorImpl::unsqueeze(int dim) const {
     vector<data_t> new_data = this->get_serial_data();
     return TensorImpl(new_data, new_shape, this->dtype, this->device);
 }
+
 size_t get_data_idx(size_t index, TensorImpl t) {
     size_t offset = 0;
     size_t tmp = 0;
