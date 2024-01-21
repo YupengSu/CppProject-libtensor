@@ -35,17 +35,24 @@ TensorImpl::TensorImpl(const vector<data_t> &i_data, const vector<int> &i_shape,
     this->offset = 0;
     this->stride = init_stride(this->shape.shape);
     this->origin_stride = vector<int>(this->stride);
+
+
 }
 
 TensorImpl::TensorImpl(const Storage &i_data, const Size &i_shape,
-               const vector<int> i_stride, dt dtype, dev device)
+               const vector<int> i_stride, dt dtype, dev device, bool another_view)
     : data(i_data), stride(i_stride), shape(i_shape) {
-        
     this->ndim = i_shape.ndim;
     this->dtype = dtype;
     this->device = device;
-    this->origin_stride = init_stride(this->shape.shape);
     this->offset = 0;
+    if (another_view) {
+        this->origin_stride = vector<int>(this->stride);
+
+    } else {
+        this->origin_stride = init_stride(this->shape.shape);
+    
+    }
 }
 
 TensorImpl TensorImpl::to(dev device) const {
