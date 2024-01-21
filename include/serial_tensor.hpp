@@ -72,6 +72,8 @@ class TensorImpl {
     TensorImpl permute(vector<int> dims) const;
     TensorImpl transpose(int dim1, int dim2) const;
     TensorImpl view(vector<int> shape) const;
+    TensorImpl squeeze() const;
+    TensorImpl unsqueeze(int dim) const;
 
     void* data_ptr() const;
     size_t size() const;

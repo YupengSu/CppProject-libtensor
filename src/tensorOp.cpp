@@ -161,7 +161,6 @@ data_t TensorImpl::locate(vector<size_t> inds) const {
     return data[offset];
 }
 
-
 TensorImpl TensorImpl::operator[](size_t index) const { return slice(index); }
 
 TensorImpl &TensorImpl::operator=(BaseTensor<> bt) {
@@ -204,18 +203,17 @@ TensorImpl &TensorImpl::operator=(double val) {
     return *this;
 }
 
-
-TensorImpl& TensorImpl::operator=(const TensorImpl& other) {
+TensorImpl &TensorImpl::operator=(const TensorImpl &other) {
     this->data = other.data;
     this->ndim = other.ndim;
     this->shape = Size(other.shape);
-    this->stride = vector<int> (other.stride);
-    this->origin_stride = vector<int> (other.origin_stride);
+    this->stride = vector<int>(other.stride);
+    this->origin_stride = vector<int>(other.origin_stride);
     this->offset = other.offset;
     this->dtype = other.dtype;
     this->device = other.device;
     return *this;
-} 
+}
 
 size_t TensorImpl::get_dim() const { return this->ndim; }
 size_t TensorImpl::size(int i) const { return this->shape.size(i); }
@@ -439,11 +437,11 @@ vector<int> vec_mul(vector<int> v1, vector<int> v2) {
     }
     return ret;
 }
-TensorImpl tile(const TensorImpl & t, vector<int> reps) {
+TensorImpl tile(const TensorImpl &t, vector<int> reps) {
     CHECK_EQUAL(t.ndim, reps.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, reps.size());
     TensorImpl new_t = TensorImpl(t);
-    for (int i = t.ndim-1; i >= 0; i--) {
+    for (int i = t.ndim - 1; i >= 0; i--) {
         TensorImpl tmp = TensorImpl(new_t);
         for (int j = 0; j < reps[i] - 1; j++) {
             tmp = cat({tmp, new_t}, i);
@@ -451,9 +449,8 @@ TensorImpl tile(const TensorImpl & t, vector<int> reps) {
         new_t = tmp;
     }
     return new_t;
-    
 }
-TensorImpl transpose(const TensorImpl & t, int dim1, int dim2) {
+TensorImpl transpose(const TensorImpl &t, int dim1, int dim2) {
     CHECK_IN_RANGE(dim1, 0, t.ndim,
                    "Dimension out of range (expected to be in range of [0, "
                    "%d), but got %d)",
@@ -469,7 +466,7 @@ TensorImpl transpose(const TensorImpl & t, int dim1, int dim2) {
     Storage new_data = Storage(t.data, 0);
     return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
-TensorImpl permute(const TensorImpl & t, vector<int> dims) {
+TensorImpl permute(const TensorImpl &t, vector<int> dims) {
     CHECK_EQUAL(t.ndim, dims.size(), "Tensor dimension mismatch: %d vs %zu",
                 t.ndim, dims.size());
     vector<int> new_shape = vector<int>(t.ndim);
@@ -482,7 +479,7 @@ TensorImpl permute(const TensorImpl & t, vector<int> dims) {
     return TensorImpl(new_data, Size(new_shape), new_stride, t.dtype, t.device);
 }
 
-TensorImpl view(const TensorImpl & t, vector<int> shape) {
+TensorImpl view(const TensorImpl &t, vector<int> shape) {
     CHECK_CONTIGUOUS(t);
     int size = 1;
     for (int i = 0; i < shape.size(); i++) {
@@ -556,19 +553,27 @@ vector<int> get_dim_idx(size_t index, vector<int> shape,
     return indices;
 }
 
-// size_t get_data_idx(size_t index, vector<int> shape_v, vector<int> stride,
-//                     vector<int> origin_stride) {
-//     size_t offset = 0;
-//     size_t tmp = 0;
-//     for (int i = 0; i < shape_v.size(); i++) {
-//         tmp = index / origin_stride[i];
-//         offset += tmp * stride[i];
-//         index -= tmp * origin_stride[i];
-//     }
+TensorImpl TensorImpl::squeeze() const {
+    vector<int> new_shape;
+    for (int i = 0; i < this->ndim; i++) {
+        if (this->shape[i] != 1) {
+            new_shape.push_back(this->shape[i]);
+        }
+    }
+    vector<data_t> new_data = this->get_serial_data();
+    return TensorImpl(new_data, new_shape, this->dtype, this->device);
+}
 
-//     return offset;
-// }
-
+TensorImpl TensorImpl::unsqueeze(int dim) const {
+    CHECK_IN_RANGE(dim, 0, this->ndim,
+                   "Dimension out of range (expected to be in range of [0, "
+                   "%d), but got %d)",
+                   this->ndim, dim);
+    vector<int> new_shape = this->shape.shape;
+    new_shape.insert(new_shape.begin() + dim, 1);
+    vector<data_t> new_data = this->get_serial_data();
+    return TensorImpl(new_data, new_shape, this->dtype, this->device);
+}
 size_t get_data_idx(size_t index, TensorImpl t) {
     size_t offset = 0;
     size_t tmp = 0;
