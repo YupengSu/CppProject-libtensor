@@ -17,7 +17,7 @@ void permute();
 
 void view();
 
-void einsum_();
+void einsum();
 
 void serialization();
 
