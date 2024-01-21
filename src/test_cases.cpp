@@ -168,8 +168,30 @@ void einsum() {
     cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
 
     // 6) Matrix vector multiplication
-    TensorImpl t6 = rand({16, 16});
-    TensorImpl t7 = rand({16});
+    TensorImpl t6 = ones({16, 16});
+    TensorImpl t7 = ones({16});
+    t6.info("Tensor 6");
+    t7.info("Tensor 7");
+    start = clock();
+    tensors = {t6, t7};
+    t6 = ts::einsum("ij,j->i", tensors);
+    end = clock();
+    cout << "einsum(\"ij,j->i\", tensors):" << endl;
+    cout << t6 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t6 = ones({16, 16}).cuda();
+    t7 = ones({16}).cuda();
+    t6.info("Tensor 6");
+    t7.info("Tensor 7");
+    start = clock();
+    tensors = {t6, t7};
+    t6 = ts::einsum("ij,j->i", tensors);
+    end = clock();
+    cout << "einsum(\"ij,j->i\", tensors):" << endl;
+    cout << t6 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+    
     
 
 
