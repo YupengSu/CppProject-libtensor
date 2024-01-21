@@ -255,7 +255,6 @@ TensorImpl log(const TensorImpl& t) {
 TensorImpl sum(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
                    "Invalid sum dim. %d out of %zu-D Tensor", dim, t.get_dim());
-
     dt target_dtype;
     if (is_floating(t.dtype)) {
         target_dtype = t.dtype;
@@ -263,12 +262,12 @@ TensorImpl sum(const TensorImpl& t, int dim) {
         target_dtype = dt::int32;
     }
     target_dtype = dt::float32;
-
     int size = t.shape.data_len();
     int outer_size = t.shape.outer_size(dim);
     int inner_size = t.shape.inner_size(dim);
     int new_size = outer_size * inner_size;
     Storage new_data = Storage(new_size, t.device);
+    
     if (t.device == dev::cpu) {
         for (int i = 0; i < outer_size; i++) {
             for (int j = 0; j < inner_size; j++) {
@@ -287,6 +286,9 @@ TensorImpl sum(const TensorImpl& t, int dim) {
     }
     vector<int> new_shape = t.shape.shape;
     new_shape.erase(new_shape.begin() + dim);
+    if (new_shape.size() == 0) {
+        new_shape.push_back(1);
+    }
     vector<int> new_stride(new_shape.size());
     int stride = 1;
     for (int i = new_shape.size() - 1; i >= 0; --i) {
@@ -330,12 +332,16 @@ TensorImpl max(const TensorImpl& t, int dim) {
             for (int j = 0; j < inner_size; j++) {
                 size_t index_new = i * inner_size + j;
                 size_t index_old = i * inner_size * t.shape[dim] + j;
-                new_data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    new_data[index_new] =
-                        new_data[index_new] >= t.get(index_old + k * inner_size)
-                            ? new_data[index_new]
-                            : t.get(index_old + k * inner_size);
+                    if (k == 0) {
+                        new_data[index_new] = t.get(index_old + k * inner_size);
+                    }
+                    else {
+                        new_data[index_new] =
+                            new_data[index_new] >= t.get(index_old + k * inner_size)
+                                ? new_data[index_new]
+                                : t.get(index_old + k * inner_size);
+                    }
                 }
                 new_data[index_new].set_dtype(target_dtype);
             }
@@ -346,6 +352,9 @@ TensorImpl max(const TensorImpl& t, int dim) {
     }
     vector<int> new_shape = t.shape.shape;
     new_shape.erase(new_shape.begin() + dim);
+    if (new_shape.size() == 0) {
+        new_shape.push_back(1);
+    }
     vector<int> new_stride(new_shape.size());
     int stride = 1;
     for (int i = new_shape.size() - 1; i >= 0; --i) {
@@ -362,43 +371,57 @@ TensorImpl TensorImpl::max(int dim) const { return ts::max(*this, dim); }
 // min
 TensorImpl min(const TensorImpl& t, int dim) {
     CHECK_IN_RANGE(dim, 0, t.get_dim(),
-                   "Invalid min dim. %d out of %zu-D Tensor", dim, t.get_dim());
+                   "Invalid sum dim. %d out of %zu-D Tensor", dim, t.get_dim());
 
     dt target_dtype;
     if (is_floating(t.dtype)) {
         target_dtype = t.dtype;
     } else {
-        target_dtype = dt::float32;
+        target_dtype = dt::int32;
     }
+    target_dtype = dt::float32;
 
     int size = t.shape.data_len();
     int outer_size = t.shape.outer_size(dim);
     int inner_size = t.shape.inner_size(dim);
     int new_size = outer_size * inner_size;
-    vector<data_t> data(new_size);
+    Storage new_data = Storage(new_size, t.device);
     if (t.device == dev::cpu) {
         for (int i = 0; i < outer_size; i++) {
             for (int j = 0; j < inner_size; j++) {
                 size_t index_new = i * inner_size + j;
                 size_t index_old = i * inner_size * t.shape[dim] + j;
-
-                data[index_new] = t.get(index_old);
+                new_data[index_new] = 0.0;
                 for (int k = 0; k < t.shape[dim]; k++) {
-                    data[index_new] =
-                        data[index_new] <= t.get(index_old + k * inner_size)
-                            ? data[i * inner_size + j]
-                            : t.get(index_old + k * inner_size);
+                    if (k == 0) {
+                        new_data[index_new] = t.get(index_old + k * inner_size);
+                    }
+                    else {
+                        new_data[index_new] =
+                            new_data[index_new] <= t.get(index_old + k * inner_size)
+                                ? new_data[index_new]
+                                : t.get(index_old + k * inner_size);
+                    }
                 }
-                data[index_new].set_dtype(target_dtype);
+                new_data[index_new].set_dtype(target_dtype);
             }
         }
     }
-    // else {
-    //     sumKernel(data, t, dim, outer_size, inner_size);
-    // }
+    else {
+        minKernal(new_data.dp, t, dim, outer_size, inner_size, target_dtype);
+    }
     vector<int> new_shape = t.shape.shape;
     new_shape.erase(new_shape.begin() + dim);
-    return TensorImpl(data, new_shape, target_dtype, t.device);
+    if (new_shape.size() == 0) {
+        new_shape.push_back(1);
+    }
+    vector<int> new_stride(new_shape.size());
+    int stride = 1;
+    for (int i = new_shape.size() - 1; i >= 0; --i) {
+        new_stride[i] = stride;
+        stride *= new_shape[i];
+    }
+    return TensorImpl(new_data, new_shape, new_stride, target_dtype, t.device);
 
     // Reduce dim
 }
@@ -614,8 +637,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
     std::regex elewise("([a-zA-Z]),\\1->\\1");
 
     std::regex transposed("([a-zA-Z]),([a-zA-Z])->\\2\\1");                      // 2) Transpose, ‘ij->ji’, 
-    std::regex permute("(*[a-zA-Z])([a-zA-Z])->*\\2\\1");                          //3) Permuate, ‘…ij->…ji’ , 
-    std::regex sum_along_dimension("([a-zA-Z])([a-zA-Z])->\\j");                  // 5) Sum along dimension, ‘ij->j’ , 
+    std::regex permute("(.*[a-zA-Z])([a-zA-Z])->.*\\2\\1");                          //3) Permuate, ‘…ij->…ji’ , 
+    std::regex sum_along_dimension("([a-zA-Z])([a-zA-Z])->\\2");                  // 5) Sum along dimension, ‘ij->j’ , 
     std::regex matrix_multiply("([a-zA-Z])([a-zA-Z]),([a-zA-Z])([a-zA-Z])->\\1\\3");  //7) Matrix mul, ‘ik, kj->ij’ ,
     std::regex reduce_sum("([a-zA-Z])([a-zA-Z])->");                                         // 4) Reduce sum, ‘ij->’,
     std::regex matrix_vector_multiply("([a-zA-Z])([a-zA-Z]),\\2->\\1");           //6) Matrix and vector mul, ‘ik, k->i’, 7) 
@@ -625,24 +648,24 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
 
     if (regex_match(eq, dot)) {
         // dot production
-        if (tensors.size() < 2) {
+        cout << "dot product" << endl;
+        if (tensors.size() != 2) {
             throw std::runtime_error(
                 "Insufficient number of tensors for dot product");
         }
         const TensorImpl& t1 = tensors[0];
         const TensorImpl& t2 = tensors[1];
 
-        CHECK_SAME_SHAPE(t1, t2);
-        const Size& shape = t1.shape;
-        vector<data_t> data(1);
-        // data_t dot_product;
-        for (size_t i = 0; i < shape.data_len(); ++i) {
-            data[0] += t1.get(i) * t2.get(i);
-            // cout << "data1 " << t1.get(i) << " data2 " << t2.get(i) << endl;
+        if (t1.ndim != 1 || t2.ndim != 1) {
+            throw std::runtime_error("Tensors are not vectors");
         }
-        cout << data[0] << endl;
-        return TensorImpl(data, {});  // scalar //todo test
-    } else if (regex_match(eq, elewise)) {
+
+        TensorImpl t3 = ts::mul(t1, t2);
+        cout << t3 << endl;
+        
+        return ts::sum(t3, 0);  // scalar 
+    } 
+    else if (regex_match(eq, elewise)) {
         // element-wise production
         if (tensors.size() < 2) {
             throw std::runtime_error(

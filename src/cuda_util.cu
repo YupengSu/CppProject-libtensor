@@ -856,7 +856,10 @@ __global__ void maxTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
         // offset = i;
         for (int k = 0; k < dim_size; k++) {
             size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
-            cmp_data_t(c[index_new], c[index_new], a[offset], target_dtype);
+            if (k == 0)
+                c[index_new] = a[offset];
+            else
+                cmp_data_t(c[index_new], c[index_new], a[offset], target_dtype);
         }
     }
 }
@@ -871,7 +874,10 @@ __global__ void minTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
         // offset = i;
         for (int k = 0; k < dim_size; k++) {
             size_t offset = get_idx(index_old + k * inner_size, shape, stride, origin_stride, dim);
-            cmp_data_t(c[index_new], a[offset], c[index_new], target_dtype);
+            if (k == 0)
+                c[index_new] = a[offset];
+            else
+                cmp_data_t(c[index_new], c[index_new], a[offset], target_dtype);
         }
     }
 }
