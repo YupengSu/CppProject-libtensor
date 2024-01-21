@@ -727,9 +727,9 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         }
         const TensorImpl& t1 = tensors[0];
         const TensorImpl& t2 = tensors[1];
-        t1.unsqueeze(1);
-        t2.unsqueeze(0);
-        return ts::matrix_multiply(t1, t2);
+        TensorImpl t3 = t1.unsqueeze(1);
+        TensorImpl t4 = t2.unsqueeze(0);
+        return ts::matrix_multiply(t3, t4);
     } else if (regex_match(eq, batch)) {
         // batch matrix multiplication
         if (tensors.size() < 2) {
@@ -752,9 +752,15 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         int batches = shape1[0];
         int rows1 = shape1[1];
         int cols2 = shape2[2];
-        TensorImpl result = ts::zeros({batches, rows1, cols2});
-        for (size_t b = 0; b < batches; ++b) {
-            result[b] = ts::matrix_multiply(t1[b], t2[b]);
+        TensorImpl result;
+        for (size_t b = 0; b < batches; b++) {
+            if (b == 0) {
+                result = ts::matrix_multiply(t1[b], t2[b]).unsqueeze(0);
+            } else {
+                result = ts::cat(
+                    {result, ts::matrix_multiply(t1[b], t2[b]).unsqueeze(0)},
+                    0);
+            }
         }
         return result;
     } else if(regex_match(eq,transposed)){

@@ -410,6 +410,83 @@ void einsum() {
     cout << "einsum(\"i,i->\", tensors):" << endl;
     cout << t10 << endl;
     cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 9) Pointwise multiplication and reduce sum
+    TensorImpl t12 = ones({16, 16});
+    TensorImpl t13 = ones({16, 16});
+    t12.info("Tensor 12");
+    t13.info("Tensor 13");
+    start = clock();
+    tensors = {t12, t13};
+    t12 = ts::einsum("ij,ij->", tensors);
+    end = clock();
+    cout << "einsum(\"ij,ij->\", tensors):" << endl;
+    cout << t12 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t12 = ones({16, 16}).cuda();
+    t13 = ones({16, 16}).cuda();
+    t12.info("Tensor 12");
+    t13.info("Tensor 13");
+    start = clock();
+    tensors = {t12, t13};
+    t12 = ts::einsum("ij,ij->", tensors);
+    end = clock();
+    cout << "einsum(\"ij,ij->\", tensors):" << endl;
+    cout << t12 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 10) Outer product
+    TensorImpl t14 = ones({16});
+    TensorImpl t15 = ones({16});
+    t14.info("Tensor 14");
+    t15.info("Tensor 15");
+    start = clock();
+    tensors = {t14, t15};
+    t14 = ts::einsum("i,j->ij", tensors);
+    end = clock();
+    cout << "einsum(\"i,j->ij\", tensors):" << endl;
+    cout << t14 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+    
+    t14 = ones({16}).cuda();
+    t15 = ones({16}).cuda();
+    t14.info("Tensor 14");
+    t15.info("Tensor 15");
+    start = clock();
+    tensors = {t14, t15};
+    t14 = ts::einsum("i,j->ij", tensors);
+    end = clock();
+    cout << "einsum(\"i,j->ij\", tensors):" << endl;
+    cout << t14 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    // 11) Batch matrix multiplication
+    TensorImpl t16 = ones({4, 16, 16});
+    TensorImpl t17 = ones({4, 16, 16});
+    t16.info("Tensor 16");
+    t17.info("Tensor 17");
+    start = clock();
+    tensors = {t16, t17};
+    t16 = ts::einsum("bij,bjk->bik", tensors);
+    end = clock();
+    cout << "einsum(\"bij,bjk->bik\", tensors):" << endl;
+    cout << t16 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+
+    t16 = ones({4, 16, 16}).cuda();
+    t17 = ones({4, 16, 16}).cuda();
+    t16.info("Tensor 16");
+    t17.info("Tensor 17");
+    start = clock();
+    tensors = {t16, t17};
+    t16 = ts::einsum("bij,bjk->bik", tensors);
+    end = clock();
+    cout << "einsum(\"bij,bjk->bik\", tensors):" << endl;
+    cout << t16 << endl;
+    cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
+    
+
     
 }
 
