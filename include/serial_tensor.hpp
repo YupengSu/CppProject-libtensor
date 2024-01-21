@@ -154,6 +154,8 @@ TensorImpl mean(const TensorImpl& t, int dim = -1);
 TensorImpl max(const TensorImpl& t, int dim = -1);
 TensorImpl min(const TensorImpl& t, int dim = -1);
 
+TensorImpl matrix_multiply(const TensorImpl& t1, const TensorImpl t2);
+
 // comparison
 TensorImpl eq(const TensorImpl& t1, const TensorImpl& t2);
 TensorImpl ne(const TensorImpl& t1, const TensorImpl& t2);
