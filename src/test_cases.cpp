@@ -387,8 +387,8 @@ void einsum() {
     cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
 
     // 8) Dot product
-    TensorImpl t10 = ones({16});
-    TensorImpl t11 = ones({16});
+    TensorImpl t10 = ones({256});
+    TensorImpl t11 = ones({256});
     t10.info("Tensor 10");
     t11.info("Tensor 11");
     start = clock();

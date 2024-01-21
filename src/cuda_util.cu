@@ -646,6 +646,62 @@ __device__ void cmp_data_t(data_t& dst, const data_t& a, const data_t& b, dt tar
     dst.dtype = target_dtype;
 }
 
+__device__ void cmn_data_t(data_t& dst, const data_t& a, const data_t& b, dt target_dtype) {
+    double tmp_a, tmp_b;
+    switch (a.dtype) {
+        case dt::int8:
+            tmp_a = (double)a.data.tensor_int8;
+            break;
+        case dt::float32:
+            tmp_a = (double)a.data.tensor_float32;
+            break;
+        case dt::bool8:
+            tmp_a = (double)a.data.tensor_bool;
+            break;
+        case dt::int32:
+            tmp_a = (double)a.data.tensor_int32;
+            break;
+        case dt::float64:
+            tmp_a = a.data.tensor_float64;
+            break;
+    }
+    switch (b.dtype) {
+        case dt::int8:
+            tmp_b = (double)b.data.tensor_int8;
+            break;
+        case dt::float32:
+            tmp_b = (double)b.data.tensor_float32;
+            break;
+        case dt::bool8:
+            tmp_b = (double)b.data.tensor_bool;
+            break;
+        case dt::int32:
+            tmp_b = (double)b.data.tensor_int32;
+            break;
+        case dt::float64:
+            tmp_b = b.data.tensor_float64;
+            break;
+    }
+    switch (target_dtype) {
+        case dt::int8:
+            dst.data.tensor_int8 = tmp_a < tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::float32:
+            dst.data.tensor_float32 = tmp_a < tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::bool8:
+            dst.data.tensor_bool = tmp_a < tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::int32:
+            dst.data.tensor_int32 = tmp_a < tmp_b? tmp_a: tmp_b;
+            break;
+        case dt::float64:
+            dst.data.tensor_float64 = tmp_a < tmp_b? tmp_a: tmp_b;
+            break;
+    }
+    dst.dtype = target_dtype;
+}
+
 __device__ void muladd_data_t(data_t& dst, const data_t& a, const data_t& b, dt target_dtype) {
     double tmp_a, tmp_b;
     switch (a.dtype) {
@@ -940,7 +996,7 @@ __global__ void minTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
             if (k == 0)
                 c[index_new] = a[offset];
             else
-                cmp_data_t(c[index_new], a[offset], c[index_new], target_dtype);
+                cmn_data_t(c[index_new], c[index_new], a[offset], target_dtype);
         }
     }
 }
