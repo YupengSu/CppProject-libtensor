@@ -761,15 +761,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
             throw std::runtime_error(
                 "Insufficient number of tensors for transpose");
         }
-        const TensorImpl& t1 = tensors[0];
-        const Size& shape = t1.shape;
-        vector<data_t> data(shape.data_len());
-        for (size_t i = 0; i < shape[0]; ++i) {
-            for (size_t j = 0; j < shape[1]; ++j) {
-                data[j * shape[0] + i] = t1.get(i * shape[1] + j);
-            }
-        }
-        return TensorImpl(data, {shape[1], shape[0]});
+        return tensors[0].transpose(tensors[0].ndim - 1, tensors[0].ndim - 2);
     } 
     else if(regex_match(eq,permute)){
         // permute: ‘…ij->…ji’ means
@@ -777,15 +769,7 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
             throw std::runtime_error(
                 "Insufficient number of tensors for permute");
         }
-        const TensorImpl& t1 = tensors[0];
-        const Size& shape = t1.shape;
-        vector<data_t> data(shape.data_len());
-        for (size_t i = 0; i < shape[0]; ++i) {
-            for (size_t j = 0; j < shape[1]; ++j) {
-                data[j * shape[0] + i] = t1.get(i * shape[1] + j);
-            }
-        }
-        return TensorImpl(data, {shape[1], shape[0]});
+        return tensors[0].transpose(tensors[0].ndim - 1, tensors[0].ndim - 2);
     } else if(regex_match(eq,sum_along_dimension)){
         // sum along dimension
         if (tensors.size() < 1) {
