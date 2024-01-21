@@ -188,14 +188,14 @@ TensorImpl &TensorImpl::operator=(BaseTensor<> bt) {
 }
 
 TensorImpl &TensorImpl::operator=(double val) {
+    data_t tmp;
+    tmp = val;
+    tmp.set_dtype(this->dtype);
     for (int i = 0; i < this->size(); i++) {
         size_t idx = get_data_idx(i, *this);
         if (this->device == dev::cpu) {
-            this->data.dp[idx] = val;
+            this->data.dp[idx] = tmp;
         } else {
-            data_t tmp;
-            tmp.set_dtype(this->dtype);
-            tmp = val;
             c_cudaMemcpy(this->data.dp + idx, &tmp, sizeof(data_t),
                          c_cudaMemcpyHostToDevice);
         }

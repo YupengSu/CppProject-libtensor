@@ -17,10 +17,11 @@ void permute();
 
 void view();
 
-void einsum();
+void einsum_();
 
 void serialization();
 
 void cuda_acc();
+
 
 }
