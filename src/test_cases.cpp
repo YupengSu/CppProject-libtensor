@@ -326,4 +326,28 @@ void einsum() {
     cout << "Time: " << (double)(end - start) / CLOCKS_PER_SEC << endl << endl;
     
 }
+
+void serialization() {
+    TensorImpl t1 = rand({2, 3, 4}, dt::int8).to(target_device);
+
+    t1.info("Tensor 1");
+    cout << t1 << endl << endl;
+
+    string path = "t1.bin";
+    cout << "Serializing t1 to " << path << endl;
+    t1.save(path);
+
+    cout << "Loading t2 from " << path << endl;
+    TensorImpl t2 = TensorImpl::load(path);
+    t2.info("Tensor 2");
+    cout << t2 << endl << endl;
+
+    cout << "Modifying t2[1][1] to 0" << endl;
+    t2[1][1] = 0;
+    cout << "t2:\n" << t2 << endl;
+    cout << "t1:\n" << t1 << endl;
+
+    t1.info("Tensor 1 after Saving");
+    t2.info("Tensor 2 after Loading ");
+}
 }  // namespace test_case
