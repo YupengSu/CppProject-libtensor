@@ -32,8 +32,10 @@ void mulKernel(void* dst, TensorImpl a, TensorImpl b, size_t size, dt target_dty
 void mulKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype);
 
 void divKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
+
 void divKernelNum(void* dst, TensorImpl a, data_t b, size_t size);
 
+void matrixMultiplyKernel(void* dst, TensorImpl a, TensorImpl b, size_t m, size_t n, size_t k, dt target_dtype);
 
 void eqKernel(void* dst, TensorImpl a, TensorImpl b, size_t size);
 

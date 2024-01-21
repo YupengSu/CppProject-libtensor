@@ -619,7 +619,35 @@ TensorImpl TensorImpl::operator>=(const TensorImpl& other) const {
 }
 
 //////////////other
+TensorImpl matrix_multiply(const TensorImpl& t1, const TensorImpl t2) {
+    CHECK_SAME_DEVICE(t1, t2);
+    dt target_dtype = descision_dtype(t1.dtype, t2.dtype);
+    size_t M = t1.shape[0];
+    size_t N = t2.shape[1];
+    size_t K = t1.shape[1];
+    if (t1.shape[1] != t2.shape[0]) {
+        throw std::runtime_error("Matrix dimension mismatch");
+    }
+    Storage new_data = Storage(M * N, t1.device);
+    new_data.dtype = target_dtype;
+    if (t1.device == dev::cpu) {
+        for (int i = 0; i < t1.shape[0]; i++) {
+            for (int j = 0; j < t2.shape[1]; j++) {
+                new_data[i * t2.shape[1] + j] = 0;
+                for (int k = 0; k < t1.shape[1]; k++) {
+                    new_data[i * t2.shape[1] + j] +=
+                        t1.get(i * t1.shape[1] + k) * t2.get(k * t2.shape[1] + j);
+                }
+                new_data[i * t2.shape[1] + j].set_dtype(target_dtype);
+            }
+        }
 
+    } else {
+        matrixMultiplyKernel(new_data.dp, t1, t2, M, N, K, target_dtype);
+    }
+    return TensorImpl(new_data, t1.shape, t1.origin_stride, t1.dtype,
+                      t1.device);
+}
 
 
 
@@ -659,11 +687,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         if (t1.ndim != 1 || t2.ndim != 1) {
             throw std::runtime_error("Tensors are not vectors");
         }
-
-        TensorImpl t3 = ts::mul(t1, t2);
-        cout << t3 << endl;
         
-        return ts::sum(t3, 0);  // scalar 
+        return ts::sum(ts::mul(t1, t2), 0);  // scalar 
     } 
     else if (regex_match(eq, elewise)) {
         // element-wise production
@@ -673,13 +698,9 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         }
         const TensorImpl& t1 = tensors[0];
         const TensorImpl& t2 = tensors[1];
-        CHECK_SAME_SHAPE(t1, t2);
-        vector<data_t> data(t1.shape.data_len());
-        for (size_t i = 0; i < t1.shape.data_len(); ++i) {
-            data[i] = t1.get(i) * t2.get(i);
-        }
-        return TensorImpl(data, {t1.shape.shape});
-    } else if (regex_match(eq, diag)) {
+        return ts::mul(t1, t2);
+    } 
+    else if (regex_match(eq, diag)) {
         // diagnoal of t1
         if (tensors.size() < 1) {
             throw std::runtime_error(
@@ -695,7 +716,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
             data[i] = t1.get(i * shape[0] + i);
         }
         return TensorImpl(data, {shape[0]});
-    } else if (regex_match(eq, outer)) {
+    } 
+    else if (regex_match(eq, outer)) {
         // outer product
         if (tensors.size() < 2) {
             throw std::runtime_error(
@@ -732,10 +754,6 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         const Size& shape1 = t1.shape;
         const Size& shape2 = t2.shape;
         int batches = shape1[0];
-        int rows1 = shape1[1];
-        int cols1 = shape1[2];
-        int rows2 = shape2[1];
-        int cols2 = shape2[2];
 
         vector<data_t> data(batches * rows1 * cols2);
         for (size_t b = 0; b < batches; ++b) {
@@ -765,7 +783,8 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
             }
         }
         return TensorImpl(data, {shape[1], shape[0]});
-    } else if(regex_match(eq,permute)){
+    } 
+    else if(regex_match(eq,permute)){
         // permute: ‘…ij->…ji’ means
         if (tensors.size() < 1) {
             throw std::runtime_error(
@@ -787,15 +806,9 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
                 "Insufficient number of tensors for sum along dimension");
         }
         const TensorImpl& t1 = tensors[0];
-        const Size& shape = t1.shape;
-        vector<data_t> data(shape.data_len());
-        for (size_t i = 0; i < shape[0]; ++i) {
-            for (size_t j = 0; j < shape[1]; ++j) {
-                data[j * shape[0] + i] = t1.get(i * shape[1] + j);
-            }
-        }
-        return TensorImpl(data, {shape[1], shape[0]});
-    } else if(regex_match(eq,matrix_multiply)){
+        return ts::sum(t1, 0);
+    } 
+    else if(regex_match(eq,matrix_multiply)){
         // matrix multiply
         if (tensors.size() < 2) {
             throw std::runtime_error(
@@ -806,41 +819,18 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         if (t1.ndim != 2 || t2.ndim != 2) {
             throw std::runtime_error("Tensors are not matrices");
         }
-        const Size& shape1 = t1.shape;
-        const Size& shape2 = t2.shape;
-        int rows1 = shape1[0];
-        int cols1 = shape1[1];
-        int rows2 = shape2[0];
-        int cols2 = shape2[1];
-        if (cols1 != rows2) {
-            throw std::runtime_error("Matrices cannot be multiplied");
-        }
-        vector<data_t> data(rows1 * cols2);
-        for (size_t i = 0; i < rows1; ++i) {
-            for (size_t j = 0; j < cols2; ++j) {
-                for (size_t k = 0; k < cols1; ++k) {
-                    data[i * cols2 + j] +=
-                        t1.get(i * cols1 + k) * t2.get(k * cols2 + j);
-                }
-            }
-        }
-        return TensorImpl(data, {rows1, cols2});
-    } else if(regex_match(eq,reduce_sum)){
+        return ts::matrix_multiply(t1, t2);
+    }
+    else if(regex_match(eq,reduce_sum)){
         // reduce sum
         if (tensors.size() < 1) {
             throw std::runtime_error(
                 "Insufficient number of tensors for reduce sum");
         }
         const TensorImpl& t1 = tensors[0];
-        const Size& shape = t1.shape;
-        vector<data_t> data(shape.data_len());
-        for (size_t i = 0; i < shape[0]; ++i) {
-            for (size_t j = 0; j < shape[1]; ++j) {
-                data[j * shape[0] + i] = t1.get(i * shape[1] + j);
-            }
-        }
-        return TensorImpl(data, {shape[1], shape[0]});
-    } else if(regex_match(eq,point_wise)){
+        return ts::sum(ts::sum(t1, 0), 0);
+    } 
+    else if(regex_match(eq,point_wise)){
         // point wise
         if (tensors.size() < 2) {
             throw std::runtime_error(
@@ -848,139 +838,10 @@ TensorImpl einsum(string eq, vector<TensorImpl> tensors) {
         }
         const TensorImpl& t1 = tensors[0];
         const TensorImpl& t2 = tensors[1];
-        if (t1.ndim != 2 || t2.ndim != 2) {
-            throw std::runtime_error("Tensors are not matrices");
-        }
-        const Size& shape1 = t1.shape;
-        const Size& shape2 = t2.shape;
-        int rows1 = shape1[0];
-        int cols1 = shape1[1];
-        int rows2 = shape2[0];
-        int cols2 = shape2[1];
-        if (cols1 != cols2 || rows1 != rows2) {
-            throw std::runtime_error("Matrices cannot be multiplied");
-        }
-
-        vector<data_t> data(rows1 * cols1);
-        for (size_t i = 0; i < rows1; ++i) {
-            for (size_t j = 0; j < cols1; ++j) {
-                data[i * cols1 + j] = t1.get(i * cols1 + j) * t2.get(i * cols1 + j);
-            }
-        }
-        return TensorImpl(data, {rows1, cols1});
-    } else if(regex_match(eq,bilinear)){
-        // bilinear
-        if (tensors.size() < 3) {
-            throw std::runtime_error(
-                "Insufficient number of tensors for bilinear");
-        }
-        const TensorImpl& t1 = tensors[0];
-        const TensorImpl& t2 = tensors[1];
-        const TensorImpl& t3 = tensors[2];
-        if (t1.ndim != 2 || t2.ndim != 3 || t3.ndim != 2) {
-            throw std::runtime_error("Tensors are not matrices");
-        }
-        const Size& shape1 = t1.shape;
-        const Size& shape2 = t2.shape;
-        const Size& shape3 = t3.shape;
-        int rows1 = shape1[0];
-        int cols1 = shape1[1];
-        int rows2 = shape2[1];
-        int cols2 = shape2[2];
-        int rows3 = shape3[0];
-        int cols3 = shape3[1];
-        if (cols1 != rows2 || cols3 != rows2) {
-            throw std::runtime_error("Matrices cannot be multiplied");
-        }
-
-        vector<data_t> data(rows1 * rows3 * cols2);
-        for (size_t i = 0; i < rows1; ++i) {
-            for (size_t j = 0; j < rows3; ++j) {
-                for (size_t k = 0; k < cols2; ++k) {
-                    for (size_t l = 0; l < cols1; ++l) {
-                        data[(i * rows3 + j) * cols2 + k] +=
-                            t1.get(i * cols1 + l) * t2.get(l * rows2 + k) *
-                            t3.get(j * cols3 + l);
-                    }
-                }
-            }
-        }
-        return TensorImpl(data, {rows1, rows3, cols2});
-    } else if(regex_match(eq,contraction)){
-        // contraction
-        if (tensors.size() < 6) {
-            throw std::runtime_error(
-                "Insufficient number of tensors for contraction");
-        }
-        const TensorImpl& t1 = tensors[0];
-        const TensorImpl& t2 = tensors[1];
-        const TensorImpl& t3 = tensors[2];
-        const TensorImpl& t4 = tensors[3];
-        const TensorImpl& t5 = tensors[4];
-        const TensorImpl& t6 = tensors[5];
-        if (t1.ndim != 4 || t2.ndim != 5 || t3.ndim != 2 || t4.ndim != 3 ||
-            t5.ndim != 5 || t6.ndim != 3) {
-            throw std::runtime_error("Tensors are not matrices");
-        }
-        const Size& shape1 = t1.shape;
-        const Size& shape2 = t2.shape;
-        const Size& shape3 = t3.shape;
-        const Size& shape4 = t4.shape;
-        const Size& shape5 = t5.shape;
-        const Size& shape6 = t6.shape;
-        int rows1 = shape1[0];
-        int cols1 = shape1[1];
-        int rows2 = shape2[1];
-        int cols2 = shape2[2];
-        int rows3 = shape3[0];
-        int cols3 = shape3[1];
-        int rows4 = shape4[0];
-        int cols4 = shape4[1];
-        int rows5 = shape5[1];
-        int cols5 = shape5[2];
-        int rows6 = shape6[0];
-        int cols6 = shape6[1];
-
-        if (cols1 != rows2 || cols3 != rows2 || cols4 != rows2 ||
-            cols5 != rows2 || cols6 != rows2) {
-            throw std::runtime_error("Matrices cannot be multiplied");
-        }
-
-        vector<data_t> data(rows1 * rows3 * rows4 * rows5 * rows6 * cols2);
-        for (size_t i = 0; i < rows1; ++i) {
-            for (size_t j = 0; j < rows3; ++j) {
-                for (size_t k = 0; k < rows4; ++k) {
-                    for (size_t l = 0; l < rows5; ++l) {
-                        for (size_t m = 0; m < rows6; ++m) {
-                            for (size_t n = 0; n < cols2; ++n) {
-                                for (size_t o = 0; o < cols1; ++o) {
-                                    data[((((i * rows3 + j) * rows4 + k) *
-                                           rows5 +
-                                           l) *
-                                              rows6 +
-                                          m) *
-                                             cols2 +
-                                         n] +=
-                                        t1.get(i * cols1 + o) *
-                                        t2.get(o * rows2 + n) *
-                                        t3.get(j * cols3 + o) *
-                                        t4.get(k * cols4 + o) *
-                                        t5.get(l * cols5 + o) *
-                                        t6.get(m * cols6 + o);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return TensorImpl(data, {rows1, rows3, rows4, rows5, rows6, cols2});
+        return ts::sum(ts::sum(ts::mul(t1, t2),0), 0);
     }
-    //6) Matrix and vector mul, ‘ik, k->i’, 7) 
-    int pos = eq.find_last_of("->", eq.size());
-    string lhs = eq.substr(0, pos);
-    int index = eq.substr(pos, eq.size() - pos).at(0) - '0';
-    if(regex_match(lhs,matrix_vector_multiply)){
+    
+    else if(regex_match(eq,matrix_vector_multiply)){
         // matrix vector multiply
         if (tensors.size() < 2) {
             throw std::runtime_error(
