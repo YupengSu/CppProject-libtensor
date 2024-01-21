@@ -21,6 +21,7 @@ void c_cudaMemcpy(void* dst, void* src, size_t count,
                          c_cudaMemcpyKind kind);
 void c_cudaFreeHost(void* ptr);
 void* c_cudaMallocHost(size_t size);
+void get_serial_tensor_kernel(void* dst, const TensorImpl& a);
 
 void addKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size, dt target_dtype);
 void addKernelNum(void* dst, TensorImpl a, data_t b, size_t size, dt target_dtype);
@@ -46,8 +47,6 @@ void leKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 void geKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
 
 void neKernel(void* dst, const TensorImpl& a, const TensorImpl& b, size_t size);
-
-void get_serial_tensor_kernel(void* dst, const TensorImpl& a);
 
 void logKernel(void* dst, TensorImpl a, size_t size, dt target_dtype);
 
