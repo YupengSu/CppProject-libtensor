@@ -50,3 +50,4 @@ build/
 .cache/
 .vscode/
 Cuda_Test/
+.clangd
