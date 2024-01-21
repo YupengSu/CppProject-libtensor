@@ -940,7 +940,7 @@ __global__ void minTensorKernel(data_t* c, data_t* a, size_t dim_size, size_t ou
             if (k == 0)
                 c[index_new] = a[offset];
             else
-                cmp_data_t(c[index_new], a[offset, c[index_new]], target_dtype);
+                cmp_data_t(c[index_new], a[offset], c[index_new], target_dtype);
         }
     }
 }
