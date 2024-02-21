@@ -6,7 +6,10 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "config.hpp"
 #include "size.hpp"
+#include "data_type.cuh"
 
 using namespace std;
 
@@ -44,25 +47,15 @@ class BaseTensor {
         return this->data[index];
     }
 
-    template <class iterT>
-    BaseTensor(iterT begin, iterT end, dt dtype = float32) {
-        this->dim = 1;
-        // this->shape = Size((int)ts.size());
-        this->shape = Size(begin - end);
-        for (iterT i = begin; i != end; i++) {
-            this->data.push_back(BaseTensor<value_type>(*i));
-        }
-        this->set_dtype(dtype);
-    }
-
-    BaseTensor(value_type data, dt dtype = float32) {
+    BaseTensor(value_type data, dt dtype = DEFAULT_DTYPE) {
         this->dim = 0;
         this->shape = Size();
         this->scaler = data;
         this->set_dtype(dtype);
     }
 
-    BaseTensor(initializer_list<BaseTensor<value_type>> data, dt dtype = float32) {
+    BaseTensor(initializer_list<BaseTensor<value_type>> data,
+               dt dtype = DEFAULT_DTYPE) {
         this->data = {};
 
         for (BaseTensor<value_type> i : data) {
@@ -72,7 +65,9 @@ class BaseTensor {
         if (first.dim == 0) {
             this->shape = Size((int)this->data.size());
         } else {
-            this->shape = Size(first.shape, (int)this->data.size());
+            vector<int> shape(first.shape.shape);
+            shape.insert(shape.begin(), (int)this->data.size());
+            this->shape = Size(shape);
         }
         this->dim = first.dim + 1;
 
@@ -83,15 +78,6 @@ class BaseTensor {
             }
         }
         this->set_dtype(dtype);
-    }
-
-    ostream &operator<<(ostream &os) {
-        os << "[";
-        for (value_type i : data) {
-            os << i << " ";
-        }
-        os << ']' << endl;
-        return os;
     }
 
     friend ostream &operator<<(ostream &os, BaseTensor<value_type> &tsr) {
@@ -116,57 +102,6 @@ class BaseTensor {
         }
     }
 
-    template <class T>
-    bool operator==(BaseTensor<T> ts) {
-        if (this->dim != ts.dim) {
-            return false;
-        }
-        if (this->dim == 0) {
-            return this->scaler == ts.scaler;
-        }
-        if (this->shape != ts.shape) {
-            return false;
-        }
-        for (int i = 0; i < this->data.size(); i++) {
-            if (this->data[i] != ts.data[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-    template <class T>
-    bool operator!=(BaseTensor<T> ts) {
-        if (this->dim != ts.dim) {
-            return true;
-        }
-        if (this->dim == 0) {
-            return this->scaler != ts.scaler;
-        }
-        if (this->shape != ts.shape) {
-            return true;
-        }
-        for (int i = 0; i < this->data.size(); i++) {
-            if (this->data[i] != ts.data[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    BaseTensor<value_type> copy() {
-        if (this->dim == 0) {
-            return {BaseTensor<value_type>(this->scaler)};
-        } else {
-            BaseTensor<value_type> newT;
-            for (BaseTensor<value_type> &ts : this->data) {
-                newT.data.push_back(ts.copy());
-            }
-            newT.dim = this->dim;
-            newT.shape = this->shape;
-            return newT;
-        }
-    }
-
     void set_dtype(dt dtype) {
         if (this->dtype == dtype) {
             return;
@@ -175,15 +110,25 @@ class BaseTensor {
 
         if (this->dim == 0) {
             switch (dtype) {
-                case int8:
-                    this->scaler = (int8_t)this->scaler;
-                    this->dtype = int8;
+                case dt::int8:
+                    this->scaler = (uint8_t)this->scaler;
                     break;
-                case float32:
+                case dt::float32:
                     this->scaler = (float)this->scaler;
-                    this->dtype = float32;
+                    break;
+                case dt::bool8:
+                    this->scaler = (bool)this->scaler;
+                    break;
+                case dt::int32:
+                    this->scaler = (int)this->scaler;
+                    break;
+                case dt::float64:
+                    this->scaler = (double)this->scaler;
+                    break;
+                default:
                     break;
             }
+            this->dtype = dtype;
         } else {
             for (BaseTensor<value_type> &ts : this->data) {
                 ts.set_dtype(dtype);
@@ -191,24 +136,6 @@ class BaseTensor {
         }
         this->dtype = dtype;
     }
-
-    string type() {
-        switch (this->dtype) {
-            case int8:
-                return "int8";
-            case float32:
-                return "float32";
-        }
-    }
-
-    void *data_ptr() {
-        if (this->dim == 0) {
-            return &this->scaler;
-        } else {
-            return &this->data;
-        }
-    }
-
 
     vector<value_type> get_data() {
         vector<value_type> data;
@@ -224,11 +151,6 @@ class BaseTensor {
         }
         return data;
     }
-
 };
-
-
-
-
 
 }  // namespace ts

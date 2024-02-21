@@ -47,3 +47,9 @@ _deps
 *.app
 
 build/
+.cache/
+.vscode/
+Cuda_Test/
+.clangd
+
+save/
